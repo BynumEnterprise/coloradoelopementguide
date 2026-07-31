@@ -1,7 +1,7 @@
 ---
 import '../styles/global.css';
 import Disclosure from '../components/Disclosure.astro';
-const { title, description } = Astro.props;
+const { title, description, noindex = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 ---
 <!doctype html>
@@ -11,7 +11,13 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{title}</title>
   <meta name="description" content={description} />
-  <link rel="canonical" href={canonical} />
+  {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content={canonical} />
+  <meta property="og:site_name" content="Colorado Elopement Guide" />
+  <meta name="twitter:card" content="summary" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -34,7 +40,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <div class="max-w-6xl mx-auto px-4 py-10 grid gap-6 md:grid-cols-3 text-sm">
       <div>
         <p class="display text-lg text-sand-50 mb-2">Colorado Elopement Guide</p>
-        <p>A hand-checked directory of elopement and micro-wedding vendors across Colorado.</p>
+        <p>An independent directory of elopement and micro-wedding vendors across Colorado, organized by region.</p>
       </div>
       <div>
         <p class="font-semibold text-sand-50 mb-2">Explore</p>
@@ -42,6 +48,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
           <li><a href="/category/photographers" class="hover:text-clay-500">Photographers</a></li>
           <li><a href="/category/venues" class="hover:text-clay-500">Venues</a></li>
           <li><a href="/category/officiants" class="hover:text-clay-500">Officiants</a></li>
+          <li><a href="/checklist" class="hover:text-clay-500">Planning checklist</a></li>
           <li><a href="/pricing" class="hover:text-clay-500">Vendor pricing</a></li>
         </ul>
       </div>

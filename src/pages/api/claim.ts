@@ -24,3 +24,5 @@ export const POST: APIRoute = async ({ request, redirect }) => {
   });
   return redirect('/thanks?claim=1', 303);
 };
+
+export const GET: APIRoute = () => new Response('Method not allowed', { status: 405 });

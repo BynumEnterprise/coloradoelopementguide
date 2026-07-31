@@ -11,14 +11,13 @@ const { v } = Astro.props;
 const cat = CATEGORIES[v.category]; const reg = REGIONS[v.sub_region];
 const jsonld = {
   "@context":"https://schema.org", "@type":"LocalBusiness",
-  name: v.name, address: v.address || undefined, telephone: v.phone || undefined,
-  url: v.website || undefined,
-  aggregateRating: (v.rating && v.reviews) ? {"@type":"AggregateRating", ratingValue: v.rating, reviewCount: v.reviews} : undefined,
+  name: v.name, url: v.website || undefined,
   geo: (v.lat && v.lng) ? {"@type":"GeoCoordinates", latitude: v.lat, longitude: v.lng} : undefined
 };
+const metaDesc = v.description.length > 155 ? v.description.slice(0, 152).replace(/\s+\S*$/, '') + '\u2026' : v.description;
 ---
 <Base title={`${v.name} — ${cat.singular} · ${reg.name} | Colorado Elopement Guide`}
-  description={v.description.slice(0, 155)}>
+  description={metaDesc}>
   <script slot="head" type="application/ld+json" set:html={JSON.stringify(jsonld)} />
   <div class="max-w-3xl mx-auto px-4 py-10">
     <nav class="text-xs text-stone-500 mb-4">
@@ -38,7 +37,7 @@ const jsonld = {
         {v.phone && <div class="flex gap-2"><dt class="text-stone-500 w-20 shrink-0">Phone</dt><dd><a href={`tel:${v.phone}`} data-track="phone_click" class="underline hover:text-clay-600">{v.phone}</a></dd></div>}
         {v.website && <div class="flex gap-2"><dt class="text-stone-500 w-20 shrink-0">Website</dt><dd><a href={v.website} rel="nofollow noopener" target="_blank" data-track="website_click" class="underline hover:text-clay-600 break-all">{v.domain || v.website}</a></dd></div>}
       </dl>
-      <p class="mt-6 text-xs text-stone-400">Listing compiled from public sources · last verified 2026-07-30 · <a href="/claim" class="underline">Is this your business? Claim this listing free.</a></p>
+      <p class="mt-6 text-xs text-stone-400">Listing compiled from public listings and Google Business Profile data on 2026-07-30 — details may have changed since · <a href="/claim" class="underline">Is this your business? Claim this listing free.</a></p>
     </div>
     <div class="mt-6 rounded-xl bg-clay-100 border border-clay-500/30 p-5 text-sm text-clay-700">
       <strong>Planning an elopement in {reg.name}?</strong> <a href={`/region/${v.sub_region}`} class="underline">See every vendor in this region →</a>
