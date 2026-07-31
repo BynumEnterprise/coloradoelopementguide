@@ -10,7 +10,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
   try {
     await fetch(`${SB_URL}/rest/v1/p2_subscribers`, {
       method: 'POST',
-      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal,resolution=ignore-duplicates' },
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
       body: JSON.stringify({ email, source: 'site' })
     });
   } catch { /* noop */ }
