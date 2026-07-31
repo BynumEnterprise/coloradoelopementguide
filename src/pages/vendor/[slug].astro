@@ -1,0 +1,48 @@
+---
+import Base from '../../layouts/Base.astro';
+import Tracker from '../../components/Tracker.astro';
+import { allVendors } from '../../lib/vendors';
+import { CATEGORIES, REGIONS } from '../../lib/taxonomy';
+export async function getStaticPaths() {
+  const vendors = await allVendors();
+  return vendors.map(v => ({ params: { slug: v.slug }, props: { v } }));
+}
+const { v } = Astro.props;
+const cat = CATEGORIES[v.category]; const reg = REGIONS[v.sub_region];
+const jsonld = {
+  "@context":"https://schema.org", "@type":"LocalBusiness",
+  name: v.name, address: v.address || undefined, telephone: v.phone || undefined,
+  url: v.website || undefined,
+  aggregateRating: (v.rating && v.reviews) ? {"@type":"AggregateRating", ratingValue: v.rating, reviewCount: v.reviews} : undefined,
+  geo: (v.lat && v.lng) ? {"@type":"GeoCoordinates", latitude: v.lat, longitude: v.lng} : undefined
+};
+---
+<Base title={`${v.name} — ${cat.singular} · ${reg.name} | Colorado Elopement Guide`}
+  description={v.description.slice(0, 155)}>
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(jsonld)} />
+  <div class="max-w-3xl mx-auto px-4 py-10">
+    <nav class="text-xs text-stone-500 mb-4">
+      <a href="/" class="hover:underline">Home</a> › <a href={`/category/${v.category}`} class="hover:underline">{cat.name}</a> › <span>{v.name}</span>
+    </nav>
+    <div class="rounded-2xl border border-stone-200 bg-white p-6 md:p-8">
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 class="display text-2xl md:text-3xl text-pine-900">{v.name}</h1>
+          <p class="text-sm text-stone-500 mt-1">{cat.singular} · <a href={`/region/${v.sub_region}`} class="underline hover:text-clay-600">{reg.name}</a></p>
+        </div>
+        {v.rating && v.reviews ? <p class="text-pine-700 font-medium">★ {v.rating} <span class="text-stone-400 text-sm">({v.reviews} Google reviews)</span></p> : null}
+      </div>
+      <p class="mt-5 text-stone-700 leading-relaxed">{v.description}</p>
+      <dl class="mt-6 grid gap-2 text-sm">
+        {v.address && <div class="flex gap-2"><dt class="text-stone-500 w-20 shrink-0">Address</dt><dd>{v.address}</dd></div>}
+        {v.phone && <div class="flex gap-2"><dt class="text-stone-500 w-20 shrink-0">Phone</dt><dd><a href={`tel:${v.phone}`} data-track="phone_click" class="underline hover:text-clay-600">{v.phone}</a></dd></div>}
+        {v.website && <div class="flex gap-2"><dt class="text-stone-500 w-20 shrink-0">Website</dt><dd><a href={v.website} rel="nofollow noopener" target="_blank" data-track="website_click" class="underline hover:text-clay-600 break-all">{v.domain || v.website}</a></dd></div>}
+      </dl>
+      <p class="mt-6 text-xs text-stone-400">Listing compiled from public sources · last verified 2026-07-30 · <a href="/claim" class="underline">Is this your business? Claim this listing free.</a></p>
+    </div>
+    <div class="mt-6 rounded-xl bg-clay-100 border border-clay-500/30 p-5 text-sm text-clay-700">
+      <strong>Planning an elopement in {reg.name}?</strong> <a href={`/region/${v.sub_region}`} class="underline">See every vendor in this region →</a>
+    </div>
+  </div>
+  <Tracker vendorId={v.id ?? null} eventType="profile_view" />
+</Base>

@@ -1,0 +1,10 @@
+@import "tailwindcss";
+@theme {
+  --color-pine-50: #f3f6f4; --color-pine-100: #e0e9e3; --color-pine-700: #2f5243; --color-pine-800: #264337; --color-pine-900: #1e352c;
+  --color-clay-100: #f8ece5; --color-clay-500: #c46f4d; --color-clay-600: #ad5a3a; --color-clay-700: #8f4830;
+  --color-sand-50: #faf7f2; --color-sand-100: #f3ede2;
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Inter", system-ui, sans-serif;
+}
+html { font-family: var(--font-body); background: var(--color-sand-50); color: #26312b; }
+h1,h2,h3,.display { font-family: var(--font-display); }

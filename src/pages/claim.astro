@@ -1,0 +1,36 @@
+---
+import Base from '../layouts/Base.astro';
+import { allVendors } from '../lib/vendors';
+const vendors = await allVendors();
+---
+<Base title="Claim your free listing | Colorado Elopement Guide"
+  description="Colorado wedding vendors: claim your free listing, update your details, and see how many couples click through to your site each month.">
+  <div class="max-w-2xl mx-auto px-4 py-10">
+    <h1 class="display text-3xl text-pine-900">Claim your free listing</h1>
+    <p class="text-stone-600 mt-3">If your business is listed here, it's yours — free, forever. Claiming lets you correct your details, add photos and packages, and see your monthly click and inquiry counts. No credit card, no catch.</p>
+    <form method="post" action="/api/claim" class="mt-8 space-y-4 rounded-2xl border border-stone-200 bg-white p-6">
+      <div>
+        <label class="block text-sm font-medium mb-1" for="vendor">Your business</label>
+        <select id="vendor" name="vendor_slug" required class="w-full rounded-lg border border-stone-300 px-3 py-2.5 bg-white">
+          <option value="">Select your listing…</option>
+          {vendors.map(v => <option value={v.slug}>{v.name}</option>)}
+          <option value="__not_listed__">We're not listed yet — add us</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1" for="name">Your name</label>
+        <input id="name" name="name" required class="w-full rounded-lg border border-stone-300 px-3 py-2.5" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1" for="email">Business email</label>
+        <input id="email" name="email" type="email" required class="w-full rounded-lg border border-stone-300 px-3 py-2.5" />
+        <p class="text-xs text-stone-400 mt-1">Use an email at your business domain so we can verify it's you.</p>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1" for="message">Anything to correct or add? (optional)</label>
+        <textarea id="message" name="message" rows="3" class="w-full rounded-lg border border-stone-300 px-3 py-2.5"></textarea>
+      </div>
+      <button class="rounded-lg bg-clay-500 hover:bg-clay-600 text-white px-5 py-2.5 font-medium">Claim my listing</button>
+    </form>
+  </div>
+</Base>

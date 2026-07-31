@@ -1,0 +1,13 @@
+---
+import Base from '../layouts/Base.astro';
+import VendorCard from '../components/VendorCard.astro';
+import { allVendors } from '../lib/vendors';
+const vendors = await allVendors();
+---
+<Base title="All Colorado elopement & micro-wedding vendors | Colorado Elopement Guide"
+  description={`Browse all ${vendors.length} Colorado elopement photographers, venues, officiants, florists, planners and hair & makeup artists.`}>
+  <div class="max-w-6xl mx-auto px-4 py-10">
+    <h1 class="display text-3xl text-pine-900">All vendors <span class="text-stone-400 text-lg">({vendors.length})</span></h1>
+    <div class="grid gap-4 md:grid-cols-3 mt-8">{vendors.map(v => <VendorCard v={v} />)}</div>
+  </div>
+</Base>

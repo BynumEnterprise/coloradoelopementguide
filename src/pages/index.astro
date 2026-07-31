@@ -1,0 +1,49 @@
+---
+import Base from '../layouts/Base.astro';
+import VendorCard from '../components/VendorCard.astro';
+import EmailCapture from '../components/EmailCapture.astro';
+import { allVendors } from '../lib/vendors';
+import { CATEGORIES, REGIONS } from '../lib/taxonomy';
+const vendors = await allVendors();
+const top = vendors.slice(0, 6);
+const counts = Object.fromEntries(Object.keys(CATEGORIES).map(c => [c, vendors.filter(v => v.category===c).length]));
+---
+<Base title="Colorado Elopement Guide — elopement & micro-wedding vendors, hand-checked"
+  description="Find Colorado elopement photographers, micro-wedding venues, officiants, florists, planners and hair & makeup artists — organized by region, with real Google ratings.">
+  <section class="bg-pine-900 text-sand-50">
+    <div class="max-w-6xl mx-auto px-4 py-16 md:py-24">
+      <h1 class="display text-3xl md:text-5xl max-w-2xl leading-tight">Every Colorado elopement vendor, one honest guide.</h1>
+      <p class="mt-4 max-w-xl text-pine-100">{vendors.length} photographers, venues, officiants, florists, planners and beauty artists who actually work small weddings — organized by region, with real Google ratings.</p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        {Object.entries(CATEGORIES).map(([slug, c]) => (
+          <a href={`/category/${slug}`} class="rounded-full border border-pine-700 bg-pine-800 hover:bg-pine-700 px-4 py-2 text-sm">{c.name} <span class="text-pine-100/60">({counts[slug]})</span></a>
+        ))}
+      </div>
+    </div>
+  </section>
+  <section class="max-w-6xl mx-auto px-4 py-12">
+    <h2 class="display text-2xl mb-6">Top-rated across Colorado</h2>
+    <div class="grid gap-4 md:grid-cols-3">{top.map(v => <VendorCard v={v} />)}</div>
+  </section>
+  <section class="max-w-6xl mx-auto px-4 py-4">
+    <h2 class="display text-2xl mb-6">Browse by region</h2>
+    <div class="grid gap-4 md:grid-cols-3">
+      {Object.entries(REGIONS).filter(([s]) => s!=='other-colorado').map(([slug, r]) => (
+        <a href={`/region/${slug}`} class="rounded-xl border border-stone-200 bg-white p-5 hover:shadow-md">
+          <h3 class="font-semibold text-pine-900">{r.name}</h3>
+          <p class="text-sm text-stone-600 mt-1">{r.blurb}</p>
+        </a>
+      ))}
+    </div>
+  </section>
+  <section class="max-w-6xl mx-auto px-4 py-12"><EmailCapture /></section>
+  <section class="max-w-6xl mx-auto px-4 pb-12">
+    <div class="rounded-2xl border border-stone-200 bg-white p-6 md:p-8 md:flex items-center justify-between gap-6">
+      <div>
+        <h2 class="display text-xl text-pine-900">Are you a Colorado wedding vendor?</h2>
+        <p class="text-sm text-stone-600 mt-1">Your listing here is free. Claim it to update your details and see how many couples click through to you.</p>
+      </div>
+      <a href="/claim" class="inline-block mt-4 md:mt-0 rounded-lg bg-clay-500 hover:bg-clay-600 text-white px-5 py-2.5 font-medium shrink-0">Claim your free listing</a>
+    </div>
+  </section>
+</Base>

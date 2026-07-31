@@ -1,0 +1,21 @@
+---
+const { vendorId, eventType = 'profile_view' } = Astro.props;
+---
+<script is:inline define:vars={{ vendorId, eventType }}>
+  (function(){
+    var send = function(type){
+      try {
+        fetch('https://yucgsuzveabsgntlmste.supabase.co/rest/v1/p2_events', {
+          method:'POST',
+          headers:{'apikey':'sb_publishable_acsHsb9mrZ756aT12EgAPQ_GugWXmjM','Authorization':'Bearer sb_publishable_acsHsb9mrZ756aT12EgAPQ_GugWXmjM','Content-Type':'application/json','Prefer':'return=minimal'},
+          body: JSON.stringify({vendor_id:vendorId, event_type:type, path:location.pathname, referrer:document.referrer||null}),
+          keepalive:true
+        });
+      } catch(e){}
+    };
+    send(eventType);
+    document.querySelectorAll('[data-track]').forEach(function(el){
+      el.addEventListener('click', function(){ send(el.getAttribute('data-track')); });
+    });
+  })();
+</script>

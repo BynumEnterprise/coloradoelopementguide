@@ -1,0 +1,27 @@
+---
+import Base from '../../layouts/Base.astro';
+import VendorCard from '../../components/VendorCard.astro';
+import EmailCapture from '../../components/EmailCapture.astro';
+import { allVendors } from '../../lib/vendors';
+import { CATEGORIES, REGIONS } from '../../lib/taxonomy';
+export async function getStaticPaths() {
+  return Object.keys(REGIONS).map(region => ({ params: { region } }));
+}
+const { region } = Astro.params;
+const meta = REGIONS[region];
+const vendors = (await allVendors()).filter(v => v.sub_region === region);
+const byCat = Object.keys(CATEGORIES).map(c => [c, vendors.filter(v => v.category===c)]).filter(([,vs]) => vs.length);
+---
+<Base title={`Elopement & micro-wedding vendors — ${meta.name} | Colorado Elopement Guide`} description={`${meta.blurb} ${vendors.length} elopement and micro-wedding vendors listed.`}>
+  <div class="max-w-6xl mx-auto px-4 py-10">
+    <h1 class="display text-3xl text-pine-900">Eloping in {meta.name}</h1>
+    <p class="text-stone-600 mt-2 max-w-2xl">{meta.blurb} {vendors.length} vendors listed.</p>
+    {byCat.map(([c, vs]) => (
+      <section class="mt-10">
+        <h2 class="display text-xl text-pine-900 mb-4"><a href={`/category/${c}`} class="hover:underline">{CATEGORIES[c].name}</a> <span class="text-stone-400 text-sm font-normal">({vs.length})</span></h2>
+        <div class="grid gap-4 md:grid-cols-3">{vs.map(v => <VendorCard v={v} />)}</div>
+      </section>
+    ))}
+    <div class="mt-12"><EmailCapture /></div>
+  </div>
+</Base>

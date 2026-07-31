@@ -1,0 +1,27 @@
+name: QA
+on: [push, pull_request]
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run build
+      - name: FTC disclosure present on every page
+        run: |
+          missing=0
+          while IFS= read -r f; do
+            grep -q "data-disclosure" "$f" || { echo "MISSING DISCLOSURE: $f"; missing=1; }
+          done < <(find .vercel/output/static dist -name "*.html" 2>/dev/null)
+          exit $missing
+      - name: No credentials in repo
+        run: |
+          ! grep -rInE "ghp_[A-Za-z0-9]{20,}|kit_[a-f0-9]{16,}" --include="*.{ts,js,astro,json,md,mjs}" . || { echo "CREDENTIAL LEAK"; exit 1; }
+      - name: Internal link check
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --offline --include-fragments "dist/**/*.html" ".vercel/output/static/**/*.html" --no-progress
+          fail: true
+        continue-on-error: true

@@ -1,0 +1,55 @@
+---
+import '../styles/global.css';
+import Disclosure from '../components/Disclosure.astro';
+const { title, description } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonical} />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <slot name="head" />
+</head>
+<body class="min-h-screen flex flex-col">
+  <header class="bg-pine-900 text-sand-50">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
+      <a href="/" class="display text-xl tracking-tight">Colorado <span class="text-clay-500">Elopement</span> Guide</a>
+      <nav class="flex gap-5 text-sm">
+        <a href="/vendors" class="hover:text-clay-500">All vendors</a>
+        <a href="/regions" class="hover:text-clay-500">Regions</a>
+        <a href="/claim" class="hover:text-clay-500">Claim your listing</a>
+        <a href="/pricing" class="hover:text-clay-500">For vendors</a>
+      </nav>
+    </div>
+  </header>
+  <main class="flex-1"><slot /></main>
+  <footer class="bg-pine-900 text-pine-100 mt-16">
+    <div class="max-w-6xl mx-auto px-4 py-10 grid gap-6 md:grid-cols-3 text-sm">
+      <div>
+        <p class="display text-lg text-sand-50 mb-2">Colorado Elopement Guide</p>
+        <p>A hand-checked directory of elopement and micro-wedding vendors across Colorado.</p>
+      </div>
+      <div>
+        <p class="font-semibold text-sand-50 mb-2">Explore</p>
+        <ul class="space-y-1">
+          <li><a href="/category/photographers" class="hover:text-clay-500">Photographers</a></li>
+          <li><a href="/category/venues" class="hover:text-clay-500">Venues</a></li>
+          <li><a href="/category/officiants" class="hover:text-clay-500">Officiants</a></li>
+          <li><a href="/pricing" class="hover:text-clay-500">Vendor pricing</a></li>
+        </ul>
+      </div>
+      <div class="space-y-3">
+        <Disclosure />
+        <p class="text-xs text-stone-500">© 2026 Colorado Elopement Guide · A Bynum Enterprises LLC property · <a href="/contact" class="underline">Contact</a></p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
