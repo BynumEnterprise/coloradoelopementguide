@@ -1,5 +1,6 @@
 import { getCollection } from 'astro:content';
 export async function allVendors() {
   const entries = await getCollection('vendors');
-  return entries.map(e => e.data).sort((a,b) => ((b.rating||0)*Math.log((b.reviews||0)+1)) - ((a.rating||0)*Math.log((a.reviews||0)+1)));
+  const score = (v: any) => ((v.rating||0) * Math.log((v.reviews||0)+1)) + (v.status === 'featured' ? 1000 : 0);
+  return entries.map(e => e.data as any).sort((a,b) => score(b) - score(a));
 }

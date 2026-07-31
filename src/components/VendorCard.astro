@@ -1,6 +1,7 @@
 ---
 import { CATEGORIES, REGIONS } from '../lib/taxonomy';
-const { v, featured = false } = Astro.props;
+const { v } = Astro.props;
+const featured = v.status === 'featured';
 ---
 <a href={`/vendor/${v.slug}`} class={`block rounded-xl border bg-white p-5 hover:shadow-md transition-shadow ${featured ? 'border-clay-500 ring-1 ring-clay-500' : 'border-stone-200'}`}>
   {featured && <span class="inline-block text-[11px] uppercase tracking-wide bg-clay-100 text-clay-700 rounded px-2 py-0.5 mb-2">Featured</span>}

@@ -44,5 +44,5 @@ const jsonld = {
       <strong>Planning an elopement in {reg.name}?</strong> <a href={`/region/${v.sub_region}`} class="underline">See every vendor in this region →</a>
     </div>
   </div>
-  <Tracker vendorId={v.id ?? null} eventType="profile_view" />
+  <Tracker vendorId={v.db_id ?? null} eventType="profile_view" />
 </Base>
