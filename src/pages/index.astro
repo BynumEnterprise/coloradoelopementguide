@@ -60,8 +60,8 @@ const heroRegions = ['estes-park','summit-county','vail-aspen','telluride-san-ju
     <p class="eyebrow text-clay-600 mb-3">Or start with where</p>
     <h2 class="display text-3xl md:text-4xl leading-tight mb-8">Choose your corner <span class="serif-i">of Colorado</span></h2>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-      {heroRegions.map((slug, i) => (
-        <a href={`/region/${slug}`} class={`img-tile group relative rounded-2xl overflow-hidden ${i===0||i===5 ? 'md:row-span-2 h-56 md:h-full' : 'h-56'}`}>
+      {heroRegions.map((slug) => (
+        <a href={`/region/${slug}`} class="img-tile group relative rounded-2xl overflow-hidden h-56">
           <img src={regionImg(slug)} alt={REGIONS[slug].name} loading="lazy" class="absolute inset-0 w-full h-full object-cover" />
           <div class="absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent"></div>
           <div class="absolute bottom-0 p-4 md:p-5">
