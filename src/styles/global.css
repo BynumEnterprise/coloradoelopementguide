@@ -1,10 +1,19 @@
 @import "tailwindcss";
 @theme {
-  --color-pine-50: #f3f6f4; --color-pine-100: #e0e9e3; --color-pine-700: #2f5243; --color-pine-800: #264337; --color-pine-900: #1e352c;
-  --color-clay-100: #f8ece5; --color-clay-500: #c46f4d; --color-clay-600: #ad5a3a; --color-clay-700: #8f4830;
-  --color-sand-50: #faf7f2; --color-sand-100: #f3ede2;
+  --color-ivory: #FAF7F1;
+  --color-parchment: #F2EDE3;
+  --color-ink: #23281F;
+  --color-spruce-700: #3A4A3C; --color-spruce-800: #2C3A2E; --color-spruce-900: #202B22;
+  --color-clay-50: #F9F0EA; --color-clay-500: #A9694A; --color-clay-600: #8F5539; --color-clay-700: #77452E;
+  --color-gold: #C99B5F;
+  --color-hairline: #E7E1D5;
   --font-display: "Fraunces", Georgia, serif;
   --font-body: "Inter", system-ui, sans-serif;
 }
-html { font-family: var(--font-body); background: var(--color-sand-50); color: #26312b; }
-h1,h2,h3,.display { font-family: var(--font-display); }
+html { font-family: var(--font-body); background: var(--color-ivory); color: var(--color-ink); }
+h1,h2,h3,.display { font-family: var(--font-display); font-weight: 400; letter-spacing: -0.01em; }
+.eyebrow { font-family: var(--font-body); font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 600; }
+.serif-i { font-family: var(--font-display); font-style: italic; }
+.img-tile { position: relative; overflow: hidden; }
+.img-tile img { transition: transform .6s ease; }
+.img-tile:hover img { transform: scale(1.045); }

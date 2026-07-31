@@ -1,47 +1,64 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Tracker from '../../components/Tracker.astro';
+import VendorCard from '../../components/VendorCard.astro';
 import { allVendors } from '../../lib/vendors';
 import { CATEGORIES, REGIONS } from '../../lib/taxonomy';
+import { regionImg } from '../../lib/assets';
 export async function getStaticPaths() {
   const vendors = await allVendors();
-  return vendors.map(v => ({ params: { slug: v.slug }, props: { v } }));
+  return vendors.map(v => ({ params: { slug: v.slug }, props: { v, all: vendors } }));
 }
-const { v } = Astro.props;
+const { v, all } = Astro.props;
 const cat = CATEGORIES[v.category]; const reg = REGIONS[v.sub_region];
+const related = all.filter(x => x.sub_region === v.sub_region && x.category === v.category && x.slug !== v.slug).slice(0,3);
+const fallback = regionImg(v.sub_region);
 const jsonld = {
   "@context":"https://schema.org", "@type":"LocalBusiness",
   name: v.name, url: v.website || undefined,
   geo: (v.lat && v.lng) ? {"@type":"GeoCoordinates", latitude: v.lat, longitude: v.lng} : undefined
 };
-const metaDesc = v.description.length > 155 ? v.description.slice(0, 152).replace(/\s+\S*$/, '') + '\u2026' : v.description;
+const metaDesc = v.description.length > 155 ? v.description.slice(0, 152).replace(/\s+\S*$/, '') + '…' : v.description;
 ---
-<Base title={`${v.name} — ${cat.singular} · ${reg.name} | Colorado Elopement Guide`}
-  description={metaDesc}>
+<Base title={`${v.name} — ${cat.singular} · ${reg.name} | Colorado Elopement Guide`} description={metaDesc}>
   <script slot="head" type="application/ld+json" set:html={JSON.stringify(jsonld)} />
-  <div class="max-w-3xl mx-auto px-4 py-10">
-    <nav class="text-xs text-stone-500 mb-4">
-      <a href="/" class="hover:underline">Home</a> › <a href={`/category/${v.category}`} class="hover:underline">{cat.name}</a> › <span>{v.name}</span>
+  <div class="max-w-5xl mx-auto px-5 md:px-8 pt-10">
+    <nav class="text-xs text-ink/45 mb-6">
+      <a href="/" class="hover:underline">Home</a> › <a href={`/category/${v.category}`} class="hover:underline">{cat.name}</a> › <a href={`/region/${v.sub_region}`} class="hover:underline">{reg.name}</a>
     </nav>
-    <div class="rounded-2xl border border-stone-200 bg-white p-6 md:p-8">
-      <div class="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 class="display text-2xl md:text-3xl text-pine-900">{v.name}</h1>
-          <p class="text-sm text-stone-500 mt-1">{cat.singular} · <a href={`/region/${v.sub_region}`} class="underline hover:text-clay-600">{reg.name}</a></p>
+    <div class="rounded-3xl overflow-hidden border border-hairline bg-white">
+      <div class="relative h-64 md:h-80 bg-parchment">
+        <img src={v.image_url || fallback} alt={v.name} class="absolute inset-0 w-full h-full object-cover" onerror={`this.onerror=null;this.src='${fallback}'`} />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/55 via-transparent to-transparent"></div>
+        <div class="absolute bottom-0 p-6 md:p-9">
+          <p class="eyebrow text-gold mb-2">{cat.singular} · {reg.name}</p>
+          <h1 class="display text-white text-3xl md:text-4xl leading-tight">{v.name}</h1>
         </div>
-        {v.rating && v.reviews ? <p class="text-pine-700 font-medium">★ {v.rating} <span class="text-stone-400 text-sm">({v.reviews} Google reviews)</span></p> : null}
       </div>
-      <p class="mt-5 text-stone-700 leading-relaxed">{v.description}</p>
-      <dl class="mt-6 grid gap-2 text-sm">
-        {v.address && <div class="flex gap-2"><dt class="text-stone-500 w-20 shrink-0">Address</dt><dd>{v.address}</dd></div>}
-        {v.phone && <div class="flex gap-2"><dt class="text-stone-500 w-20 shrink-0">Phone</dt><dd><a href={`tel:${v.phone}`} data-track="phone_click" class="underline hover:text-clay-600">{v.phone}</a></dd></div>}
-        {v.website && <div class="flex gap-2"><dt class="text-stone-500 w-20 shrink-0">Website</dt><dd><a href={v.website} rel="nofollow noopener" target="_blank" data-track="website_click" class="underline hover:text-clay-600 break-all">{v.domain || v.website}</a></dd></div>}
-      </dl>
-      <p class="mt-6 text-xs text-stone-400">Listing compiled from public listings and Google Business Profile data on 2026-07-30 — details may have changed since · <a href="/claim" class="underline">Is this your business? Claim this listing free.</a></p>
+      <div class="p-6 md:p-9 md:grid md:grid-cols-3 md:gap-10">
+        <div class="md:col-span-2">
+          {v.rating && v.reviews ? <p class="text-sm font-medium text-ink mb-4">★ {v.rating}<span class="text-ink/45"> · {v.reviews} Google reviews</span></p> : null}
+          <p class="text-ink/80 leading-relaxed">{v.description}</p>
+          <p class="mt-8 text-xs text-ink/40">Listing compiled from public listings and Google Business Profile data on 2026-07-30 — details may have changed since · <a href="/claim" class="underline">Is this your business? Claim this listing free.</a></p>
+        </div>
+        <div class="mt-8 md:mt-0">
+          <div class="rounded-2xl bg-parchment/70 border border-hairline p-5 space-y-3 text-sm">
+            <p class="eyebrow text-clay-600">Contact</p>
+            {v.website && <p><a href={v.website} rel="nofollow noopener" target="_blank" data-track="website_click" class="font-medium underline underline-offset-4 hover:text-clay-700 break-all">Visit website →</a></p>}
+            {v.phone && <p><a href={`tel:${v.phone}`} data-track="phone_click" class="underline underline-offset-4 hover:text-clay-700">{v.phone}</a></p>}
+            {v.address && <p class="text-ink/60 leading-snug">{v.address}</p>}
+          </div>
+          <a href={`/region/${v.sub_region}`} class="block mt-4 rounded-2xl border border-hairline p-5 text-sm hover:bg-parchment/60 transition-colors">
+            <p class="eyebrow text-clay-600 mb-1.5">Planning here?</p>
+            <p class="font-medium">Every vendor in {reg.name} →</p>
+          </a>
+        </div>
+      </div>
     </div>
-    <div class="mt-6 rounded-xl bg-clay-100 border border-clay-500/30 p-5 text-sm text-clay-700">
-      <strong>Planning an elopement in {reg.name}?</strong> <a href={`/region/${v.sub_region}`} class="underline">See every vendor in this region →</a>
-    </div>
+    {related.length > 0 && <section class="pt-14">
+      <h2 class="display text-2xl mb-6">More {cat.name.toLowerCase()} in <span class="serif-i">{reg.name}</span></h2>
+      <div class="grid gap-5 md:grid-cols-3">{related.map(r => <VendorCard v={r} />)}</div>
+    </section>}
   </div>
   <Tracker vendorId={v.db_id ?? null} eventType="profile_view" />
 </Base>

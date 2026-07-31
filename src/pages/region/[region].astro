@@ -4,6 +4,7 @@ import VendorCard from '../../components/VendorCard.astro';
 import EmailCapture from '../../components/EmailCapture.astro';
 import { allVendors } from '../../lib/vendors';
 import { CATEGORIES, REGIONS } from '../../lib/taxonomy';
+import { regionImg } from '../../lib/assets';
 export async function getStaticPaths() {
   return Object.keys(REGIONS).map(region => ({ params: { region } }));
 }
@@ -12,16 +13,26 @@ const meta = REGIONS[region];
 const vendors = (await allVendors()).filter(v => v.sub_region === region);
 const byCat = Object.keys(CATEGORIES).map(c => [c, vendors.filter(v => v.category===c)]).filter(([,vs]) => vs.length);
 ---
-<Base title={`Elopement & micro-wedding vendors — ${meta.name} | Colorado Elopement Guide`} description={`${meta.blurb} ${vendors.length} elopement and micro-wedding vendors listed.`}>
-  <div class="max-w-6xl mx-auto px-4 py-10">
-    <h1 class="display text-3xl text-pine-900">Eloping in {meta.name}</h1>
-    <p class="text-stone-600 mt-2 max-w-2xl">{meta.blurb} {vendors.length} vendors listed.</p>
+<Base dark={true} title={`Elopement & micro-wedding vendors — ${meta.name} | Colorado Elopement Guide`} description={`${meta.blurb} ${vendors.length} elopement and micro-wedding vendors listed.`}>
+  <section class="relative min-h-[46vh] flex items-end">
+    <img src={regionImg(region)} alt={meta.name} class="absolute inset-0 w-full h-full object-cover" fetchpriority="high" />
+    <div class="absolute inset-0 bg-gradient-to-t from-ink/75 via-ink/20 to-black/25"></div>
+    <div class="relative z-10 max-w-7xl mx-auto px-5 md:px-8 pb-12 w-full">
+      <p class="eyebrow text-gold mb-3">{vendors.length} vendors in this region</p>
+      <h1 class="display text-white text-4xl md:text-5xl leading-tight">Eloping in <span class="serif-i">{meta.name}</span></h1>
+      <p class="mt-3 max-w-xl text-white/85">{meta.blurb}</p>
+    </div>
+  </section>
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
     {byCat.map(([c, vs]) => (
-      <section class="mt-10">
-        <h2 class="display text-xl text-pine-900 mb-4"><a href={`/category/${c}`} class="hover:underline">{CATEGORIES[c].name}</a> <span class="text-stone-400 text-sm font-normal">({vs.length})</span></h2>
-        <div class="grid gap-4 md:grid-cols-3">{vs.map(v => <VendorCard v={v} />)}</div>
+      <section class="pt-14">
+        <div class="flex items-end justify-between gap-6 mb-6">
+          <h2 class="display text-2xl">{CATEGORIES[c].name} <span class="text-ink/40 text-base">({vs.length})</span></h2>
+          <a href={`/category/${c}`} class="text-sm font-medium underline underline-offset-4 hover:text-clay-700 shrink-0">All {CATEGORIES[c].name.toLowerCase()} →</a>
+        </div>
+        <div class="grid gap-5 md:grid-cols-3">{vs.map(v => <VendorCard v={v} />)}</div>
       </section>
     ))}
-    <div class="mt-12"><EmailCapture /></div>
+    <div class="pt-16"><EmailCapture /></div>
   </div>
 </Base>

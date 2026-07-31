@@ -1,16 +1,20 @@
 ---
 import { CATEGORIES, REGIONS } from '../lib/taxonomy';
+import { regionImg } from '../lib/assets';
 const { v } = Astro.props;
 const featured = v.status === 'featured';
+const fallback = regionImg(v.sub_region);
 ---
-<a href={`/vendor/${v.slug}`} class={`block rounded-xl border bg-white p-5 hover:shadow-md transition-shadow ${featured ? 'border-clay-500 ring-1 ring-clay-500' : 'border-stone-200'}`}>
-  {featured && <span class="inline-block text-[11px] uppercase tracking-wide bg-clay-100 text-clay-700 rounded px-2 py-0.5 mb-2">Featured</span>}
-  <div class="flex items-start justify-between gap-3">
-    <div>
-      <h3 class="font-semibold text-pine-900 leading-snug">{v.name}</h3>
-      <p class="text-xs text-stone-500 mt-0.5">{CATEGORIES[v.category]?.singular} · {REGIONS[v.sub_region]?.name}</p>
-    </div>
-    {v.rating && v.reviews ? <p class="text-sm shrink-0 text-pine-700 font-medium">★ {v.rating} <span class="text-stone-400">({v.reviews})</span></p> : null}
+<a href={`/vendor/${v.slug}`} class={`img-tile group block rounded-2xl overflow-hidden bg-white border ${featured ? 'border-clay-500' : 'border-hairline'} hover:shadow-[0_18px_40px_-18px_rgba(35,40,31,0.35)] transition-shadow`}>
+  <div class="relative h-44 overflow-hidden bg-parchment">
+    <img src={v.image_url || fallback} alt={`${v.name} — ${CATEGORIES[v.category]?.singular} in Colorado`} loading="lazy"
+      class="w-full h-full object-cover" onerror={`this.onerror=null;this.src='${fallback}'`} />
+    {featured && <span class="absolute top-3 left-3 eyebrow bg-ivory/95 text-clay-700 rounded-full px-3 py-1.5">Featured</span>}
+    {v.rating && v.reviews ? <span class="absolute bottom-3 right-3 text-xs font-medium bg-ink/70 text-ivory rounded-full px-2.5 py-1">★ {v.rating} · {v.reviews}</span> : null}
   </div>
-  <p class="text-sm text-stone-600 mt-2 line-clamp-2">{v.description}</p>
+  <div class="p-5">
+    <p class="eyebrow text-clay-600 mb-1.5">{CATEGORIES[v.category]?.singular}</p>
+    <h3 class="display text-lg leading-snug text-ink group-hover:text-clay-700 transition-colors">{v.name}</h3>
+    <p class="text-xs text-ink/50 mt-1">{REGIONS[v.sub_region]?.name}</p>
+  </div>
 </a>

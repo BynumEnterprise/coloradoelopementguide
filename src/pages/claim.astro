@@ -5,32 +5,33 @@ const vendors = await allVendors();
 ---
 <Base title="Claim your free listing | Colorado Elopement Guide"
   description="Colorado wedding vendors: claim your free listing, update your details, and see how many couples click through to your site each month.">
-  <div class="max-w-2xl mx-auto px-4 py-10">
-    <h1 class="display text-3xl text-pine-900">Claim your free listing</h1>
-    <p class="text-stone-600 mt-3">If your business is listed here, it's yours — free, forever. Claiming lets you correct your details, add photos and packages, and see your monthly click and inquiry counts. No credit card, no catch.</p>
-    <form method="post" action="/api/claim" class="mt-8 space-y-4 rounded-2xl border border-stone-200 bg-white p-6">
+  <div class="max-w-2xl mx-auto px-5 md:px-8 pt-14">
+    <p class="eyebrow text-clay-600 mb-3">Free, forever</p>
+    <h1 class="display text-4xl md:text-5xl leading-tight">Claim your <span class="serif-i">listing</span></h1>
+    <p class="text-ink/65 mt-4 leading-relaxed">If your business is listed here, it's yours. Claiming lets you correct your details, add photos and packages, and see your monthly click and inquiry counts. No credit card, no catch.</p>
+    <form method="post" action="/api/claim" class="mt-10 space-y-5 rounded-3xl border border-hairline bg-white p-7 md:p-8">
       <div>
-        <label class="block text-sm font-medium mb-1" for="vendor">Your business</label>
-        <select id="vendor" name="vendor_slug" required class="w-full rounded-lg border border-stone-300 px-3 py-2.5 bg-white">
+        <label class="eyebrow text-ink/60 block mb-2" for="vendor">Your business</label>
+        <select id="vendor" name="vendor_slug" required class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm">
           <option value="">Select your listing…</option>
           {vendors.map(v => <option value={v.slug}>{v.name}</option>)}
           <option value="__not_listed__">We're not listed yet — add us</option>
         </select>
       </div>
       <div>
-        <label class="block text-sm font-medium mb-1" for="name">Your name</label>
-        <input id="name" name="name" required class="w-full rounded-lg border border-stone-300 px-3 py-2.5" />
+        <label class="eyebrow text-ink/60 block mb-2" for="name">Your name</label>
+        <input id="name" name="name" required class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" />
       </div>
       <div>
-        <label class="block text-sm font-medium mb-1" for="email">Business email</label>
-        <input id="email" name="email" type="email" required class="w-full rounded-lg border border-stone-300 px-3 py-2.5" />
-        <p class="text-xs text-stone-400 mt-1">Use an email at your business domain so we can verify it's you.</p>
+        <label class="eyebrow text-ink/60 block mb-2" for="email">Business email</label>
+        <input id="email" name="email" type="email" required class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" />
+        <p class="text-xs text-ink/40 mt-2">Use an email at your business domain so we can verify it's you.</p>
       </div>
       <div>
-        <label class="block text-sm font-medium mb-1" for="message">Anything to correct or add? (optional)</label>
-        <textarea id="message" name="message" rows="3" class="w-full rounded-lg border border-stone-300 px-3 py-2.5"></textarea>
+        <label class="eyebrow text-ink/60 block mb-2" for="message">Anything to correct or add? <span class="normal-case tracking-normal font-normal">(optional)</span></label>
+        <textarea id="message" name="message" rows="3" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm"></textarea>
       </div>
-      <button class="rounded-lg bg-clay-500 hover:bg-clay-600 text-white px-5 py-2.5 font-medium">Claim my listing</button>
+      <button class="rounded-full bg-ink text-ivory px-7 py-3.5 text-sm font-semibold hover:bg-spruce-800 transition-colors">Claim my listing</button>
     </form>
   </div>
 </Base>

@@ -1,7 +1,7 @@
 ---
 import '../styles/global.css';
 import Disclosure from '../components/Disclosure.astro';
-const { title, description, noindex = false } = Astro.props;
+const { title, description, noindex = false, dark = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 ---
 <!doctype html>
@@ -17,10 +17,11 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
   <meta property="og:type" content="website" />
   <meta property="og:url" content={canonical} />
   <meta property="og:site_name" content="Colorado Elopement Guide" />
-  <meta name="twitter:card" content="summary" />
+  <meta property="og:image" content="https://yucgsuzveabsgntlmste.supabase.co/storage/v1/object/public/p2-assets/hero.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-2R7TQZE64W"></script>
   <script is:inline>
     window.dataLayer = window.dataLayer || [];
@@ -31,37 +32,39 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
   <slot name="head" />
 </head>
 <body class="min-h-screen flex flex-col">
-  <header class="bg-pine-900 text-sand-50">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
-      <a href="/" class="display text-xl tracking-tight">Colorado <span class="text-clay-500">Elopement</span> Guide</a>
-      <nav class="flex gap-5 text-sm">
-        <a href="/vendors" class="hover:text-clay-500">All vendors</a>
-        <a href="/regions" class="hover:text-clay-500">Regions</a>
-        <a href="/claim" class="hover:text-clay-500">Claim your listing</a>
-        <a href="/pricing" class="hover:text-clay-500">For vendors</a>
+  <header class={`${dark ? 'absolute top-0 left-0 right-0 z-30 bg-gradient-to-b from-black/45 to-transparent' : 'bg-ivory border-b border-hairline'}`}>
+    <div class="max-w-7xl mx-auto px-5 md:px-8 py-5 flex items-center justify-between gap-4">
+      <a href="/" class={`display text-[1.35rem] leading-none tracking-tight ${dark ? 'text-white' : 'text-ink'}`}>Colorado <span class="serif-i">Elopement</span> Guide</a>
+      <nav class={`hidden md:flex items-center gap-8 text-[0.83rem] font-medium ${dark ? 'text-white/90' : 'text-ink/80'}`}>
+        <a href="/vendors" class="hover:opacity-70">Vendors</a>
+        <a href="/regions" class="hover:opacity-70">Regions</a>
+        <a href="/checklist" class="hover:opacity-70">Planning checklist</a>
+        <a href="/pricing" class="hover:opacity-70">For vendors</a>
+        <a href="/claim" class={`${dark ? 'border border-white/70 text-white hover:bg-white hover:text-ink' : 'border border-ink/70 hover:bg-ink hover:text-ivory'} rounded-full px-4 py-2 transition-colors`}>Claim your listing</a>
       </nav>
+      <a href="/vendors" class={`md:hidden text-[0.83rem] font-medium underline underline-offset-4 ${dark ? 'text-white' : 'text-ink'}`}>Vendors</a>
     </div>
   </header>
   <main class="flex-1"><slot /></main>
-  <footer class="bg-pine-900 text-pine-100 mt-16">
-    <div class="max-w-6xl mx-auto px-4 py-10 grid gap-6 md:grid-cols-3 text-sm">
-      <div>
-        <p class="display text-lg text-sand-50 mb-2">Colorado Elopement Guide</p>
-        <p>An independent directory of elopement and micro-wedding vendors across Colorado, organized by region.</p>
+  <footer class="bg-spruce-900 text-ivory/80 mt-24">
+    <div class="max-w-7xl mx-auto px-5 md:px-8 py-14 grid gap-10 md:grid-cols-12 text-sm">
+      <div class="md:col-span-5">
+        <p class="display text-xl text-ivory mb-3">Colorado <span class="serif-i">Elopement</span> Guide</p>
+        <p class="max-w-sm leading-relaxed">An independent, region-by-region directory of Colorado's elopement and micro-wedding vendors — built for couples who'd rather say their vows on a ridgeline than in a ballroom.</p>
       </div>
-      <div>
-        <p class="font-semibold text-sand-50 mb-2">Explore</p>
-        <ul class="space-y-1">
-          <li><a href="/category/photographers" class="hover:text-clay-500">Photographers</a></li>
-          <li><a href="/category/venues" class="hover:text-clay-500">Venues</a></li>
-          <li><a href="/category/officiants" class="hover:text-clay-500">Officiants</a></li>
-          <li><a href="/checklist" class="hover:text-clay-500">Planning checklist</a></li>
-          <li><a href="/pricing" class="hover:text-clay-500">Vendor pricing</a></li>
+      <div class="md:col-span-3">
+        <p class="eyebrow text-gold mb-4">Explore</p>
+        <ul class="space-y-2.5">
+          <li><a href="/category/photographers" class="hover:text-ivory">Photographers</a></li>
+          <li><a href="/category/venues" class="hover:text-ivory">Venues</a></li>
+          <li><a href="/category/officiants" class="hover:text-ivory">Officiants</a></li>
+          <li><a href="/checklist" class="hover:text-ivory">Planning checklist</a></li>
+          <li><a href="/pricing" class="hover:text-ivory">Vendor pricing</a></li>
         </ul>
       </div>
-      <div class="space-y-3">
+      <div class="md:col-span-4 space-y-4">
         <Disclosure />
-        <p class="text-xs text-stone-500">© 2026 Colorado Elopement Guide · A Bynum Enterprises LLC property · <a href="/contact" class="underline">Contact</a></p>
+        <p class="text-xs text-ivory/50">© 2026 Colorado Elopement Guide · A Bynum Enterprises LLC property · <a href="/contact" class="underline hover:text-ivory">Contact</a></p>
       </div>
     </div>
   </footer>

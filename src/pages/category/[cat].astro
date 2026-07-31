@@ -13,15 +13,19 @@ const vendors = (await allVendors()).filter(v => v.category === cat);
 const byRegion = Object.keys(REGIONS).map(r => [r, vendors.filter(v => v.sub_region===r)]).filter(([,vs]) => vs.length);
 ---
 <Base title={`${meta.name} in Colorado — elopement & micro-wedding | Colorado Elopement Guide`} description={meta.blurb}>
-  <div class="max-w-6xl mx-auto px-4 py-10">
-    <h1 class="display text-3xl text-pine-900">{meta.name} in Colorado</h1>
-    <p class="text-stone-600 mt-2 max-w-2xl">{meta.blurb} {vendors.length} listed.</p>
+  <div class="max-w-7xl mx-auto px-5 md:px-8 pt-14">
+    <p class="eyebrow text-clay-600 mb-3">{vendors.length} listed statewide</p>
+    <h1 class="display text-4xl md:text-5xl leading-tight">{meta.name} <span class="serif-i">in Colorado</span></h1>
+    <p class="text-ink/65 mt-3 max-w-2xl leading-relaxed">{meta.blurb}</p>
     {byRegion.map(([r, vs]) => (
-      <section class="mt-10">
-        <h2 class="display text-xl text-pine-900 mb-4"><a href={`/region/${r}`} class="hover:underline">{REGIONS[r].name}</a> <span class="text-stone-400 text-sm font-normal">({vs.length})</span></h2>
-        <div class="grid gap-4 md:grid-cols-3">{vs.map(v => <VendorCard v={v} />)}</div>
+      <section class="pt-14">
+        <div class="flex items-end justify-between gap-6 mb-6">
+          <h2 class="display text-2xl">{REGIONS[r].name} <span class="text-ink/40 text-base">({vs.length})</span></h2>
+          <a href={`/region/${r}`} class="text-sm font-medium underline underline-offset-4 hover:text-clay-700 shrink-0">Everything in this region →</a>
+        </div>
+        <div class="grid gap-5 md:grid-cols-3">{vs.map(v => <VendorCard v={v} />)}</div>
       </section>
     ))}
-    <div class="mt-12"><EmailCapture /></div>
+    <div class="pt-16"><EmailCapture /></div>
   </div>
 </Base>

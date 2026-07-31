@@ -2,18 +2,23 @@
 import Base from '../layouts/Base.astro';
 import { allVendors } from '../lib/vendors';
 import { REGIONS } from '../lib/taxonomy';
+import { regionImg } from '../lib/assets';
 const vendors = await allVendors();
 ---
 <Base title="Colorado elopement regions — where to elope | Colorado Elopement Guide"
   description="Estes Park & RMNP, Summit County, Telluride, Colorado Springs, Boulder, Vail & Aspen — browse elopement vendors by Colorado region.">
-  <div class="max-w-6xl mx-auto px-4 py-10">
-    <h1 class="display text-3xl text-pine-900">Choose your corner of Colorado</h1>
-    <div class="grid gap-4 md:grid-cols-3 mt-8">
+  <div class="max-w-7xl mx-auto px-5 md:px-8 pt-14">
+    <p class="eyebrow text-clay-600 mb-3">Nine regions, one state</p>
+    <h1 class="display text-4xl md:text-5xl leading-tight">Choose your corner <span class="serif-i">of Colorado</span></h1>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mt-10">
       {Object.entries(REGIONS).map(([slug, r]) => (
-        <a href={`/region/${slug}`} class="rounded-xl border border-stone-200 bg-white p-5 hover:shadow-md">
-          <h2 class="font-semibold text-pine-900">{r.name}</h2>
-          <p class="text-sm text-stone-600 mt-1">{r.blurb}</p>
-          <p class="text-xs text-stone-400 mt-2">{vendors.filter(v => v.sub_region===slug).length} vendors</p>
+        <a href={`/region/${slug}`} class="img-tile group relative rounded-2xl overflow-hidden h-60">
+          <img src={regionImg(slug)} alt={r.name} loading="lazy" class="absolute inset-0 w-full h-full object-cover" />
+          <div class="absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent"></div>
+          <div class="absolute bottom-0 p-5">
+            <p class="display text-ivory text-xl leading-tight">{r.name}</p>
+            <p class="text-[11px] text-ivory/70 mt-1">{vendors.filter(v => v.sub_region===slug).length} vendors · {r.blurb}</p>
+          </div>
         </a>
       ))}
     </div>
