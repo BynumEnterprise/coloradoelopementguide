@@ -3,6 +3,8 @@ const { vendorId, eventType = 'profile_view' } = Astro.props;
 ---
 <script is:inline define:vars={{ vendorId, eventType }}>
   (function(){
+    var ua = navigator.userAgent || '';
+    if (navigator.webdriver || /bot|crawl|spider|slurp|bingpreview|lighthouse|headless|prerender|facebookexternal|whatsapp|telegram|python-requests|curl/i.test(ua)) return;
     var send = function(type){
       try {
         fetch('https://yucgsuzveabsgntlmste.supabase.co/rest/v1/p2_events', {
