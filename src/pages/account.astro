@@ -10,20 +10,37 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
 
     <!-- SIGN IN -->
     <div id="acct-signin" class="hidden">
-      <div class="md:grid md:grid-cols-2 gap-12 items-center">
+      <div class="md:grid md:grid-cols-2 gap-12 items-start">
         <div>
           <p class="eyebrow text-clay-600 mb-3">Your Free Planner</p>
           <h1 class="display text-4xl md:text-5xl leading-tight">Plan your <span class="serif-i">vendor team</span></h1>
-          <p class="text-ink/65 mt-4 leading-relaxed">One place for your whole elopement: every vendor you save, quotes and budget, private notes, and a Colorado specific checklist. Free, synced to your email, no password.</p>
-          <form method="post" action="/api/auth-request" class="mt-7 flex flex-wrap gap-2.5">
-            <input type="text" name="website_url" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
-            <input type="hidden" name="slugs" id="si-slugs" />
-            <input type="email" name="email" required placeholder="you@example.com" class="flex-1 min-w-[220px] rounded-full px-5 py-3.5 text-sm bg-white border border-hairline outline-none focus:ring-2 focus:ring-gold" />
-            <button class="rounded-full bg-ink text-ivory px-7 py-3.5 text-sm font-semibold hover:bg-spruce-800 transition-colors">Email My Sign In Link</button>
-          </form>
-          <p id="si-note" class="hidden text-sm text-ink/55 mt-4">Anything you've already hearted on this device comes with you automatically.</p>
+          <p class="text-ink/65 mt-4 leading-relaxed">One place for your whole elopement: every vendor you save, quotes and budget, private notes, and a Colorado specific checklist.</p>
+          <div class="mt-7 rounded-3xl border border-hairline bg-white p-6 md:p-7 max-w-md">
+            <div class="flex gap-1.5 mb-5">
+              <button data-authmode="signup" class="am-btn flex-1 rounded-full px-4 py-2.5 text-sm font-medium">Create Account</button>
+              <button data-authmode="signin" class="am-btn flex-1 rounded-full px-4 py-2.5 text-sm font-medium">Sign In</button>
+            </div>
+            <div class="space-y-4">
+              <div><label class="eyebrow text-ink/60 block mb-2">Email</label>
+                <input id="au-email" type="email" required class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" placeholder="you@example.com" /></div>
+              <div><label class="eyebrow text-ink/60 block mb-2">Password</label>
+                <input id="au-pass" type="password" minlength="8" required class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" placeholder="8+ characters" /></div>
+              <p id="au-err" class="hidden text-sm rounded-xl border border-clay-500 bg-clay-50 text-clay-700 px-4 py-3"></p>
+              <button id="au-submit" class="w-full rounded-full bg-ink text-ivory px-7 py-3.5 text-sm font-semibold hover:bg-spruce-800 transition-colors">Create My Free Account</button>
+            </div>
+            <div class="mt-5 pt-4 border-t border-hairline">
+              <button id="au-maglink" class="text-xs text-ink/50 underline underline-offset-4 hover:text-ink">Forgot password, or prefer no password? Email me a sign in link</button>
+              <form method="post" action="/api/auth-request" id="au-magform" class="hidden mt-3 flex gap-2">
+                <input type="text" name="website_url" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
+                <input type="hidden" name="slugs" id="si-slugs" />
+                <input type="email" name="email" id="au-magemail" required placeholder="you@example.com" class="flex-1 rounded-full px-4 py-2.5 text-sm bg-ivory border border-hairline" />
+                <button class="rounded-full border border-ink px-4 py-2.5 text-xs font-medium hover:bg-ink hover:text-ivory">Send Link</button>
+              </form>
+            </div>
+            <p id="si-note" class="hidden text-xs text-ink/50 mt-4">Anything you've already hearted on this device comes with you automatically.</p>
+          </div>
         </div>
-        <div class="hidden md:block rounded-3xl bg-spruce-900 text-ivory p-8">
+        <div class="hidden md:block rounded-3xl bg-spruce-900 text-ivory p-8 mt-16">
           <p class="eyebrow text-gold mb-4">Inside Your Planner</p>
           <ul class="space-y-3.5 text-sm text-ivory/85">
             <li>◆ Vendor pipeline: Saved → Contacted → Got a Quote → Booked</li>
@@ -309,6 +326,30 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
         await rpc('ceg_set_vendor',{p_token:tok(),p_slug:slug,p_status:'',p_note:ta.value,p_quote:null}); flash(slug);
       }, 700);
     });
-    document.addEventListener('DOMContentLoaded', boot);
+    let authMode='signup';
+    function paintAuthMode(){
+      document.querySelectorAll('.am-btn').forEach(b=>{
+        const on=b.dataset.authmode===authMode;
+        b.className='am-btn flex-1 rounded-full px-4 py-2.5 text-sm font-medium '+(on?'bg-ink text-ivory':'bg-parchment text-ink/60 hover:bg-hairline/60');
+      });
+      document.getElementById('au-submit').textContent = authMode==='signup' ? 'Create My Free Account' : 'Sign In';
+    }
+    document.addEventListener('click', async e=>{
+      const m=e.target.closest('[data-authmode]');
+      if(m){ authMode=m.dataset.authmode; paintAuthMode(); return; }
+      if(e.target.closest('#au-maglink')){ const f=document.getElementById('au-magform'); f.classList.toggle('hidden'); document.getElementById('au-magemail').value=document.getElementById('au-email').value; return; }
+      if(e.target.closest('#au-submit')){
+        const email=document.getElementById('au-email').value.trim(), pass=document.getElementById('au-pass').value;
+        const err=document.getElementById('au-err'); err.classList.add('hidden');
+        const res=await rpc(authMode==='signup'?'ceg_signup':'ceg_login',{p_email:email,p_password:pass});
+        if(!res || res.error){ err.textContent=(res&&res.error)||'Something went wrong. Try again.'; err.classList.remove('hidden'); return; }
+        localStorage.setItem('ceg_token',res.token);
+        const local=(window.CEG?CEG.get():[]);
+        if(local.length) await rpc('ceg_merge_vendors',{p_token:res.token,p_slugs:local});
+        localStorage.removeItem('ceg_shortlist');
+        location.reload();
+      }
+    });
+    document.addEventListener('DOMContentLoaded', ()=>{ paintAuthMode(); boot(); });
   </script>
 </Base>
