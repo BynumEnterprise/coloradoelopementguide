@@ -4,7 +4,7 @@ import Tracker from '../../components/Tracker.astro';
 import VendorCard from '../../components/VendorCard.astro';
 import { allVendors } from '../../lib/vendors';
 import { CATEGORIES, REGIONS } from '../../lib/taxonomy';
-import { regionImg } from '../../lib/assets';
+import { regionImg, gimg } from '../../lib/assets';
 export async function getStaticPaths() {
   const vendors = await allVendors();
   return vendors.map(v => ({ params: { slug: v.slug }, props: { v, all: vendors } }));
@@ -29,7 +29,7 @@ const metaDesc = v.description.length > 155 ? v.description.slice(0, 152).replac
     </nav>
     <div class="rounded-3xl overflow-hidden border border-hairline bg-white">
       <div class="relative h-64 md:h-80 bg-parchment">
-        <img src={v.image_url || fallback} alt={v.name} class="absolute inset-0 w-full h-full object-cover" onerror={`this.onerror=null;this.src='${fallback}'`} />
+        <img src={gimg(v.image_url, 1600, 900) || fallback} alt={v.name} class="absolute inset-0 w-full h-full object-cover" onerror={`this.onerror=null;this.src='${fallback}'`} />
         <div class="absolute inset-0 bg-gradient-to-t from-ink/55 via-transparent to-transparent"></div>
         <div class="absolute bottom-0 p-6 md:p-9">
           <p class="eyebrow text-gold mb-2">{cat.singular} · {reg.name}</p>
