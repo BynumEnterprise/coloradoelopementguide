@@ -90,6 +90,8 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
     const tok = () => localStorage.getItem('ceg_token');
     const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const money = n => n == null ? '' : '$' + Number(n).toLocaleString();
+    const IMGBASE='https://yucgsuzveabsgntlmste.supabase.co/storage/v1/object/public/p2-assets/';
+    const vimg = v => v.image_url ? v.image_url.replace(/=w\d+-h\d+-k-no.*$/, '=w800-h500-k-no') : (IMGBASE + v.sub_region + '.jpg');
     let D = null, activeTab = 'overview', filter = 'all', debounces = {};
 
     async function boot(){
@@ -190,7 +192,7 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
       const chips = ['all',...Object.keys(STATUSES)].map(k=>`<button data-filter="${k}" class="rounded-full border px-4 py-2 text-xs font-medium ${filter===k?'bg-ink text-ivory border-ink':'border-hairline text-ink/60 hover:bg-parchment'}">${k==='all'?'All':STATUSES[k]}${counts[k]?` · ${counts[k]}`:''}</button>`).join('');
       const cards = vs.length ? vs.map(v => `
         <div class="rounded-2xl border ${v.status==='booked'?'border-spruce-800/50':'border-hairline'} bg-white p-5 md:flex gap-5">
-          <a href="/vendor/${esc(v.slug)}" class="block shrink-0 w-full md:w-44 h-32 rounded-xl overflow-hidden bg-parchment mb-4 md:mb-0">${v.image_url?`<img src="${esc(v.image_url)}" alt="" class="w-full h-full object-cover" loading="lazy" />`:''}</a>
+          <a href="/vendor/${esc(v.slug)}" class="block shrink-0 w-full md:w-44 h-32 rounded-xl overflow-hidden bg-parchment mb-4 md:mb-0"><img src="${esc(vimg(v))}" alt="" class="w-full h-full object-cover" loading="lazy" onerror="this.src='${'${IMGBASE}'}'+ '${'${esc(v.sub_region)}'}' + '.jpg'" /></a>
           <div class="flex-1 min-w-0">
             <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
               <a href="/vendor/${esc(v.slug)}" class="font-medium text-ink hover:text-clay-700">${esc(v.name)}</a>
