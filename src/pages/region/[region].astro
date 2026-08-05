@@ -10,8 +10,13 @@ export async function getStaticPaths() {
 }
 const { region } = Astro.params;
 const meta = REGIONS[region];
-const vendors = (await allVendors()).filter(v => v.sub_region === region);
+const all = await allVendors();
+const vendors = all.filter(v => v.sub_region === region);
 const byCat = Object.keys(CATEGORIES).map(c => [c, vendors.filter(v => v.category===c)]).filter(([,vs]) => vs.length);
+const sparse = region === 'other-colorado' ? [] : Object.keys(CATEGORIES)
+  .map(c => [c, vendors.filter(v => v.category===c).length, all.filter(v => v.sub_region==='other-colorado' && v.category===c)])
+  .filter(([,localCount,statewide]) => localCount < 3 && statewide.length > 0)
+  .map(([c,,statewide]) => [c, statewide.slice(0,6)]);
 ---
 <Base dark={true} title={`Elopement & micro-wedding vendors — ${meta.name} | Colorado Elopement Guide`} description={`${meta.blurb} ${vendors.length} elopement and micro-wedding vendors listed.`}>
   <section class="relative min-h-[46vh] flex items-end">
@@ -30,6 +35,16 @@ const byCat = Object.keys(CATEGORIES).map(c => [c, vendors.filter(v => v.categor
           <h2 class="display text-2xl">{CATEGORIES[c].name} <span class="text-ink/40 text-base">({vs.length})</span></h2>
           <a href={`/category/${c}`} class="text-sm font-medium underline underline-offset-4 hover:text-clay-700 shrink-0">All {CATEGORIES[c].name.toLowerCase()} →</a>
         </div>
+        <div class="grid gap-5 md:grid-cols-3">{vs.map(v => <VendorCard v={v} />)}</div>
+      </section>
+    ))}
+    {sparse.map(([c, vs]) => (
+      <section class="pt-14">
+        <div class="flex items-end justify-between gap-6 mb-2">
+          <h2 class="display text-2xl">{CATEGORIES[c].name} <span class="serif-i text-ink/60 text-lg">serving all of Colorado</span></h2>
+          <a href={`/category/${c}`} class="text-sm font-medium underline underline-offset-4 hover:text-clay-700 shrink-0">All {CATEGORIES[c].name.toLowerCase()} →</a>
+        </div>
+        <p class="text-sm text-ink/55 mb-6">These vendors travel — most work {meta.name} regularly.</p>
         <div class="grid gap-5 md:grid-cols-3">{vs.map(v => <VendorCard v={v} />)}</div>
       </section>
     ))}

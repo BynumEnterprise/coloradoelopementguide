@@ -1,10 +1,27 @@
 ---
 import Base from '../layouts/Base.astro';
+const err = false;
 ---
-<Base title="Contact | Colorado Elopement Guide" description="Contact Colorado Elopement Guide — corrections, removals, vendor questions.">
+<Base title="Contact | Colorado Elopement Guide" description="Contact Colorado Elopement Guide — corrections, removals, vendor questions. We reply within two business days.">
   <div class="max-w-2xl mx-auto px-5 md:px-8 pt-14">
     <h1 class="display text-4xl leading-tight">Contact <span class="serif-i">us</span></h1>
-    <p class="text-ink/70 mt-4 leading-relaxed">Corrections, listing removals, or vendor questions: email <a href="mailto:hello@coloradoelopementguide.com" class="underline underline-offset-4">hello@coloradoelopementguide.com</a> and we'll reply within two business days. Vendors: the fastest way to update a listing is to <a href="/claim" class="underline underline-offset-4">claim it</a>.</p>
-    <p class="text-ink/50 mt-4 text-sm">Colorado Elopement Guide · operated by Bynum Enterprises LLC</p>
+    <p class="text-ink/65 mt-4 leading-relaxed">Corrections, listing removals, vendor questions, or anything else — we reply within two business days. Vendors: the fastest way to update a listing is to <a href="/claim" class="underline underline-offset-4">claim it</a>.</p>
+    <form method="post" action="/api/contact" class="mt-8 space-y-5 rounded-3xl border border-hairline bg-white p-7 md:p-8">
+      <input type="text" name="website_url" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
+      <div>
+        <label class="eyebrow text-ink/60 block mb-2" for="name">Your name</label>
+        <input id="name" name="name" required class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" />
+      </div>
+      <div>
+        <label class="eyebrow text-ink/60 block mb-2" for="email">Email</label>
+        <input id="email" name="email" type="email" required class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" />
+      </div>
+      <div>
+        <label class="eyebrow text-ink/60 block mb-2" for="message">Message</label>
+        <textarea id="message" name="message" rows="5" required class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm"></textarea>
+      </div>
+      <button class="rounded-full bg-ink text-ivory px-7 py-3.5 text-sm font-semibold hover:bg-spruce-800 transition-colors">Send message</button>
+    </form>
+    <p class="text-ink/50 mt-5 text-sm">Colorado Elopement Guide · operated by Bynum Enterprises LLC · <a href="/about" class="underline underline-offset-4">About us</a></p>
   </div>
 </Base>

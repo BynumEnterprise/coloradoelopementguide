@@ -10,6 +10,7 @@ const vendors = await allVendors();
     <h1 class="display text-4xl md:text-5xl leading-tight">Claim your <span class="serif-i">listing</span></h1>
     <p class="text-ink/65 mt-4 leading-relaxed">If your business is listed here, it's yours. Claiming lets you correct your details, add photos and packages, and see your monthly click and inquiry counts. No credit card, no catch.</p>
     <form method="post" action="/api/claim" class="mt-10 space-y-5 rounded-3xl border border-hairline bg-white p-7 md:p-8">
+      <input type="text" name="website_url" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
       <div>
         <label class="eyebrow text-ink/60 block mb-2" for="vendor">Your business</label>
         <select id="vendor" name="vendor_slug" required class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm">

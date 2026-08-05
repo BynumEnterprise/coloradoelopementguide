@@ -18,6 +18,7 @@ const jsonld = {
   name: v.name, url: v.website || undefined,
   geo: (v.lat && v.lng) ? {"@type":"GeoCoordinates", latitude: v.lat, longitude: v.lng} : undefined
 };
+const telHref = v.phone ? 'tel:+1' + String(v.phone).replace(/[^0-9]/g,'').replace(/^1/,'') : '';
 const metaDesc = v.description.length > 155 ? v.description.slice(0, 152).replace(/\s+\S*$/, '') + '…' : v.description;
 ---
 <Base title={`${v.name} — ${cat.singular} · ${reg.name} | Colorado Elopement Guide`} description={metaDesc}>
@@ -45,7 +46,7 @@ const metaDesc = v.description.length > 155 ? v.description.slice(0, 152).replac
           <div class="rounded-2xl bg-parchment/70 border border-hairline p-5 space-y-3 text-sm">
             <p class="eyebrow text-clay-600">Contact</p>
             {v.website && <p><a href={v.website} rel="nofollow noopener" target="_blank" data-track="website_click" class="font-medium underline underline-offset-4 hover:text-clay-700 break-all">Visit website →</a></p>}
-            {v.phone && <p><a href={`tel:${v.phone}`} data-track="phone_click" class="underline underline-offset-4 hover:text-clay-700">{v.phone}</a></p>}
+            {v.phone && <p><a href={telHref} data-track="phone_click" class="underline underline-offset-4 hover:text-clay-700">{v.phone}</a></p>}
             {v.address && <p class="text-ink/60 leading-snug">{v.address}</p>}
           </div>
           <a href={`/region/${v.sub_region}`} class="block mt-4 rounded-2xl border border-hairline p-5 text-sm hover:bg-parchment/60 transition-colors">
