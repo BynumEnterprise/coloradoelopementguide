@@ -12,7 +12,12 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
   <div class="max-w-5xl mx-auto px-5 md:px-8 pt-14">
     <p class="eyebrow text-clay-600 mb-3">Your shortlist</p>
     <h1 class="display text-4xl md:text-5xl leading-tight">My <span class="serif-i">vendors</span></h1>
-    <p class="text-ink/65 mt-4 leading-relaxed max-w-2xl">Tap the ♡ on any vendor to build your team here. Your list is saved on this device. Email it to yourself below to keep it anywhere.</p>
+    <p class="text-ink/65 mt-4 leading-relaxed max-w-2xl">Tap the ♡ on any vendor to build your team here. Your list is saved on this device.</p>
+    <div class="mt-5 rounded-2xl border border-clay-500/40 bg-clay-50 p-5 text-sm" id="ml-acct-cta">
+      <strong>Want notes, booking status, and sync across devices?</strong>
+      <a href="/account" class="underline underline-offset-4 ml-1">Create your free planner account →</a>
+      <span class="text-ink/50 block mt-1">Everything you've hearted comes with you.</span>
+    </div>
     <div id="ml-empty" class="hidden mt-10 rounded-3xl border border-hairline bg-white p-10 text-center">
       <p class="display text-2xl">Nothing saved <span class="serif-i">yet</span></p>
       <p class="text-ink/60 mt-2 text-sm">Browse <a href="/vendors" class="underline underline-offset-4">all vendors</a> or start with <a href="/category/photographers" class="underline underline-offset-4">photographers</a>, and tap the heart on anyone you like.</p>
@@ -20,7 +25,7 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
     <div id="ml-groups" class="mt-8"></div>
     <div id="ml-email" class="hidden mt-12 rounded-3xl bg-spruce-900 text-ivory p-8">
       <h2 class="display text-2xl mb-2">Email me <span class="serif-i">my list</span></h2>
-      <p class="text-sm text-ivory/70 mb-5">We'll send your saved vendors with links, so your list travels with you.</p>
+      <p class="text-sm text-ivory/70 mb-5">We'll send your saved vendors with links. Subject line: "Your saved Colorado elopement vendors".</p>
       <form method="post" action="/api/savelist" class="flex flex-wrap gap-2.5" id="ml-form">
         <input type="hidden" name="slugs" id="ml-slugs" />
         <input type="email" name="email" required placeholder="you@example.com" class="flex-1 min-w-[210px] rounded-full px-5 py-3 text-ink text-sm bg-ivory placeholder-ink/40 outline-none focus:ring-2 focus:ring-gold" />

@@ -1,0 +1,127 @@
+---
+import Base from '../layouts/Base.astro';
+import { CATEGORIES, REGIONS } from '../lib/taxonomy';
+const catNames = Object.fromEntries(Object.entries(CATEGORIES).map(([k,c]) => [k, c.name]));
+const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r.name]));
+---
+<Base title="My planner | Colorado Elopement Guide" description="Your private elopement vendor planner: saved vendors, notes, and booking status." noindex={true}>
+  <div class="max-w-5xl mx-auto px-5 md:px-8 pt-14">
+    <div id="acct-loading" class="py-24 text-center text-ink/50">Opening your planner…</div>
+
+    <div id="acct-signin" class="hidden">
+      <p class="eyebrow text-clay-600 mb-3">Your planner</p>
+      <h1 class="display text-4xl md:text-5xl leading-tight">Plan your <span class="serif-i">vendor team</span></h1>
+      <p class="text-ink/65 mt-4 leading-relaxed max-w-2xl">A free account keeps every vendor you save, with your own notes and a booking status for each, synced on any device. Enter your email and we'll send a sign in link. No password to remember.</p>
+      <form method="post" action="/api/auth-request" class="mt-8 flex flex-wrap gap-2.5 max-w-lg">
+        <input type="text" name="website_url" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
+        <input type="hidden" name="slugs" id="si-slugs" />
+        <input type="email" name="email" required placeholder="you@example.com" class="flex-1 min-w-[220px] rounded-full px-5 py-3.5 text-sm bg-white border border-hairline outline-none focus:ring-2 focus:ring-gold" />
+        <button class="rounded-full bg-ink text-ivory px-7 py-3.5 text-sm font-semibold hover:bg-spruce-800 transition-colors">Email my sign in link</button>
+      </form>
+      <p id="si-note" class="hidden text-sm text-ink/55 mt-4">Anything you've already hearted on this device comes with you automatically.</p>
+    </div>
+
+    <div id="acct-app" class="hidden">
+      <div class="md:flex items-end justify-between gap-6">
+        <div>
+          <p class="eyebrow text-clay-600 mb-3">Signed in as <span id="acct-email" class="normal-case tracking-normal"></span></p>
+          <h1 class="display text-4xl md:text-5xl leading-tight">My <span class="serif-i">planner</span></h1>
+        </div>
+        <div class="mt-4 md:mt-0 flex gap-3 text-sm shrink-0">
+          <a href="/vendors" class="rounded-full border border-ink/60 px-5 py-2.5 font-medium hover:bg-parchment">Find more vendors</a>
+          <button id="acct-signout" class="rounded-full border border-hairline px-5 py-2.5 text-ink/60 hover:bg-parchment">Sign out</button>
+        </div>
+      </div>
+      <div id="acct-empty" class="hidden mt-10 rounded-3xl border border-hairline bg-white p-10 text-center">
+        <p class="display text-2xl">Your planner is <span class="serif-i">empty</span></p>
+        <p class="text-ink/60 mt-2 text-sm">Tap the ♡ on any vendor and they'll appear here with room for notes.</p>
+      </div>
+      <div id="acct-groups" class="mt-6"></div>
+    </div>
+  </div>
+
+  <script is:inline define:vars={{ catNames, regNames }}>
+    const SB = 'https://yucgsuzveabsgntlmste.supabase.co/rest/v1/rpc/';
+    const SBK = 'sb_publishable_acsHsb9mrZ756aT12EgAPQ_GugWXmjM';
+    const STATUSES = { saved:'Saved', contacted:'Contacted', quoted:'Got a quote', booked:'Booked ✓', passed:'Passed' };
+    const rpc = (fn, args) => fetch(SB + fn, { method:'POST', headers:{ apikey:SBK, Authorization:'Bearer '+SBK, 'Content-Type':'application/json' }, body: JSON.stringify(args) }).then(r => r.ok ? r.json() : null);
+    const tok = () => localStorage.getItem('ceg_token');
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    let debounces = {};
+
+    async function boot(){
+      const params = new URLSearchParams(location.search);
+      if (params.get('lt')) {
+        const res = await rpc('ceg_verify_login', { p_lt: params.get('lt') });
+        if (res && res.token) {
+          localStorage.setItem('ceg_token', res.token);
+          localStorage.setItem('ceg_email', res.email);
+          const merge = (params.get('merge') || localStorage.getItem('ceg_shortlist') || '').toString();
+          const slugs = merge.startsWith('[') ? JSON.parse(merge) : merge.split(',').filter(Boolean);
+          if (slugs.length) await rpc('ceg_merge_vendors', { p_token: res.token, p_slugs: slugs });
+          localStorage.removeItem('ceg_shortlist');
+        }
+        history.replaceState({}, '', '/account');
+      }
+      if (!tok()) { show('signin'); const el=document.getElementById('si-slugs'); const local=CEG.get(); el.value=local.join(','); if(local.length) document.getElementById('si-note').classList.remove('hidden'); return; }
+      const data = await rpc('ceg_get_account', { p_token: tok() });
+      if (!data) { localStorage.removeItem('ceg_token'); show('signin'); return; }
+      document.getElementById('acct-email').textContent = data.email;
+      render(data.vendors || []);
+      show('app');
+    }
+    function show(which){
+      for (const id of ['loading','signin','app']) document.getElementById('acct-'+id).classList.toggle('hidden', id!==which);
+    }
+    function render(vendors){
+      document.getElementById('acct-empty').classList.toggle('hidden', vendors.length>0);
+      const groups = {};
+      vendors.forEach(v => (groups[v.category] = groups[v.category] || []).push(v));
+      document.getElementById('acct-groups').innerHTML = Object.entries(groups).map(([c, vs]) => `
+        <section class="pt-10">
+          <h2 class="display text-2xl mb-5">${esc(catNames[c] || c)} <span class="text-ink/40 text-base">(${vs.length})</span></h2>
+          <div class="space-y-4">${vs.map(v => `
+            <div class="rounded-2xl border border-hairline bg-white p-5 md:flex gap-5">
+              <a href="/vendor/${esc(v.slug)}" class="block shrink-0 w-full md:w-44 h-32 rounded-xl overflow-hidden bg-parchment mb-4 md:mb-0">
+                ${v.image_url ? `<img src="${esc(v.image_url)}" alt="" class="w-full h-full object-cover" loading="lazy" />` : ''}
+              </a>
+              <div class="flex-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-3">
+                  <a href="/vendor/${esc(v.slug)}" class="font-medium text-ink hover:text-clay-700">${esc(v.name)}</a>
+                  <span class="text-xs text-ink/45">${esc(regNames[v.sub_region] || '')}</span>
+                  <select data-status="${esc(v.slug)}" class="ml-auto rounded-full border border-hairline bg-ivory px-3 py-1.5 text-xs">
+                    ${Object.entries(STATUSES).map(([k,l]) => `<option value="${k}" ${v.status===k?'selected':''}>${l}</option>`).join('')}
+                  </select>
+                </div>
+                <textarea data-note="${esc(v.slug)}" rows="2" placeholder="Your notes: pricing, availability, gut feeling…" class="mt-3 w-full rounded-xl border border-hairline bg-ivory px-4 py-2.5 text-sm">${esc(v.note)}</textarea>
+                <div class="mt-2 flex items-center gap-4 text-xs">
+                  <span data-savednote="${esc(v.slug)}" class="text-ink/35"></span>
+                  <button data-remove="${esc(v.slug)}" class="ml-auto text-clay-700 underline underline-offset-4">Remove</button>
+                </div>
+              </div>
+            </div>`).join('')}</div>
+        </section>`).join('');
+    }
+    document.addEventListener('change', async e => {
+      const sel = e.target.closest('[data-status]');
+      if (sel) { await rpc('ceg_set_vendor', { p_token: tok(), p_slug: sel.getAttribute('data-status'), p_status: sel.value, p_note: null }); flash(sel.getAttribute('data-status')); }
+    });
+    document.addEventListener('input', e => {
+      const ta = e.target.closest('[data-note]');
+      if (!ta) return;
+      const slug = ta.getAttribute('data-note');
+      clearTimeout(debounces[slug]);
+      debounces[slug] = setTimeout(async () => {
+        await rpc('ceg_set_vendor', { p_token: tok(), p_slug: slug, p_status: '', p_note: ta.value });
+        flash(slug);
+      }, 700);
+    });
+    document.addEventListener('click', async e => {
+      if (e.target.closest('#acct-signout')) { localStorage.removeItem('ceg_token'); localStorage.removeItem('ceg_email'); location.reload(); return; }
+      const rm = e.target.closest('[data-remove]');
+      if (rm) { await rpc('ceg_remove_vendor', { p_token: tok(), p_slug: rm.getAttribute('data-remove') }); boot(); }
+    });
+    function flash(slug){ const el = document.querySelector(`[data-savednote="${slug}"]`); if (el){ el.textContent = 'Saved ✓'; setTimeout(()=>el.textContent='', 1600); } }
+    document.addEventListener('DOMContentLoaded', boot);
+  </script>
+</Base>

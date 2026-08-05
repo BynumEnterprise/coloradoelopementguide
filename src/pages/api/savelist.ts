@@ -34,6 +34,6 @@ If you don't want occasional planning notes, reply "unsubscribe" and we won't em
     });
   } catch { /* noop */ }
   await sendMail('bynumenterprisesbe@gmail.com', '[CEG] Shortlist emailed', `${email} saved ${slugs.length} vendors:\n\n${lines}`);
-  return redirect('/thanks', 303);
+  return redirect('/thanks?list=1', 303);
 };
 export const GET: APIRoute = () => new Response('Method not allowed', { status: 405 });
