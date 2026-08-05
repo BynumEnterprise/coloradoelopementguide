@@ -10,6 +10,7 @@ const fallback = regionImg(v.sub_region);
     <img src={gimg(v.image_url, 800, 500) || fallback} alt={`${v.name} — ${CATEGORIES[v.category]?.singular} in Colorado`} loading="lazy"
       class="w-full h-full object-cover" onerror={`this.onerror=null;this.src='${fallback}'`} />
     {featured && <span class="absolute top-3 left-3 eyebrow bg-ivory/95 text-clay-700 rounded-full px-3 py-1.5">Featured</span>}
+    <button data-save={v.slug} aria-label="Save to my vendors" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-ivory/95 text-clay-600 text-lg leading-none hover:scale-110 transition-transform">♡</button>
     {v.rating && v.reviews ? <span class="absolute bottom-3 right-3 text-xs font-medium bg-ink/70 text-ivory rounded-full px-2.5 py-1">★ {v.rating} · {v.reviews}</span> : null}
   </div>
   <div class="p-5">

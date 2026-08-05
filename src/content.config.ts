@@ -3,7 +3,7 @@ import { SB_URL, SB_KEY } from './lib/supabase';
 
 const vendors = defineCollection({
   loader: async () => {
-    const r = await fetch(`${SB_URL}/rest/v1/p2_vendors?select=*&status=neq.removed&order=id&limit=1000`, {
+    const r = await fetch(`${SB_URL}/rest/v1/p2_vendors?select=*&status=in.(seeded,claimed,featured)&order=id&limit=1000`, {
       headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
     });
     if (!r.ok) throw new Error(`Vendor fetch failed: ${r.status} — build aborted (schema gate)`);

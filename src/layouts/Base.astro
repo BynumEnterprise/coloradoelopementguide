@@ -37,9 +37,24 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <div class="max-w-7xl mx-auto px-5 md:px-8 py-5 flex items-center justify-between gap-4">
       <a href="/" class={`display text-[1.35rem] leading-none tracking-tight ${dark ? 'text-white' : 'text-ink'}`}>Colorado <span class="serif-i">Elopement</span> Guide</a>
       <nav class={`hidden md:flex items-center gap-8 text-[0.83rem] font-medium ${dark ? 'text-white/90' : 'text-ink/80'}`}>
-        <a href="/vendors" class="hover:opacity-70">Vendors</a>
+        <div class="relative group">
+          <a href="/vendors" class="hover:opacity-70">Vendors ▾</a>
+          <div class="absolute left-0 top-full pt-3 hidden group-hover:block z-50">
+            <div class="w-56 rounded-2xl border border-hairline bg-ivory shadow-xl p-3 flex flex-col gap-1 text-sm text-ink">
+              <a href="/category/photographers" class="px-3 py-2 rounded-lg hover:bg-parchment">Elopement Photographers</a>
+              <a href="/category/venues" class="px-3 py-2 rounded-lg hover:bg-parchment">Micro Wedding Venues</a>
+              <a href="/category/officiants" class="px-3 py-2 rounded-lg hover:bg-parchment">Officiants</a>
+              <a href="/category/planners" class="px-3 py-2 rounded-lg hover:bg-parchment">Planners</a>
+              <a href="/category/florists" class="px-3 py-2 rounded-lg hover:bg-parchment">Florists</a>
+              <a href="/category/hair-makeup" class="px-3 py-2 rounded-lg hover:bg-parchment">Hair &amp; Makeup</a>
+              <div class="border-t border-hairline my-1"></div>
+              <a href="/vendors" class="px-3 py-2 rounded-lg hover:bg-parchment font-medium">All vendors →</a>
+            </div>
+          </div>
+        </div>
         <a href="/regions" class="hover:opacity-70">Regions</a>
         <a href="/checklist" class="hover:opacity-70">Planning checklist</a>
+        <a href="/my-vendors" class="hover:opacity-70">My vendors<span id="ceg-count" class="ml-1 hidden text-[10px] align-top bg-clay-500 text-white rounded-full px-1.5 py-0.5"></span></a>
         <a href="/pricing" class="hover:opacity-70">For vendors</a>
         <a href="/claim" class={`${dark ? 'border border-white/70 text-white hover:bg-white hover:text-ink' : 'border border-ink/70 hover:bg-ink hover:text-ivory'} rounded-full px-4 py-2 transition-colors`}>Claim your listing</a>
       </nav>
@@ -49,6 +64,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
           <a href="/vendors" class="px-3 py-2 rounded-lg hover:bg-parchment">All vendors</a>
           <a href="/regions" class="px-3 py-2 rounded-lg hover:bg-parchment">Regions</a>
           <a href="/checklist" class="px-3 py-2 rounded-lg hover:bg-parchment">Planning checklist</a>
+          <a href="/my-vendors" class="px-3 py-2 rounded-lg hover:bg-parchment">My vendors</a>
           <a href="/pricing" class="px-3 py-2 rounded-lg hover:bg-parchment">For vendors</a>
           <a href="/claim" class="px-3 py-2 rounded-lg hover:bg-parchment font-medium">Claim your listing</a>
         </nav>
@@ -78,5 +94,31 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
       </div>
     </div>
   </footer>
+<script is:inline>
+window.CEG = {
+  key: 'ceg_shortlist',
+  get(){ try { return JSON.parse(localStorage.getItem(this.key)||'[]'); } catch(e){ return []; } },
+  set(a){ localStorage.setItem(this.key, JSON.stringify([...new Set(a)])); this.paint(); },
+  has(s){ return this.get().includes(s); },
+  toggle(s){ const a=this.get(); const i=a.indexOf(s); i>=0 ? a.splice(i,1) : a.push(s); this.set(a); },
+  paint(){
+    const n=this.get().length, b=document.getElementById('ceg-count');
+    if(b){ b.textContent=n; b.classList.toggle('hidden', n===0); }
+    document.querySelectorAll('[data-save]').forEach(el=>{
+      const on=this.has(el.getAttribute('data-save'));
+      el.textContent = on ? '♥' : '♡';
+      el.setAttribute('aria-pressed', on);
+      el.title = on ? 'Remove from my vendors' : 'Save to my vendors';
+    });
+  }
+};
+document.addEventListener('click', function(e){
+  const el = e.target.closest('[data-save]');
+  if(!el) return;
+  e.preventDefault(); e.stopPropagation();
+  CEG.toggle(el.getAttribute('data-save'));
+});
+document.addEventListener('DOMContentLoaded', ()=>CEG.paint());
+</script>
 </body>
 </html>

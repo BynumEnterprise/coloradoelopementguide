@@ -49,6 +49,7 @@ const metaDesc = v.description.length > 155 ? v.description.slice(0, 152).replac
             {v.phone && <p><a href={telHref} data-track="phone_click" class="underline underline-offset-4 hover:text-clay-700">{v.phone}</a></p>}
             {v.address && <p class="text-ink/60 leading-snug">{v.address}</p>}
           </div>
+          <button data-save={v.slug} class="block w-full mt-4 rounded-2xl border border-clay-500 text-clay-700 p-4 text-sm font-medium hover:bg-clay-50 transition-colors text-center">♡</button>
           <a href={`/region/${v.sub_region}`} class="block mt-4 rounded-2xl border border-hairline p-5 text-sm hover:bg-parchment/60 transition-colors">
             <p class="eyebrow text-clay-600 mb-1.5">Planning here?</p>
             <p class="font-medium">Every vendor in {reg.name} →</p>
