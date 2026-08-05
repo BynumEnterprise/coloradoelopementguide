@@ -24,7 +24,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
     body: JSON.stringify({ vendor_id: vendorId, claimant_name: name, claimant_email: email, message: slug === '__not_listed__' ? `[NEW LISTING REQUEST] ${message}` : message })
   });
-  await sendMail(email, `We got your claim${vendorName ? ` for ${vendorName}` : ''} — Colorado Elopement Guide`,
+  await sendMail(email, `We got your claim${vendorName ? ` for ${vendorName}` : ''} | Colorado Elopement Guide`,
 `Hi ${name},
 
 Thanks for claiming${vendorName ? ` for ${vendorName}` : ''}. Here's what happens next:
