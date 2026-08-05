@@ -1,5 +1,5 @@
 export async function sendMail(to: string, subject: string, text: string) {
-  const key = import.meta.env.RESEND_API_KEY;
+  const key = process.env.RESEND_API_KEY ?? import.meta.env.RESEND_API_KEY;
   if (!key) return false;
   try {
     const r = await fetch('https://api.resend.com/emails', {

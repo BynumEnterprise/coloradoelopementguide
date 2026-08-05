@@ -29,7 +29,7 @@ Happy planning,
 Colorado Elopement Guide
 Bynum Enterprises LLC, 306 Lost Creek Trl, Greenville, TX 75402
 Don't want occasional planning notes? Reply "unsubscribe" and we won't email again.`);
-  const key = import.meta.env.KIT_API_KEY;
+  const key = process.env.KIT_API_KEY ?? import.meta.env.KIT_API_KEY;
   if (key) {
     try {
       await fetch('https://api.kit.com/v4/subscribers', {
