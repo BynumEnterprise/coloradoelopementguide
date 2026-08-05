@@ -29,6 +29,8 @@ Happy planning,
 Colorado Elopement Guide
 
 If you don't want occasional planning notes, reply "unsubscribe" and we won't email again.`);
+  await sendMail('bynumenterprisesbe@gmail.com', '[CEG] New checklist subscriber',
+`New subscriber to the planning checklist: ${email}\n\nStored in p2_subscribers and forwarded to Kit.`);
   const key = process.env.KIT_API_KEY ?? import.meta.env.KIT_API_KEY;
   if (key) {
     try {
