@@ -4,50 +4,93 @@ import { CATEGORIES, REGIONS } from '../lib/taxonomy';
 const catNames = Object.fromEntries(Object.entries(CATEGORIES).map(([k,c]) => [k, c.name]));
 const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r.name]));
 ---
-<Base title="My planner | Colorado Elopement Guide" description="Your private elopement vendor planner: saved vendors, notes, and booking status." noindex={true}>
-  <div class="max-w-5xl mx-auto px-5 md:px-8 pt-14">
+<Base title="My Planner | Colorado Elopement Guide" description="Your private elopement planner: vendor pipeline, budget, checklist and notes." noindex={true}>
+  <div class="max-w-6xl mx-auto px-5 md:px-8 pt-12 pb-4">
     <div id="acct-loading" class="py-24 text-center text-ink/50">Opening your planner…</div>
 
+    <!-- SIGN IN -->
     <div id="acct-signin" class="hidden">
-      <p class="eyebrow text-clay-600 mb-3">Your planner</p>
-      <h1 class="display text-4xl md:text-5xl leading-tight">Plan your <span class="serif-i">vendor team</span></h1>
-      <p class="text-ink/65 mt-4 leading-relaxed max-w-2xl">A free account keeps every vendor you save, with your own notes and a booking status for each, synced on any device. Enter your email and we'll send a sign in link. No password to remember.</p>
-      <form method="post" action="/api/auth-request" class="mt-8 flex flex-wrap gap-2.5 max-w-lg">
-        <input type="text" name="website_url" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
-        <input type="hidden" name="slugs" id="si-slugs" />
-        <input type="email" name="email" required placeholder="you@example.com" class="flex-1 min-w-[220px] rounded-full px-5 py-3.5 text-sm bg-white border border-hairline outline-none focus:ring-2 focus:ring-gold" />
-        <button class="rounded-full bg-ink text-ivory px-7 py-3.5 text-sm font-semibold hover:bg-spruce-800 transition-colors">Email My Sign In Link</button>
-      </form>
-      <p id="si-note" class="hidden text-sm text-ink/55 mt-4">Anything you've already hearted on this device comes with you automatically.</p>
+      <div class="md:grid md:grid-cols-2 gap-12 items-center">
+        <div>
+          <p class="eyebrow text-clay-600 mb-3">Your Free Planner</p>
+          <h1 class="display text-4xl md:text-5xl leading-tight">Plan your <span class="serif-i">vendor team</span></h1>
+          <p class="text-ink/65 mt-4 leading-relaxed">One place for your whole elopement: every vendor you save, quotes and budget, private notes, and a Colorado specific checklist. Free, synced to your email, no password.</p>
+          <form method="post" action="/api/auth-request" class="mt-7 flex flex-wrap gap-2.5">
+            <input type="text" name="website_url" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
+            <input type="hidden" name="slugs" id="si-slugs" />
+            <input type="email" name="email" required placeholder="you@example.com" class="flex-1 min-w-[220px] rounded-full px-5 py-3.5 text-sm bg-white border border-hairline outline-none focus:ring-2 focus:ring-gold" />
+            <button class="rounded-full bg-ink text-ivory px-7 py-3.5 text-sm font-semibold hover:bg-spruce-800 transition-colors">Email My Sign In Link</button>
+          </form>
+          <p id="si-note" class="hidden text-sm text-ink/55 mt-4">Anything you've already hearted on this device comes with you automatically.</p>
+        </div>
+        <div class="hidden md:block rounded-3xl bg-spruce-900 text-ivory p-8">
+          <p class="eyebrow text-gold mb-4">Inside Your Planner</p>
+          <ul class="space-y-3.5 text-sm text-ivory/85">
+            <li>◆ Vendor pipeline: Saved → Contacted → Got a Quote → Booked</li>
+            <li>◆ Budget tracker with quotes per vendor</li>
+            <li>◆ Private notes on everyone</li>
+            <li>◆ Colorado elopement checklist with progress</li>
+            <li>◆ Synced on any device</li>
+          </ul>
+        </div>
+      </div>
     </div>
 
+    <!-- DASHBOARD -->
     <div id="acct-app" class="hidden">
-      <div class="md:flex items-end justify-between gap-6">
+      <div class="md:flex items-start justify-between gap-6">
         <div>
-          <p class="eyebrow text-clay-600 mb-3">Signed in as <span id="acct-email" class="normal-case tracking-normal"></span></p>
-          <h1 class="display text-4xl md:text-5xl leading-tight">My <span class="serif-i">planner</span></h1>
+          <p class="eyebrow text-clay-600 mb-2">My Planner</p>
+          <h1 class="display text-3xl md:text-4xl leading-tight" id="dash-title">Your elopement</h1>
+          <p class="text-sm text-ink/55 mt-2" id="dash-sub"></p>
         </div>
-        <div class="mt-4 md:mt-0 flex gap-3 text-sm shrink-0">
-          <a href="/vendors" class="rounded-full border border-ink/60 px-5 py-2.5 font-medium hover:bg-parchment">Find More Vendors</a>
+        <div class="mt-4 md:mt-0 flex gap-2.5 text-sm shrink-0">
+          <a href="/vendors" class="rounded-full bg-ink text-ivory px-5 py-2.5 font-medium hover:bg-spruce-800">Find More Vendors</a>
           <button id="acct-signout" class="rounded-full border border-hairline px-5 py-2.5 text-ink/60 hover:bg-parchment">Sign Out</button>
         </div>
       </div>
-      <div id="acct-empty" class="hidden mt-10 rounded-3xl border border-hairline bg-white p-10 text-center">
-        <p class="display text-2xl">Your planner is <span class="serif-i">empty</span></p>
-        <p class="text-ink/60 mt-2 text-sm">Tap the ♡ on any vendor and they'll appear here with room for notes.</p>
+
+      <!-- TABS -->
+      <div class="mt-8 flex gap-1.5 border-b border-hairline overflow-x-auto" id="tabs">
+        <button data-tab="overview" class="tab-btn px-5 py-3 text-sm font-medium rounded-t-xl whitespace-nowrap">Overview</button>
+        <button data-tab="vendors" class="tab-btn px-5 py-3 text-sm font-medium rounded-t-xl whitespace-nowrap">My Vendors <span id="tab-vcount" class="text-ink/40"></span></button>
+        <button data-tab="checklist" class="tab-btn px-5 py-3 text-sm font-medium rounded-t-xl whitespace-nowrap">Checklist <span id="tab-ccount" class="text-ink/40"></span></button>
+        <button data-tab="details" class="tab-btn px-5 py-3 text-sm font-medium rounded-t-xl whitespace-nowrap">Our Details</button>
       </div>
-      <div id="acct-groups" class="mt-6"></div>
+
+      <div id="pane-overview" class="pane pt-8"></div>
+      <div id="pane-vendors" class="pane pt-8 hidden"></div>
+      <div id="pane-checklist" class="pane pt-8 hidden"></div>
+      <div id="pane-details" class="pane pt-8 hidden"></div>
     </div>
   </div>
 
   <script is:inline define:vars={{ catNames, regNames }}>
     const SB = 'https://yucgsuzveabsgntlmste.supabase.co/rest/v1/rpc/';
     const SBK = 'sb_publishable_acsHsb9mrZ756aT12EgAPQ_GugWXmjM';
-    const STATUSES = { saved:'Saved', contacted:'Contacted', quoted:'Got a quote', booked:'Booked ✓', passed:'Passed' };
-    const rpc = (fn, args) => fetch(SB + fn, { method:'POST', headers:{ apikey:SBK, Authorization:'Bearer '+SBK, 'Content-Type':'application/json' }, body: JSON.stringify(args) }).then(r => r.ok ? r.json() : null);
+    const STATUSES = { saved:'Saved', contacted:'Contacted', quoted:'Got a Quote', booked:'Booked', passed:'Passed' };
+    const CHIP = { saved:'bg-parchment text-ink/70 border-hairline', contacted:'bg-sky-100 text-sky-900 border-sky-200', quoted:'bg-gold/25 text-clay-700 border-gold/40', booked:'bg-spruce-800 text-ivory border-spruce-800', passed:'bg-hairline/60 text-ink/40 border-hairline line-through' };
+    const CORE = ['photographers','venues','officiants'];
+    const TASKS = [
+      ['region','Pick your region and season'],
+      ['photographer','Book your photographer'],
+      ['venue','Lock your venue or ceremony spot'],
+      ['permit','Secure your location permit (RMNP, USFS, city parks)'],
+      ['license','Get your Colorado marriage license'],
+      ['officiate','Decide who officiates (self solemnizing is legal here)'],
+      ['florals','Order florals'],
+      ['hmua','Book hair and makeup'],
+      ['attire','Sort attire and rings'],
+      ['travel','Book travel and lodging'],
+      ['timeline','Build your day of timeline'],
+      ['vows','Write your vows'],
+      ['record','Sign and return the license for recording']
+    ];
+    const rpc = (fn, args) => fetch(SB + fn, { method:'POST', headers:{ apikey:SBK, Authorization:'Bearer '+SBK, 'Content-Type':'application/json' }, body: JSON.stringify(args) }).then(r => r.ok ? r.json() : null).catch(() => null);
     const tok = () => localStorage.getItem('ceg_token');
     const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    let debounces = {};
+    const money = n => n == null ? '' : '$' + Number(n).toLocaleString();
+    let D = null, activeTab = 'overview', filter = 'all', debounces = {};
 
     async function boot(){
       const params = new URLSearchParams(location.search);
@@ -55,73 +98,215 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
         const res = await rpc('ceg_verify_login', { p_lt: params.get('lt') });
         if (res && res.token) {
           localStorage.setItem('ceg_token', res.token);
-          localStorage.setItem('ceg_email', res.email);
-          const merge = (params.get('merge') || localStorage.getItem('ceg_shortlist') || '').toString();
+          const merge = (localStorage.getItem('ceg_shortlist') || '');
           const slugs = merge.startsWith('[') ? JSON.parse(merge) : merge.split(',').filter(Boolean);
           if (slugs.length) await rpc('ceg_merge_vendors', { p_token: res.token, p_slugs: slugs });
           localStorage.removeItem('ceg_shortlist');
         }
         history.replaceState({}, '', '/account');
       }
-      if (!tok()) { show('signin'); const el=document.getElementById('si-slugs'); const local=CEG.get(); el.value=local.join(','); if(local.length) document.getElementById('si-note').classList.remove('hidden'); return; }
-      const data = await rpc('ceg_get_account', { p_token: tok() });
-      if (!data) { localStorage.removeItem('ceg_token'); show('signin'); return; }
-      document.getElementById('acct-email').textContent = data.email;
-      render(data.vendors || []);
-      show('app');
+      if (!tok()) { showRoot('signin'); const el=document.getElementById('si-slugs'); const local=(window.CEG?CEG.get():[]); el.value=local.join(','); if(local.length) document.getElementById('si-note').classList.remove('hidden'); return; }
+      D = await rpc('ceg_get_account', { p_token: tok() });
+      if (!D) { localStorage.removeItem('ceg_token'); showRoot('signin'); return; }
+      paintHeader(); paintAll(); showRoot('app'); setTab(activeTab);
     }
-    function show(which){
-      for (const id of ['loading','signin','app']) document.getElementById('acct-'+id).classList.toggle('hidden', id!==which);
+    function showRoot(which){ for (const id of ['loading','signin','app']) document.getElementById('acct-'+id).classList.toggle('hidden', id!==which); }
+    function setTab(t){
+      activeTab = t;
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        const on = b.dataset.tab === t;
+        b.className = 'tab-btn px-5 py-3 text-sm font-medium rounded-t-xl whitespace-nowrap ' + (on ? 'bg-ink text-ivory' : 'text-ink/60 hover:bg-parchment');
+      });
+      document.querySelectorAll('.pane').forEach(p => p.classList.add('hidden'));
+      document.getElementById('pane-'+t).classList.remove('hidden');
     }
-    function render(vendors){
-      document.getElementById('acct-empty').classList.toggle('hidden', vendors.length>0);
-      const groups = {};
-      vendors.forEach(v => (groups[v.category] = groups[v.category] || []).push(v));
-      document.getElementById('acct-groups').innerHTML = Object.entries(groups).map(([c, vs]) => `
-        <section class="pt-10">
-          <h2 class="display text-2xl mb-5">${esc(catNames[c] || c)} <span class="text-ink/40 text-base">(${vs.length})</span></h2>
-          <div class="space-y-4">${vs.map(v => `
-            <div class="rounded-2xl border border-hairline bg-white p-5 md:flex gap-5">
-              <a href="/vendor/${esc(v.slug)}" class="block shrink-0 w-full md:w-44 h-32 rounded-xl overflow-hidden bg-parchment mb-4 md:mb-0">
-                ${v.image_url ? `<img src="${esc(v.image_url)}" alt="" class="w-full h-full object-cover" loading="lazy" />` : ''}
-              </a>
-              <div class="flex-1 min-w-0">
-                <div class="flex flex-wrap items-center gap-3">
-                  <a href="/vendor/${esc(v.slug)}" class="font-medium text-ink hover:text-clay-700">${esc(v.name)}</a>
-                  <span class="text-xs text-ink/45">${esc(regNames[v.sub_region] || '')}</span>
-                  <select data-status="${esc(v.slug)}" class="ml-auto rounded-full border border-hairline bg-ivory px-3 py-1.5 text-xs">
-                    ${Object.entries(STATUSES).map(([k,l]) => `<option value="${k}" ${v.status===k?'selected':''}>${l}</option>`).join('')}
-                  </select>
-                </div>
-                <textarea data-note="${esc(v.slug)}" rows="2" placeholder="Your notes: pricing, availability, gut feeling…" class="mt-3 w-full rounded-xl border border-hairline bg-ivory px-4 py-2.5 text-sm">${esc(v.note)}</textarea>
-                <div class="mt-2 flex items-center gap-4 text-xs">
-                  <span data-savednote="${esc(v.slug)}" class="text-ink/35"></span>
-                  <button data-remove="${esc(v.slug)}" class="ml-auto text-clay-700 underline underline-offset-4">Remove</button>
-                </div>
+    function paintHeader(){
+      const p = D.profile || {};
+      document.getElementById('dash-title').innerHTML = p.names ? esc(p.names) : 'Your <span class="serif-i">elopement</span>';
+      let bits = [];
+      if (p.date) { const days = Math.ceil((new Date(p.date) - new Date())/86400000); bits.push(new Date(p.date+'T12:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) + (days>0 ? ` · ${days} days away` : '')); }
+      if (p.region && regNames[p.region]) bits.push(regNames[p.region]);
+      if (p.guests) bits.push(p.guests + ' guests');
+      document.getElementById('dash-sub').textContent = bits.join('  ·  ') || 'Add your date and region in Our Details';
+    }
+    function paintAll(){ paintOverview(); paintVendors(); paintChecklist(); paintDetails();
+      const vs=D.vendors||[]; document.getElementById('tab-vcount').textContent = vs.length?`(${vs.length})`:'';
+      const done=TASKS.filter(([k])=>D.tasks && D.tasks[k]).length; document.getElementById('tab-ccount').textContent = `(${done}/${TASKS.length})`;
+    }
+    function paintOverview(){
+      const vs = (D.vendors||[]).filter(v=>v.status!=='passed');
+      const byCat = {}; vs.forEach(v => (byCat[v.category]=byCat[v.category]||[]).push(v));
+      const bookedCats = Object.keys(byCat).filter(c => byCat[c].some(v=>v.status==='booked'));
+      const coreDone = CORE.filter(c=>bookedCats.includes(c)).length;
+      const tasksDone = TASKS.filter(([k])=>D.tasks && D.tasks[k]).length;
+      const pct = Math.round(100 * (tasksDone / TASKS.length));
+      const budget = D.profile?.budget;
+      const quotedTotal = vs.filter(v=>v.quote!=null && v.status!=='booked').reduce((a,v)=>a+Number(v.quote),0);
+      const bookedTotal = vs.filter(v=>v.quote!=null && v.status==='booked').reduce((a,v)=>a+Number(v.quote),0);
+      const catCards = Object.keys(catNames).map(c => {
+        const list = byCat[c]||[];
+        const booked = list.find(v=>v.status==='booked');
+        const state = booked ? `<span class="text-[11px] rounded-full border px-2.5 py-1 ${CHIP.booked}">Booked: ${esc(booked.name)}</span>`
+          : list.length ? `<span class="text-xs text-ink/55">${list.length} saved${list.some(v=>v.status==='quoted')?' · quote in hand':''}</span>`
+          : `<a href="/category/${c}" class="text-xs underline underline-offset-4 text-clay-700">Browse ${esc(catNames[c])} →</a>`;
+        return `<div class="rounded-2xl border ${booked?'border-spruce-800/40 bg-spruce-800/5':'border-hairline bg-white'} p-4">
+          <p class="text-sm font-medium">${esc(catNames[c])} ${booked?'<span class="text-spruce-800">✓</span>':''}</p>
+          <div class="mt-2">${state}</div></div>`;
+      }).join('');
+      const next = [];
+      if (!D.profile?.date) next.push(['Set your wedding date','#','details']);
+      CORE.forEach(c=>{ if(!byCat[c] || !byCat[c].length) next.push(['Find your '+catNames[c].toLowerCase(), '/category/'+c]); });
+      vs.filter(v=>v.status==='quoted').slice(0,2).forEach(v=>next.push(['Decide on '+v.name+' (quote in hand)','#','vendors']));
+      if (!next.length) next.push(['Work through your checklist','#','checklist']);
+      document.getElementById('pane-overview').innerHTML = `
+        <div class="grid md:grid-cols-3 gap-5">
+          <div class="rounded-3xl border border-hairline bg-white p-6">
+            <p class="eyebrow text-clay-600 mb-3">Planning Progress</p>
+            <div class="flex items-end gap-2"><p class="display text-5xl">${pct}%</p><p class="text-xs text-ink/50 pb-2">${tasksDone} of ${TASKS.length} checklist items</p></div>
+            <div class="mt-3 h-2 rounded-full bg-parchment overflow-hidden"><div class="h-full bg-gold" style="width:${pct}%"></div></div>
+            <p class="text-xs text-ink/55 mt-3">${coreDone} of ${CORE.length} essential vendors booked</p>
+          </div>
+          <div class="rounded-3xl border border-hairline bg-white p-6">
+            <p class="eyebrow text-clay-600 mb-3">Budget</p>
+            ${budget ? `<p class="display text-3xl">${money(bookedTotal)}<span class="text-base text-ink/40"> booked of ${money(budget)}</span></p>
+            <div class="mt-3 h-2 rounded-full bg-parchment overflow-hidden"><div class="h-full ${bookedTotal>budget?'bg-clay-500':'bg-spruce-700'}" style="width:${Math.min(100,Math.round(100*bookedTotal/budget))}%"></div></div>
+            <p class="text-xs text-ink/55 mt-3">${money(quotedTotal)} more in open quotes</p>`
+            : `<p class="text-sm text-ink/60">Track quotes against a target. <button class="underline underline-offset-4 text-clay-700" data-goto="details">Set your budget →</button></p>
+               <p class="display text-3xl mt-3">${money(bookedTotal + quotedTotal) || '$0'}<span class="text-base text-ink/40"> in quotes so far</span></p>`}
+          </div>
+          <div class="rounded-3xl bg-spruce-900 text-ivory p-6">
+            <p class="eyebrow text-gold mb-3">Next Steps</p>
+            <ul class="space-y-2.5 text-sm">${next.slice(0,4).map(([label,href,tab])=>`<li>◆ ${tab?`<button data-goto="${tab}" class="underline underline-offset-4 hover:text-gold text-left">${esc(label)}</button>`:`<a href="${href}" class="underline underline-offset-4 hover:text-gold">${esc(label)}</a>`}</li>`).join('')}</ul>
+          </div>
+        </div>
+        <p class="eyebrow text-clay-600 mt-10 mb-4">Your Vendor Team</p>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">${catCards}</div>`;
+    }
+    function paintVendors(){
+      const all = D.vendors||[];
+      const counts = { all: all.length };
+      Object.keys(STATUSES).forEach(k=>counts[k]=all.filter(v=>v.status===k).length);
+      const vs = filter==='all' ? all : all.filter(v=>v.status===filter);
+      const chips = ['all',...Object.keys(STATUSES)].map(k=>`<button data-filter="${k}" class="rounded-full border px-4 py-2 text-xs font-medium ${filter===k?'bg-ink text-ivory border-ink':'border-hairline text-ink/60 hover:bg-parchment'}">${k==='all'?'All':STATUSES[k]}${counts[k]?` · ${counts[k]}`:''}</button>`).join('');
+      const cards = vs.length ? vs.map(v => `
+        <div class="rounded-2xl border ${v.status==='booked'?'border-spruce-800/50':'border-hairline'} bg-white p-5 md:flex gap-5">
+          <a href="/vendor/${esc(v.slug)}" class="block shrink-0 w-full md:w-44 h-32 rounded-xl overflow-hidden bg-parchment mb-4 md:mb-0">${v.image_url?`<img src="${esc(v.image_url)}" alt="" class="w-full h-full object-cover" loading="lazy" />`:''}</a>
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+              <a href="/vendor/${esc(v.slug)}" class="font-medium text-ink hover:text-clay-700">${esc(v.name)}</a>
+              <span class="text-xs text-ink/45">${esc(catNames[v.category]||'')} · ${esc(regNames[v.sub_region]||'')}</span>
+              <span class="text-[11px] rounded-full border px-2.5 py-1 ${CHIP[v.status]||''}">${STATUSES[v.status]||v.status}</span>
+            </div>
+            <div class="mt-3 grid md:grid-cols-[auto_140px] gap-3">
+              <textarea data-note="${esc(v.slug)}" rows="2" placeholder="Notes: availability, vibe, questions to ask…" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-2.5 text-sm">${esc(v.note)}</textarea>
+              <div>
+                <label class="text-[10px] uppercase tracking-wider text-ink/45 block mb-1">Quote</label>
+                <input data-quote="${esc(v.slug)}" type="number" min="0" step="50" value="${v.quote??''}" placeholder="$" class="w-full rounded-xl border border-hairline bg-ivory px-3 py-2 text-sm" />
               </div>
-            </div>`).join('')}</div>
-        </section>`).join('');
+            </div>
+            <div class="mt-3 flex flex-wrap items-center gap-2 text-xs">
+              ${Object.entries(STATUSES).map(([k,l])=>`<button data-setstatus="${esc(v.slug)}|${k}" class="rounded-full border px-3 py-1.5 ${v.status===k?'bg-ink text-ivory border-ink':'border-hairline text-ink/55 hover:bg-parchment'}">${l}</button>`).join('')}
+              <span data-savednote="${esc(v.slug)}" class="text-ink/35 ml-1"></span>
+              <button data-remove="${esc(v.slug)}" class="ml-auto text-clay-700 underline underline-offset-4">Remove</button>
+            </div>
+          </div>
+        </div>`).join('')
+      : `<div class="rounded-3xl border border-hairline bg-white p-10 text-center">
+          <p class="display text-2xl">Nothing here <span class="serif-i">yet</span></p>
+          <p class="text-ink/60 mt-2 text-sm">${filter==='all'?'Tap the ♡ on any vendor while browsing and they land here.':'No vendors with this status yet.'}</p>
+          <a href="/vendors" class="inline-block mt-5 rounded-full bg-ink text-ivory px-6 py-3 text-sm font-semibold">Browse Vendors</a>
+        </div>`;
+      document.getElementById('pane-vendors').innerHTML = `<div class="flex flex-wrap gap-2 mb-6">${chips}</div><div class="space-y-4">${cards}</div>`;
     }
+    function paintChecklist(){
+      const done = TASKS.filter(([k])=>D.tasks && D.tasks[k]).length;
+      const pct = Math.round(100*done/TASKS.length);
+      document.getElementById('pane-checklist').innerHTML = `
+        <div class="rounded-3xl border border-hairline bg-white p-6 md:p-8">
+          <div class="flex items-center justify-between gap-4 mb-1"><p class="display text-2xl">Colorado elopement <span class="serif-i">checklist</span></p><p class="text-sm text-ink/50">${done}/${TASKS.length}</p></div>
+          <div class="h-2 rounded-full bg-parchment overflow-hidden mb-6"><div class="h-full bg-gold transition-all" style="width:${pct}%"></div></div>
+          <div class="space-y-1">${TASKS.map(([k,label]) => `
+            <label class="flex items-center gap-3.5 rounded-xl px-3 py-3 hover:bg-parchment/60 cursor-pointer">
+              <input type="checkbox" data-task="${k}" ${D.tasks && D.tasks[k]?'checked':''} class="w-4.5 h-4.5 accent-[#2C3A2E]" />
+              <span class="text-sm ${D.tasks && D.tasks[k]?'line-through text-ink/40':'text-ink/80'}">${esc(label)}</span>
+            </label>`).join('')}</div>
+          <p class="text-xs text-ink/45 mt-5">The full guide with permits and license details lives at <a href="/checklist" class="underline underline-offset-4">Planning Checklist</a>.</p>
+        </div>`;
+    }
+    function paintDetails(){
+      const p = D.profile || {};
+      const regionOpts = Object.entries(regNames).map(([k,n])=>`<option value="${k}" ${p.region===k?'selected':''}>${esc(n)}</option>`).join('');
+      document.getElementById('pane-details').innerHTML = `
+        <div class="rounded-3xl border border-hairline bg-white p-6 md:p-8 max-w-2xl">
+          <p class="display text-2xl mb-6">Our <span class="serif-i">details</span></p>
+          <div class="grid md:grid-cols-2 gap-5">
+            <div class="md:col-span-2"><label class="eyebrow text-ink/60 block mb-2">Your Names</label>
+              <input id="pf-names" value="${esc(p.names||'')}" placeholder="Sam & Jordan" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" /></div>
+            <div><label class="eyebrow text-ink/60 block mb-2">Wedding Date</label>
+              <input id="pf-date" type="date" value="${p.date||''}" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" /></div>
+            <div><label class="eyebrow text-ink/60 block mb-2">Region</label>
+              <select id="pf-region" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm"><option value="">Choose…</option>${regionOpts}</select></div>
+            <div><label class="eyebrow text-ink/60 block mb-2">Guest Count</label>
+              <input id="pf-guests" type="number" min="0" value="${p.guests??''}" placeholder="2 to 50" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" /></div>
+            <div><label class="eyebrow text-ink/60 block mb-2">Vendor Budget</label>
+              <input id="pf-budget" type="number" min="0" step="100" value="${p.budget??''}" placeholder="$" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" /></div>
+          </div>
+          <div class="mt-6 flex items-center gap-4">
+            <button id="pf-save" class="rounded-full bg-ink text-ivory px-7 py-3 text-sm font-semibold hover:bg-spruce-800">Save Details</button>
+            <span id="pf-msg" class="text-sm text-ink/40"></span>
+          </div>
+          <p class="text-xs text-ink/40 mt-6">Signed in as ${esc(D.email)}.</p>
+        </div>`;
+    }
+    async function refresh(){ D = await rpc('ceg_get_account', { p_token: tok() }) || D; paintHeader(); paintAll(); setTab(activeTab); }
+    function flash(slug){ const el = document.querySelector(`[data-savednote="${slug}"]`); if (el){ el.textContent='Saved ✓'; setTimeout(()=>el.textContent='',1500);} }
+
+    document.addEventListener('click', async e => {
+      const t = e.target;
+      if (t.closest('#acct-signout')) { localStorage.removeItem('ceg_token'); location.reload(); return; }
+      const tab = t.closest('.tab-btn'); if (tab) { setTab(tab.dataset.tab); return; }
+      const goto = t.closest('[data-goto]'); if (goto) { setTab(goto.getAttribute('data-goto')); return; }
+      const f = t.closest('[data-filter]'); if (f) { filter = f.getAttribute('data-filter'); paintVendors(); return; }
+      const ss = t.closest('[data-setstatus]');
+      if (ss) { const [slug,st] = ss.getAttribute('data-setstatus').split('|');
+        const v = (D.vendors||[]).find(x=>x.slug===slug); if (v) v.status = st;
+        paintVendors(); paintOverview(); paintHeader();
+        await rpc('ceg_set_vendor',{p_token:tok(),p_slug:slug,p_status:st,p_note:null,p_quote:null}); return; }
+      const rm = t.closest('[data-remove]');
+      if (rm) { const slug = rm.getAttribute('data-remove');
+        D.vendors = (D.vendors||[]).filter(x=>x.slug!==slug); paintAll();
+        await rpc('ceg_remove_vendor',{p_token:tok(),p_slug:slug}); return; }
+      if (t.closest('#pf-save')) {
+        const ok = await rpc('ceg_update_profile',{p_token:tok(),
+          p_names:document.getElementById('pf-names').value,
+          p_date:document.getElementById('pf-date').value,
+          p_region:document.getElementById('pf-region').value,
+          p_guests:parseInt(document.getElementById('pf-guests').value)||null,
+          p_budget:parseFloat(document.getElementById('pf-budget').value)||null});
+        document.getElementById('pf-msg').textContent = ok ? 'Saved ✓' : 'Something went wrong';
+        await refresh(); return;
+      }
+    });
     document.addEventListener('change', async e => {
-      const sel = e.target.closest('[data-status]');
-      if (sel) { await rpc('ceg_set_vendor', { p_token: tok(), p_slug: sel.getAttribute('data-status'), p_status: sel.value, p_note: null }); flash(sel.getAttribute('data-status')); }
+      const cb = e.target.closest('[data-task]');
+      if (cb) { D.tasks = D.tasks||{}; D.tasks[cb.getAttribute('data-task')] = cb.checked;
+        paintChecklist(); paintOverview(); document.getElementById('tab-ccount').textContent = `(${TASKS.filter(([k])=>D.tasks[k]).length}/${TASKS.length})`; setTab(activeTab);
+        await rpc('ceg_toggle_task',{p_token:tok(),p_task:cb.getAttribute('data-task'),p_done:cb.checked}); return; }
+      const q = e.target.closest('[data-quote]');
+      if (q) { const slug=q.getAttribute('data-quote'); const val=parseFloat(q.value)||null;
+        const v=(D.vendors||[]).find(x=>x.slug===slug); if(v) v.quote=val;
+        paintOverview();
+        await rpc('ceg_set_vendor',{p_token:tok(),p_slug:slug,p_status:'',p_note:null,p_quote:val}); flash(slug); return; }
     });
     document.addEventListener('input', e => {
-      const ta = e.target.closest('[data-note]');
-      if (!ta) return;
+      const ta = e.target.closest('[data-note]'); if (!ta) return;
       const slug = ta.getAttribute('data-note');
       clearTimeout(debounces[slug]);
       debounces[slug] = setTimeout(async () => {
-        await rpc('ceg_set_vendor', { p_token: tok(), p_slug: slug, p_status: '', p_note: ta.value });
-        flash(slug);
+        const v=(D.vendors||[]).find(x=>x.slug===slug); if(v) v.note=ta.value;
+        await rpc('ceg_set_vendor',{p_token:tok(),p_slug:slug,p_status:'',p_note:ta.value,p_quote:null}); flash(slug);
       }, 700);
     });
-    document.addEventListener('click', async e => {
-      if (e.target.closest('#acct-signout')) { localStorage.removeItem('ceg_token'); localStorage.removeItem('ceg_email'); location.reload(); return; }
-      const rm = e.target.closest('[data-remove]');
-      if (rm) { await rpc('ceg_remove_vendor', { p_token: tok(), p_slug: rm.getAttribute('data-remove') }); boot(); }
-    });
-    function flash(slug){ const el = document.querySelector(`[data-savednote="${slug}"]`); if (el){ el.textContent = 'Saved ✓'; setTimeout(()=>el.textContent='', 1600); } }
     document.addEventListener('DOMContentLoaded', boot);
   </script>
 </Base>
