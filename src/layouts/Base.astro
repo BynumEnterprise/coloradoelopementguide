@@ -36,39 +36,37 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
   <header class={`${dark ? 'absolute top-0 left-0 right-0 z-30 bg-gradient-to-b from-black/45 to-transparent' : 'bg-ivory border-b border-hairline'}`}>
     <div class="max-w-7xl mx-auto px-5 md:px-8 py-5 flex items-center justify-between gap-4">
       <a href="/" class={`display text-[1.35rem] leading-none tracking-tight ${dark ? 'text-white' : 'text-ink'}`}>Colorado <span class="serif-i">Elopement</span> Guide</a>
-      <nav class={`hidden md:flex items-center gap-8 text-[0.83rem] font-medium ${dark ? 'text-white/90' : 'text-ink/80'}`}>
+      <nav class={`hidden md:flex items-center gap-7 text-[0.83rem] font-medium ${dark ? 'text-white/90' : 'text-ink/80'}`}>
         <div class="relative group">
-          <a href="/vendors" class="hover:opacity-70">Vendors ▾</a>
+          <a href="/vendors" class="hover:opacity-70">Find Vendors ▾</a>
           <div class="absolute left-0 top-full pt-3 hidden group-hover:block z-50">
             <div class="w-56 rounded-2xl border border-hairline bg-ivory shadow-xl p-3 flex flex-col gap-1 text-sm text-ink">
-              <a href="/category/photographers" class="px-3 py-2 rounded-lg hover:bg-parchment">Elopement Photographers</a>
-              <a href="/category/venues" class="px-3 py-2 rounded-lg hover:bg-parchment">Micro Wedding Venues</a>
+              <a href="/category/photographers" class="px-3 py-2 rounded-lg hover:bg-parchment">Photographers</a>
+              <a href="/category/venues" class="px-3 py-2 rounded-lg hover:bg-parchment">Venues</a>
               <a href="/category/officiants" class="px-3 py-2 rounded-lg hover:bg-parchment">Officiants</a>
               <a href="/category/planners" class="px-3 py-2 rounded-lg hover:bg-parchment">Planners</a>
               <a href="/category/florists" class="px-3 py-2 rounded-lg hover:bg-parchment">Florists</a>
               <a href="/category/hair-makeup" class="px-3 py-2 rounded-lg hover:bg-parchment">Hair &amp; Makeup</a>
               <div class="border-t border-hairline my-1"></div>
-              <a href="/vendors" class="px-3 py-2 rounded-lg hover:bg-parchment font-medium">All vendors →</a>
+              <a href="/vendors" class="px-3 py-2 rounded-lg hover:bg-parchment font-medium">All Vendors →</a>
             </div>
           </div>
         </div>
         <a href="/regions" class="hover:opacity-70">Regions</a>
-        <a href="/checklist" class="hover:opacity-70">Planning checklist</a>
-        <a href="/account" class="hover:opacity-70">My planner</a>
-        <a href="/my-vendors" class="hover:opacity-70">My vendors<span id="ceg-count" class="ml-1 hidden text-[10px] align-top bg-clay-500 text-white rounded-full px-1.5 py-0.5"></span></a>
-        <a href="/pricing" class="hover:opacity-70">For vendors</a>
-        <a href="/claim" class={`${dark ? 'border border-white/70 text-white hover:bg-white hover:text-ink' : 'border border-ink/70 hover:bg-ink hover:text-ivory'} rounded-full px-4 py-2 transition-colors`}>Claim your listing</a>
+        <a href="/checklist" class="hover:opacity-70">Planning Checklist</a>
+        <a href="/my-vendors" data-planner-link class="hover:opacity-70">My Planner<span id="ceg-count" class="ml-1 hidden text-[10px] align-top bg-clay-500 text-white rounded-full px-1.5 py-0.5"></span></a>
+        <a href="/for-vendors" class={`${dark ? 'text-white/60' : 'text-ink/50'} hover:opacity-70`}>For Vendors</a>
+        <a href="/account" class={`${dark ? 'border border-white/70 text-white hover:bg-white hover:text-ink' : 'border border-ink/70 hover:bg-ink hover:text-ivory'} rounded-full px-4 py-2 transition-colors`}>Start My Planner</a>
       </nav>
       <details class="md:hidden relative">
         <summary class={`list-none cursor-pointer text-[0.83rem] font-medium px-3 py-2 rounded-full border ${dark ? 'text-white border-white/70' : 'text-ink border-ink/40'}`}>Menu</summary>
-        <nav class="absolute right-0 mt-2 w-52 rounded-2xl border border-hairline bg-ivory shadow-lg p-3 flex flex-col gap-1 text-sm text-ink z-50">
-          <a href="/vendors" class="px-3 py-2 rounded-lg hover:bg-parchment">All vendors</a>
+        <nav class="absolute right-0 mt-2 w-56 rounded-2xl border border-hairline bg-ivory shadow-lg p-3 flex flex-col gap-1 text-sm text-ink z-50">
+          <a href="/vendors" class="px-3 py-2 rounded-lg hover:bg-parchment">Find Vendors</a>
           <a href="/regions" class="px-3 py-2 rounded-lg hover:bg-parchment">Regions</a>
-          <a href="/checklist" class="px-3 py-2 rounded-lg hover:bg-parchment">Planning checklist</a>
-          <a href="/my-vendors" class="px-3 py-2 rounded-lg hover:bg-parchment">My vendors</a>
-          <a href="/account" class="px-3 py-2 rounded-lg hover:bg-parchment">My planner</a>
-          <a href="/pricing" class="px-3 py-2 rounded-lg hover:bg-parchment">For vendors</a>
-          <a href="/claim" class="px-3 py-2 rounded-lg hover:bg-parchment font-medium">Claim your listing</a>
+          <a href="/checklist" class="px-3 py-2 rounded-lg hover:bg-parchment">Planning Checklist</a>
+          <a href="/my-vendors" data-planner-link class="px-3 py-2 rounded-lg hover:bg-parchment font-medium">My Planner</a>
+          <div class="border-t border-hairline my-1"></div>
+          <a href="/for-vendors" class="px-3 py-2 rounded-lg hover:bg-parchment text-ink/60">For Vendors</a>
         </nav>
       </details>
     </div>
@@ -81,13 +79,13 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
         <p class="max-w-sm leading-relaxed">An independent, region-by-region directory of Colorado's elopement and micro-wedding vendors — built for couples who'd rather say their vows on a ridgeline than in a ballroom.</p>
       </div>
       <div class="md:col-span-3">
-        <p class="eyebrow text-gold mb-4">Explore</p>
+        <p class="eyebrow text-gold mb-4">Plan Your Elopement</p>
         <ul class="space-y-2.5">
-          <li><a href="/category/photographers" class="hover:text-ivory">Photographers</a></li>
-          <li><a href="/category/venues" class="hover:text-ivory">Venues</a></li>
-          <li><a href="/category/officiants" class="hover:text-ivory">Officiants</a></li>
-          <li><a href="/checklist" class="hover:text-ivory">Planning checklist</a></li>
-          <li><a href="/pricing" class="hover:text-ivory">Vendor pricing</a></li>
+          <li><a href="/vendors" class="hover:text-ivory">Find Vendors</a></li>
+          <li><a href="/regions" class="hover:text-ivory">Browse Regions</a></li>
+          <li><a href="/checklist" class="hover:text-ivory">Planning Checklist</a></li>
+          <li><a href="/account" class="hover:text-ivory">My Planner</a></li>
+          <li><a href="/for-vendors" class="hover:text-ivory">For Vendors</a></li>
         </ul>
       </div>
       <div class="md:col-span-4 space-y-4">
@@ -120,7 +118,10 @@ document.addEventListener('click', function(e){
   e.preventDefault(); e.stopPropagation();
   CEG.toggle(el.getAttribute('data-save'));
 });
-document.addEventListener('DOMContentLoaded', ()=>CEG.paint());
+document.addEventListener('DOMContentLoaded', ()=>{
+  CEG.paint();
+  if (localStorage.getItem('ceg_token')) document.querySelectorAll('[data-planner-link]').forEach(a=>a.href='/account');
+});
 </script>
 </body>
 </html>

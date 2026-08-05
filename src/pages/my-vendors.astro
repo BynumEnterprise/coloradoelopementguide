@@ -15,7 +15,7 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
     <p class="text-ink/65 mt-4 leading-relaxed max-w-2xl">Tap the ♡ on any vendor to build your team here. Your list is saved on this device.</p>
     <div class="mt-5 rounded-2xl border border-clay-500/40 bg-clay-50 p-5 text-sm" id="ml-acct-cta">
       <strong>Want notes, booking status, and sync across devices?</strong>
-      <a href="/account" class="underline underline-offset-4 ml-1">Create your free planner account →</a>
+      <a href="/account" class="underline underline-offset-4 ml-1">Create Your Free Planner Account →</a>
       <span class="text-ink/50 block mt-1">Everything you've hearted comes with you.</span>
     </div>
     <div id="ml-empty" class="hidden mt-10 rounded-3xl border border-hairline bg-white p-10 text-center">
@@ -29,7 +29,7 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
       <form method="post" action="/api/savelist" class="flex flex-wrap gap-2.5" id="ml-form">
         <input type="hidden" name="slugs" id="ml-slugs" />
         <input type="email" name="email" required placeholder="you@example.com" class="flex-1 min-w-[210px] rounded-full px-5 py-3 text-ink text-sm bg-ivory placeholder-ink/40 outline-none focus:ring-2 focus:ring-gold" />
-        <button class="rounded-full bg-clay-500 hover:bg-clay-600 px-6 py-3 text-sm font-medium transition-colors">Send my list</button>
+        <button class="rounded-full bg-clay-500 hover:bg-clay-600 px-6 py-3 text-sm font-medium transition-colors">Send My List</button>
       </form>
     </div>
   </div>

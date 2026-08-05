@@ -10,20 +10,20 @@ const top = vendors.filter(v => v.image_url).slice(0, 6);
 const counts = Object.fromEntries(Object.keys(CATEGORIES).map(c => [c, vendors.filter(v => v.category===c).length]));
 const heroRegions = ['estes-park','summit-county','vail-aspen','telluride-san-juans','colorado-springs','boulder','denver-foothills','northern-colorado','other-colorado'];
 ---
-<Base dark={true} title="Colorado Elopement Guide — every elopement & micro-wedding vendor, by region"
-  description="Find Colorado elopement photographers, micro-wedding venues, officiants, florists, planners and hair & makeup artists — organized by region, with real Google ratings.">
+<Base dark={true} title="Colorado Elopement Guide — plan your Colorado elopement, find every vendor"
+  description="Plan your Colorado elopement: browse photographers, venues, officiants, florists and more by region, save favorites to your free planner, and book direct.">
 
-  <!-- HERO -->
+  <!-- HERO — couple first -->
   <section class="relative min-h-[88vh] flex items-end">
     <img src={`${IMG}/hero.jpg`} alt="Couple eloping on a Colorado mountain ridge at golden hour" class="absolute inset-0 w-full h-full object-cover" fetchpriority="high" />
     <div class="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/25 to-black/30"></div>
     <div class="relative z-10 max-w-7xl mx-auto px-5 md:px-8 pb-16 md:pb-24 w-full">
-      <p class="eyebrow text-gold mb-4">Sourced · Organized · Free to claim</p>
+      <p class="eyebrow text-gold mb-4">Plan Your Colorado Elopement</p>
       <h1 class="display text-white text-4xl md:text-6xl max-w-3xl leading-[1.05]">Marry in the mountains.<br /><span class="serif-i">We know everyone</span> who can help.</h1>
-      <p class="mt-5 max-w-xl text-white/85 text-[1.02rem] leading-relaxed">{vendors.length} Colorado photographers, venues, officiants, florists, planners and beauty artists who actually work elopements and micro-weddings — organized by region, with real Google ratings.</p>
+      <p class="mt-5 max-w-xl text-white/85 text-[1.02rem] leading-relaxed">Browse {vendors.length} Colorado elopement vendors by region, save the ones you love, and track quotes, notes and bookings in your own free planner.</p>
       <div class="mt-8 flex flex-wrap gap-3">
-        <a href="/vendors" class="rounded-full bg-ivory text-ink px-7 py-3.5 text-sm font-semibold hover:bg-white transition-colors">Find your vendors</a>
-        <a href="/checklist" class="rounded-full border border-white/70 text-white px-7 py-3.5 text-sm font-medium hover:bg-white/10 transition-colors">Read the planning checklist</a>
+        <a href="/vendors" class="rounded-full bg-ivory text-ink px-7 py-3.5 text-sm font-semibold hover:bg-white transition-colors">Find Your Vendors</a>
+        <a href="/account" class="rounded-full border border-white/70 text-white px-7 py-3.5 text-sm font-medium hover:bg-white/10 transition-colors">Start My Planner</a>
       </div>
     </div>
   </section>
@@ -34,16 +34,39 @@ const heroRegions = ['estes-park','summit-county','vail-aspen','telluride-san-ju
       <div><p class="display text-2xl">{vendors.length}</p><p class="text-xs text-ink/55 mt-0.5">vendors across Colorado</p></div>
       <div><p class="display text-2xl">9</p><p class="text-xs text-ink/55 mt-0.5">regions, RMNP to the San Juans</p></div>
       <div><p class="display text-2xl">★ Google</p><p class="text-xs text-ink/55 mt-0.5">real ratings, never edited</p></div>
-      <div><p class="display text-2xl">$0</p><p class="text-xs text-ink/55 mt-0.5">every listing is free</p></div>
+      <div><p class="display text-2xl">Free</p><p class="text-xs text-ink/55 mt-0.5">planner, checklist &amp; guides</p></div>
+    </div>
+  </section>
+
+  <!-- 3 STEPS -->
+  <section class="max-w-7xl mx-auto px-5 md:px-8 pt-16 md:pt-20">
+    <p class="eyebrow text-clay-600 mb-3">How It Works</p>
+    <h2 class="display text-3xl md:text-4xl leading-tight mb-8">Plan it in <span class="serif-i">three steps</span></h2>
+    <div class="grid md:grid-cols-3 gap-5">
+      <a href="/regions" class="rounded-3xl border border-hairline bg-white p-7 hover:shadow-md transition-shadow">
+        <p class="display text-3xl text-clay-500">1</p>
+        <p class="display text-xl mt-2">Browse <span class="serif-i">your corner</span></p>
+        <p class="text-sm text-ink/65 mt-2 leading-relaxed">Pick your region, from RMNP to the San Juans, and see every photographer, venue, officiant, florist and artist who works small weddings there.</p>
+      </a>
+      <div class="rounded-3xl border border-hairline bg-white p-7">
+        <p class="display text-3xl text-clay-500">2</p>
+        <p class="display text-xl mt-2">Save with <span class="serif-i">a heart</span></p>
+        <p class="text-sm text-ink/65 mt-2 leading-relaxed">Tap ♡ on anyone you like. Your free planner keeps them organized with your notes, quotes and a booking status for each.</p>
+      </div>
+      <div class="rounded-3xl border border-hairline bg-white p-7">
+        <p class="display text-3xl text-clay-500">3</p>
+        <p class="display text-xl mt-2">Book <span class="serif-i">direct</span></p>
+        <p class="text-sm text-ink/65 mt-2 leading-relaxed">Reach out to vendors directly, no middleman and no booking fees. We just make the finding easy.</p>
+      </div>
     </div>
   </section>
 
   <!-- CATEGORIES -->
-  <section class="max-w-7xl mx-auto px-5 md:px-8 pt-16 md:pt-20">
-    <p class="eyebrow text-clay-600 mb-3">Start with who you need</p>
+  <section class="max-w-7xl mx-auto px-5 md:px-8 pt-16 md:pt-24">
+    <p class="eyebrow text-clay-600 mb-3">Start With Who You Need</p>
     <div class="md:flex items-end justify-between gap-8 mb-8">
       <h2 class="display text-3xl md:text-4xl leading-tight">Every kind of vendor a<br class="hidden md:block" /> small wedding needs</h2>
-      <a href="/vendors" class="hidden md:inline-block text-sm font-medium underline underline-offset-4 hover:text-clay-700 shrink-0">Browse all {vendors.length} →</a>
+      <a href="/vendors" class="hidden md:inline-block text-sm font-medium underline underline-offset-4 hover:text-clay-700 shrink-0">Browse All {vendors.length} →</a>
     </div>
     <div class="grid grid-cols-2 md:grid-cols-3 gap-px bg-hairline border border-hairline rounded-2xl overflow-hidden">
       {Object.entries(CATEGORIES).map(([slug, c]) => (
@@ -55,9 +78,9 @@ const heroRegions = ['estes-park','summit-county','vail-aspen','telluride-san-ju
     </div>
   </section>
 
-  <!-- REGIONS PHOTO GRID -->
+  <!-- REGIONS -->
   <section class="max-w-7xl mx-auto px-5 md:px-8 pt-16 md:pt-24">
-    <p class="eyebrow text-clay-600 mb-3">Or start with where</p>
+    <p class="eyebrow text-clay-600 mb-3">Or Start With Where</p>
     <h2 class="display text-3xl md:text-4xl leading-tight mb-8">Choose your corner <span class="serif-i">of Colorado</span></h2>
     <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
       {heroRegions.map((slug) => (
@@ -73,51 +96,64 @@ const heroRegions = ['estes-park','summit-county','vail-aspen','telluride-san-ju
     </div>
   </section>
 
+  <!-- PLANNER PROMO -->
+  <section class="max-w-7xl mx-auto px-5 md:px-8 pt-16 md:pt-24">
+    <div class="rounded-3xl bg-spruce-900 text-ivory overflow-hidden md:grid md:grid-cols-2">
+      <div class="p-8 md:p-12 flex flex-col justify-center">
+        <p class="eyebrow text-gold mb-3">Your Free Planner</p>
+        <h2 class="display text-2xl md:text-3xl leading-tight mb-3">Every vendor you love,<br /><span class="serif-i">one organized place</span></h2>
+        <p class="text-sm text-ivory/75 leading-relaxed mb-6 max-w-md">Heart vendors as you browse, then track everything in your planner: who you've contacted, quotes you've gotten, private notes, and who's booked. Synced to your email, on any device. Free, no password.</p>
+        <div><a href="/account" class="inline-block rounded-full bg-ivory text-ink px-7 py-3.5 text-sm font-semibold hover:bg-white transition-colors">Start My Planner</a></div>
+      </div>
+      <div class="p-8 md:p-12 bg-spruce-800/50">
+        <div class="space-y-3">
+          <div class="rounded-2xl bg-ivory/10 border border-ivory/15 p-4">
+            <div class="flex items-center justify-between gap-3">
+              <p class="font-medium text-sm">Vows and Peaks</p>
+              <span class="text-[11px] rounded-full bg-gold/90 text-ink px-2.5 py-1 font-semibold">Booked ✓</span>
+            </div>
+            <p class="text-xs text-ivory/60 mt-2">"Sunrise at Sapphire Point. Deposit paid 8/12."</p>
+          </div>
+          <div class="rounded-2xl bg-ivory/10 border border-ivory/15 p-4">
+            <div class="flex items-center justify-between gap-3">
+              <p class="font-medium text-sm">Wild Basin Lodge</p>
+              <span class="text-[11px] rounded-full bg-ivory/20 px-2.5 py-1">Got a quote</span>
+            </div>
+            <p class="text-xs text-ivory/60 mt-2">"$3,400 for 20 guests, June dates open."</p>
+          </div>
+          <div class="rounded-2xl bg-ivory/10 border border-ivory/15 p-4">
+            <div class="flex items-center justify-between gap-3">
+              <p class="font-medium text-sm">Boulder Blooms</p>
+              <span class="text-[11px] rounded-full bg-ivory/20 px-2.5 py-1">Contacted</span>
+            </div>
+            <p class="text-xs text-ivory/60 mt-2">"Asked about wildflower bouquet + one arch piece."</p>
+          </div>
+        </div>
+        <p class="text-[10px] text-ivory/40 mt-4">Example planner, illustrative only.</p>
+      </div>
+    </div>
+  </section>
+
   <!-- TOP RATED -->
   <section class="max-w-7xl mx-auto px-5 md:px-8 pt-16 md:pt-24">
     <div class="md:flex items-end justify-between gap-8 mb-8">
       <div>
-        <p class="eyebrow text-clay-600 mb-3">Couples' favorites</p>
-        <h2 class="display text-3xl md:text-4xl leading-tight">Top-rated <span class="serif-i">across the state</span></h2>
+        <p class="eyebrow text-clay-600 mb-3">Couples' Favorites</p>
+        <h2 class="display text-3xl md:text-4xl leading-tight">Top rated <span class="serif-i">across the state</span></h2>
       </div>
-      <a href="/vendors" class="hidden md:inline-block text-sm font-medium underline underline-offset-4 hover:text-clay-700 shrink-0">See everyone →</a>
+      <a href="/vendors" class="hidden md:inline-block text-sm font-medium underline underline-offset-4 hover:text-clay-700 shrink-0">See Everyone →</a>
     </div>
     <div class="grid gap-5 md:grid-cols-3">{top.map(v => <VendorCard v={v} />)}</div>
   </section>
 
-  <!-- HOW IT WORKS / TRUST -->
-  <section class="max-w-7xl mx-auto px-5 md:px-8 pt-16 md:pt-24">
-    <div class="rounded-3xl border border-hairline bg-parchment/60 p-8 md:p-12 grid md:grid-cols-3 gap-8">
-      <div>
-        <p class="display text-2xl mb-2">1 · <span class="serif-i">Sourced</span></p>
-        <p class="text-sm text-ink/70 leading-relaxed">Every listing starts from public business data and Google ratings — compiled openly, never pay-to-exist.</p>
-      </div>
-      <div>
-        <p class="display text-2xl mb-2">2 · <span class="serif-i">Claimed</span></p>
-        <p class="text-sm text-ink/70 leading-relaxed">Vendors claim their listing free to correct details, add packages and photos, and see the couples we send them.</p>
-      </div>
-      <div>
-        <p class="display text-2xl mb-2">3 · <span class="serif-i">Labeled</span></p>
-        <p class="text-sm text-ink/70 leading-relaxed">Featured placement is paid and always marked. Ratings are Google's, and we never write or alter reviews.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- EMAIL -->
+  <!-- EMAIL / CHECKLIST -->
   <section class="max-w-7xl mx-auto px-5 md:px-8 pt-16 md:pt-24"><EmailCapture /></section>
 
-  <!-- VENDOR CTA -->
-  <section class="max-w-7xl mx-auto px-5 md:px-8 pt-16 md:pt-24">
-    <div class="rounded-3xl overflow-hidden md:grid md:grid-cols-2 border border-hairline bg-white">
-      <div class="p-8 md:p-12 flex flex-col justify-center">
-        <p class="eyebrow text-clay-600 mb-3">For Colorado vendors</p>
-        <h2 class="display text-2xl md:text-3xl leading-tight mb-3">Your listing is already here.<br /><span class="serif-i">Make it yours.</span></h2>
-        <p class="text-sm text-ink/70 leading-relaxed mb-6 max-w-md">Claiming is free, forever: correct your details, add photos and packages, and see exactly how many couples click through to you each month.</p>
-        <div><a href="/claim" class="inline-block rounded-full bg-ink text-ivory px-7 py-3.5 text-sm font-semibold hover:bg-spruce-800 transition-colors">Claim your free listing</a></div>
-      </div>
-      <div class="relative min-h-[260px]">
-        <img src={`${IMG}/vendors-cta.jpg`} alt="Florist arranging a bridal bouquet" loading="lazy" class="absolute inset-0 w-full h-full object-cover" />
-      </div>
-    </div>
+  <!-- VENDOR STRIP (small, clearly separate) -->
+  <section class="max-w-7xl mx-auto px-5 md:px-8 pt-14">
+    <a href="/for-vendors" class="block rounded-2xl border border-hairline bg-parchment/50 px-6 py-5 md:flex items-center justify-between gap-6 hover:bg-parchment transition-colors">
+      <p class="text-sm text-ink/70"><span class="eyebrow text-clay-600 mr-3">For Vendors</span>Are you a Colorado wedding vendor? Your free listing is waiting.</p>
+      <span class="text-sm font-medium underline underline-offset-4 shrink-0">Claim It Free →</span>
+    </a>
   </section>
 </Base>

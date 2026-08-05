@@ -1,1 +1,14 @@
-{ "redirects": [ { "source": "/sitemap.xml", "destination": "/sitemap-index.xml", "permanent": true } ] }
+{
+  "redirects": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "/sitemap-index.xml",
+      "permanent": true
+    },
+    {
+      "source": "/pricing",
+      "destination": "/for-vendors",
+      "permanent": true
+    }
+  ]
+}
