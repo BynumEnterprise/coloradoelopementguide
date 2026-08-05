@@ -1,0 +1,39 @@
+---
+import Base from '../../layouts/Base.astro';
+import { allVendors } from '../../lib/vendors';
+import { CATEGORIES, REGIONS } from '../../lib/taxonomy';
+export async function getStaticPaths() {
+  const vendors = await allVendors();
+  return vendors.map(v => ({ params: { slug: v.slug }, props: { v } }));
+}
+const { v } = Astro.props;
+---
+<Base title={`Claim ${v.name} | Colorado Elopement Guide`}
+  description={`Claim the free ${v.name} listing on Colorado Elopement Guide. Update your details, add photos, and see your monthly click counts.`} noindex={true}>
+  <div class="max-w-2xl mx-auto px-5 md:px-8 pt-14">
+    <p class="eyebrow text-clay-600 mb-3">Free, forever</p>
+    <h1 class="display text-4xl leading-tight">Claim <span class="serif-i">{v.name}</span></h1>
+    <p class="text-ink/65 mt-4 leading-relaxed">This claims your listing as a {CATEGORIES[v.category]?.singular} in {REGIONS[v.sub_region]?.name}. Claiming lets you correct details, add photos and packages, and receive your monthly click and inquiry counts. No credit card, no obligation.</p>
+    <form method="post" action="/api/claim" class="mt-8 space-y-5 rounded-3xl border border-hairline bg-white p-7 md:p-8">
+      <input type="text" name="website_url" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
+      <input type="hidden" name="vendor_slug" value={v.slug} />
+      <div class="rounded-xl bg-parchment/70 border border-hairline px-4 py-3 text-sm">
+        <span class="text-ink/50">Claiming:</span> <strong>{v.name}</strong> <a href={`/vendor/${v.slug}`} class="underline underline-offset-4 ml-2 text-ink/60">view listing</a>
+      </div>
+      <div>
+        <label class="eyebrow text-ink/60 block mb-2" for="name">Your name</label>
+        <input id="name" name="name" required class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" />
+      </div>
+      <div>
+        <label class="eyebrow text-ink/60 block mb-2" for="email">Business email</label>
+        <input id="email" name="email" type="email" required class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" />
+        <p class="text-xs text-ink/40 mt-2">Use an email at your business domain so we can verify it's you.</p>
+      </div>
+      <div>
+        <label class="eyebrow text-ink/60 block mb-2" for="message">Anything to correct or add? <span class="normal-case tracking-normal font-normal">(optional)</span></label>
+        <textarea id="message" name="message" rows="3" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm"></textarea>
+      </div>
+      <button class="rounded-full bg-ink text-ivory px-7 py-3.5 text-sm font-semibold hover:bg-spruce-800 transition-colors">Claim this listing</button>
+    </form>
+  </div>
+</Base>

@@ -27,17 +27,16 @@ export const POST: APIRoute = async ({ request, redirect }) => {
   await sendMail(email, `We got your claim${vendorName ? ` for ${vendorName}` : ''} — Colorado Elopement Guide`,
 `Hi ${name},
 
-Thanks -- we received your claim${vendorName ? ` for ${vendorName}` : ''}. Here's what happens next:
+Thanks for claiming${vendorName ? ` for ${vendorName}` : ''}. Here's what happens next:
 
 1. We verify your email against the business (usually within 1 business day).
 2. You'll get a confirmation, and any corrections you sent go live.
-3. Each month we'll send your listing's real click and inquiry counts -- couples who viewed your page, clicked through to your site, or tapped your phone number. No bots, no inflation.
+3. Each month we'll send your listing's real click and inquiry counts. That means couples who viewed your page, clicked through to your site, or tapped your phone number. No bots, no inflation.
 
 Nothing to do right now. Questions? Just reply.
 
 Ryan
-Colorado Elopement Guide
-Bynum Enterprises LLC, 306 Lost Creek Trl, Greenville, TX 75402`);
+Colorado Elopement Guide`);
   await sendMail('bynumenterprisesbe@gmail.com', `[CEG] New claim: ${vendorName || 'unlisted business'} by ${name}`,
 `Claim received.\nVendor: ${vendorName || '(not listed)'} (id ${vendorId})\nClaimant: ${name} <${email}>\nMessage: ${message || '(none)'}\n\nDaily reply-review task will verify domain match, or handle manually.`);
   return redirect('/thanks?claim=1', 303);
