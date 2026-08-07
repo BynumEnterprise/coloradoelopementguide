@@ -49,6 +49,15 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
         </div>
       </div>
       <div id="vd-pending" class="hidden mt-6 rounded-2xl border border-gold/60 bg-gold/10 px-5 py-4 text-sm">Your account is pending verification because your email domain doesn't match your listing's website. We review these within one business day; editing unlocks after that. Your stats are live below.</div>
+      <div id="vd-setpw" class="hidden mt-6 rounded-2xl border border-spruce-800/25 bg-parchment px-5 py-4">
+        <p class="text-sm font-semibold mb-1">Set a password</p>
+        <p class="text-sm text-ink/60 mb-3">You signed in from your email link. Add a password so you can sign in from any device next time.</p>
+        <div class="flex flex-wrap items-center gap-2.5">
+          <input id="sp-pass" type="password" minlength="8" class="rounded-xl border border-hairline bg-white px-4 py-2.5 text-sm" placeholder="8+ characters" />
+          <button id="sp-save" class="rounded-full bg-ink text-ivory px-6 py-2.5 text-sm font-semibold hover:bg-spruce-800">Save Password</button>
+          <span id="sp-msg" class="text-sm text-ink/50"></span>
+        </div>
+      </div>
       <p class="eyebrow text-clay-600 mt-10 mb-4">Last 30 Days</p>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="vd-stats"></div>
       <div class="md:grid md:grid-cols-5 gap-6 mt-10">
@@ -108,7 +117,10 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
     async function boot(){
       const sel=document.getElementById('va-vendor');
       vlist.sort((a,b)=>a.n.localeCompare(b.n)).forEach(v=>{ const o=document.createElement('option'); o.value=v.s; o.textContent=v.n; sel.appendChild(o); });
-      const pre=new URLSearchParams(location.search).get('vendor'); if(pre) sel.value=pre;
+      const qp=new URLSearchParams(location.search);
+      const magic=qp.get('t');
+      if(magic){ localStorage.setItem('ceg_vtoken', magic); history.replaceState(null,'',location.pathname); }
+      const pre=qp.get('vendor'); if(pre) sel.value=pre;
       if (!vtok()) { show('auth'); paintMode(); return; }
       VD = await rpc('ceg_vendor_get', { p_token: vtok() });
       if (!VD) { localStorage.removeItem('ceg_vtoken'); show('auth'); paintMode(); return; }
@@ -120,6 +132,7 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
       document.getElementById('vd-meta').textContent = `${catNames[v.category]||''} · ${regNames[v.sub_region]||''} · signed in as ${VD.email}`;
       document.getElementById('vd-view').href = '/vendor/' + v.slug;
       document.getElementById('vd-pending').classList.toggle('hidden', VD.verified);
+      document.getElementById('vd-setpw').classList.toggle('hidden', !!VD.has_password);
       const cards=[['Profile Views',s.views_30d],['Website Clicks',s.site_clicks_30d],['Phone Taps',s.phone_clicks_30d],['All Time Views',s.views_total]];
       document.getElementById('vd-stats').innerHTML = cards.map(([l,n])=>`
         <div class="rounded-2xl border border-hairline bg-white p-5 text-center">
@@ -148,6 +161,14 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
         if(!res || res.error){ err.textContent=(res&&res.error)||'Something went wrong. Try again.'; err.classList.remove('hidden'); return; }
         localStorage.setItem('ceg_vtoken',res.token);
         location.reload();
+      }
+      if(e.target.closest('#sp-save')){
+        const pass=document.getElementById('sp-pass').value;
+        const msg=document.getElementById('sp-msg'); msg.textContent='';
+        const res=await rpc('ceg_vendor_set_password',{p_token:vtok(),p_password:pass});
+        if(res && res.ok){ msg.textContent='Saved \u2713'; VD.has_password=true; document.getElementById('vd-setpw').classList.add('hidden'); }
+        else { msg.textContent=(res&&res.error)||'Could not save'; }
+        return;
       }
       if(e.target.closest('#ve-save')){
         const ok=await rpc('ceg_vendor_update',{p_token:vtok(),
