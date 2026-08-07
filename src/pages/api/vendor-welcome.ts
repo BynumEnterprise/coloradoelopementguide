@@ -35,7 +35,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   const name: string = prov.name || 'there';
   const to: string = prov.email;
-  const link = `https://coloradoelopementguide.com/vendor-dashboard?t=${prov.token}`;
+  const link = `https://coloradoelopementguide.com/vd/${prov.token}`;
 
   const subject = `Your ${name} dashboard is ready`;
 
