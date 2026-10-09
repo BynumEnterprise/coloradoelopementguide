@@ -1,0 +1,434 @@
+---
+import Base from '../layouts/Base.astro';
+import { CATEGORIES, REGIONS } from '../lib/taxonomy';
+const catNames = Object.fromEntries(Object.entries(CATEGORIES).map(([k,c]) => [k, c.name]));
+const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r.name]));
+---
+<Base title="Owner Dashboard | Colorado Elopement Guide" description="Private owner analytics for Colorado Elopement Guide." noindex={true}>
+  <div class="max-w-7xl mx-auto px-5 md:px-8 pt-12 pb-4">
+    <div id="ad-loading" class="py-24 text-center text-ink/50">Opening the dashboard…</div>
+
+    <!-- SIGN IN -->
+    <div id="ad-auth" class="hidden">
+      <p class="eyebrow text-clay-600 mb-3">Owner Access</p>
+      <h1 class="display text-4xl md:text-5xl leading-tight">The guide, <span class="serif-i">by the numbers</span></h1>
+      <p class="text-ink/65 mt-4 leading-relaxed max-w-2xl">Every vendor, every view, every click. Live from the database, bot filtered, never inflated.</p>
+      <div class="mt-7 rounded-3xl border border-hairline bg-white p-6 md:p-7 max-w-md">
+        <div class="space-y-4">
+          <div><label class="eyebrow text-ink/60 block mb-2">Email</label>
+            <input id="aa-email" type="email" autocomplete="username" required class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" placeholder="you@example.com" /></div>
+          <div><label class="eyebrow text-ink/60 block mb-2">Password</label>
+            <input id="aa-pass" type="password" autocomplete="current-password" required class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" /></div>
+          <p id="aa-err" class="hidden text-sm rounded-xl border border-clay-500 bg-clay-50 text-clay-700 px-4 py-3"></p>
+          <button id="aa-submit" class="w-full rounded-full bg-ink text-ivory px-7 py-3.5 text-sm font-semibold hover:bg-spruce-800 transition-colors">Sign In</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="ad-app" class="hidden">
+      <div class="md:flex items-start justify-between gap-6">
+        <div>
+          <p class="eyebrow text-clay-600 mb-2">Owner Dashboard</p>
+          <h1 class="display text-3xl md:text-4xl leading-tight">Colorado Elopement <span class="serif-i">Guide</span></h1>
+          <p class="text-sm text-ink/55 mt-2" id="ad-sub"></p>
+        </div>
+        <div class="mt-4 md:mt-0 flex flex-wrap gap-2.5 text-sm shrink-0">
+          <button id="ad-refresh" class="rounded-full border border-ink/60 px-5 py-2.5 font-medium hover:bg-parchment">Refresh</button>
+          <button id="ad-pwtoggle" class="rounded-full border border-hairline px-5 py-2.5 text-ink/60 hover:bg-parchment">Change Password</button>
+          <button id="ad-signout" class="rounded-full border border-hairline px-5 py-2.5 text-ink/60 hover:bg-parchment">Sign Out</button>
+        </div>
+      </div>
+      <div id="ad-pw" class="hidden mt-6 rounded-2xl border border-spruce-800/25 bg-parchment px-5 py-4">
+        <p class="text-sm font-semibold mb-1">Change password</p>
+        <p class="text-sm text-ink/60 mb-3">At least 12 characters. You stay signed in on this device.</p>
+        <div class="flex flex-wrap items-center gap-2.5">
+          <input id="pw-new" type="password" autocomplete="new-password" minlength="12" class="rounded-xl border border-hairline bg-white px-4 py-2.5 text-sm" placeholder="New password" />
+          <input id="pw-confirm" type="password" autocomplete="new-password" minlength="12" class="rounded-xl border border-hairline bg-white px-4 py-2.5 text-sm" placeholder="Confirm" />
+          <button id="pw-save" class="rounded-full bg-ink text-ivory px-6 py-2.5 text-sm font-semibold hover:bg-spruce-800">Save Password</button>
+          <span id="pw-msg" class="text-sm text-ink/50"></span>
+        </div>
+      </div>
+
+      <!-- TABS -->
+      <div class="mt-8 flex gap-1.5 border-b border-hairline overflow-x-auto" id="tabs">
+        <button data-tab="overview" class="tab-btn px-5 py-3 text-sm font-medium rounded-t-xl whitespace-nowrap">Overview</button>
+        <button data-tab="vendors" class="tab-btn px-5 py-3 text-sm font-medium rounded-t-xl whitespace-nowrap">Vendors <span id="tab-vcount" class="opacity-50"></span></button>
+        <button data-tab="couples" class="tab-btn px-5 py-3 text-sm font-medium rounded-t-xl whitespace-nowrap">Couples <span id="tab-ccount" class="opacity-50"></span></button>
+        <button data-tab="outreach" class="tab-btn px-5 py-3 text-sm font-medium rounded-t-xl whitespace-nowrap">Outreach</button>
+      </div>
+
+      <div id="pane-overview" class="pane pt-8"></div>
+      <div id="pane-vendors" class="pane pt-8 hidden"></div>
+      <div id="pane-couples" class="pane pt-8 hidden"></div>
+      <div id="pane-outreach" class="pane pt-8 hidden"></div>
+    </div>
+  </div>
+
+  <!-- VENDOR DETAIL DRAWER -->
+  <div id="drawer-wrap" class="hidden fixed inset-0 z-50">
+    <div id="drawer-bg" class="absolute inset-0 bg-ink/40"></div>
+    <aside id="drawer" class="absolute right-0 top-0 h-full w-full max-w-xl bg-ivory border-l border-hairline shadow-2xl overflow-y-auto p-6 md:p-8"></aside>
+  </div>
+
+  <script is:inline define:vars={{ catNames, regNames }}>
+    const SB = 'https://yucgsuzveabsgntlmste.supabase.co/rest/v1/rpc/';
+    const SBK = 'sb_publishable_acsHsb9mrZ756aT12EgAPQ_GugWXmjM';
+    const rpc = (fn, args) => fetch(SB + fn, { method:'POST', headers:{ apikey:SBK, Authorization:'Bearer '+SBK, 'Content-Type':'application/json' }, body: JSON.stringify(args) }).then(r => r.ok ? r.json() : null).catch(() => null);
+    const tok = () => localStorage.getItem('ceg_admin');
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const num = n => Number(n || 0).toLocaleString('en-US');
+    const STATUS_LABEL = { seeded:'Seeded', claimed:'Claimed', featured:'Featured', queued:'Queued', removed:'Removed' };
+    const CHIP = { seeded:'bg-parchment text-ink/70 border-hairline', claimed:'bg-spruce-800 text-ivory border-spruce-800', featured:'bg-gold/25 text-clay-700 border-gold/40', queued:'bg-sky-100 text-sky-900 border-sky-200', removed:'bg-hairline/60 text-ink/40 border-hairline line-through' };
+    const chip = s => `<span class="text-[11px] rounded-full border px-2.5 py-1 whitespace-nowrap ${CHIP[s]||CHIP.seeded}">${STATUS_LABEL[s]||esc(s)}</span>`;
+    const OUT_LABEL = { pending:'Pending', no_email_found:'No Email Found', claimed:'Claimed', unsubscribed:'Unsubscribed' };
+    const outLabel = s => OUT_LABEL[s] || (s && s.startsWith('sent') ? 'Sent ' + s.slice(5).toUpperCase() : (s || 'Pending'));
+    const EV_LABEL = { profile_view:'Profile view', website_click:'Website click', phone_click:'Phone tap' };
+    const fmtDate = s => s ? new Date(s.length === 10 ? s + 'T12:00:00' : s).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '';
+    const fmtDT = s => s ? new Date(s).toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }) : '';
+    const fmtDay = d => new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month:'short', day:'numeric' });
+    const ago = s => { if (!s) return 'Never'; const ms = Date.now() - new Date(s); const d = Math.floor(ms / 86400000); if (d < 1) { const h = Math.floor(ms / 3600000); return h < 1 ? 'Just now' : h + 'h ago'; } if (d < 30) return d + 'd ago'; return fmtDate(s); };
+    const catShort = c => (catNames[c] || c || '').replace(/^Elopement |^Micro-Wedding /, '');
+    const HOSTS = [[/(^|\.)google\./,'Google'],[/(^|\.)pinterest\./,'Pinterest'],[/(^|\.)bing\.com$/,'Bing'],[/(^|\.)duckduckgo\.com$/,'DuckDuckGo'],[/(^|\.)facebook\.com$/,'Facebook'],[/(^|\.)instagram\.com$/,'Instagram'],[/^t\.co$/,'X (Twitter)'],[/(^|\.)reddit\.com$/,'Reddit'],[/(^|\.)yahoo\./,'Yahoo'],[/(^|\.)theknot\.com$/,'The Knot'],[/(^|\.)zola\.com$/,'Zola'],[/(^|\.)chatgpt\.com$/,'ChatGPT'],[/(^|\.)perplexity\.ai$/,'Perplexity']];
+    function hostLabel(h){ if (!h || h === '(direct)') return 'Direct (typed, bookmarked or from an app)'; for (const [re, l] of HOSTS) if (re.test(h)) return l; if (/(^|\.)coloradoelopementguide\.com$/.test(h)) return 'Our own pages'; return esc(h); }
+    function hostOf(ref){ try { const u = new URL(ref); const h = u.hostname.replace(/^www\./, ''); return /coloradoelopementguide\.com$/.test(h) ? 'our site ' + u.pathname : h; } catch (_) { return ref; } }
+    const LEGEND = `<span class="inline-flex items-center gap-1.5"><i class="inline-block w-3 h-3 rounded-sm" style="background:#3A4A3C"></i>Profile views</span><span class="inline-flex items-center gap-1.5"><i class="inline-block w-3 h-0.5" style="background:#A9694A"></i>Site clicks</span><span class="inline-flex items-center gap-1.5"><i class="inline-block w-3 h-0.5" style="background:#C99B5F"></i>Phone taps</span>`;
+
+    let OV = null, VL = [], CP = null, activeTab = 'overview', sortKey = 'views_30d', sortDir = -1, DRAWER = null, qTimer = null;
+    const filters = { status:'live', category:'', region:'', q:'' };
+    const CH = {};
+
+    // ---------- inline SVG chart (bars for views, thin lines for clicks) ----------
+    function niceStep(max){ const raw = max / 4; const p = Math.pow(10, Math.floor(Math.log10(raw))); const m = raw / p; const f = m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10; return Math.max(1, f * p); }
+    function chart(id, series, opts){
+      opts = opts || {}; CH[id] = { series, opts };
+      const el = document.getElementById(id); if (!el) return;
+      const W = Math.max(320, el.clientWidth || 900), H = opts.h || 240;
+      const keys = opts.keys || ['views', 'site', 'phone'];
+      const pl = 38, pr = 10, pt = 14, pb = 28, iw = W - pl - pr, ih = H - pt - pb, n = Math.max(1, series.length);
+      const max = Math.max(1, ...series.map(p => Math.max(...keys.map(k => p[k] || 0))));
+      const step = niceStep(max), ymax = Math.ceil(max / step) * step;
+      const x = i => pl + (i + 0.5) * iw / n, y = v => pt + ih - (v / ymax) * ih;
+      const bw = Math.max(1.5, (iw / n) * 0.62);
+      let s = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" class="block w-full h-auto" role="img" aria-label="${esc(opts.label || 'Daily chart')}">`;
+      for (let v = 0; v <= ymax; v += step) { s += `<line x1="${pl}" x2="${W - pr}" y1="${y(v)}" y2="${y(v)}" stroke="#E7E1D5" stroke-width="1"/><text x="${pl - 6}" y="${y(v) + 3.5}" text-anchor="end" font-size="10" fill="#23281F" fill-opacity=".5">${num(v)}</text>`; }
+      series.forEach((p, i) => { const v = p.views || 0; if (!v) return; s += `<rect x="${(x(i) - bw / 2).toFixed(1)}" y="${y(v).toFixed(1)}" width="${bw.toFixed(1)}" height="${(pt + ih - y(v)).toFixed(1)}" fill="#3A4A3C" fill-opacity=".85" rx="1"><title>${fmtDay(p.d)}: ${num(v)} ${opts.unit || 'views'}${keys.includes('site') ? `, ${num(p.site)} site clicks, ${num(p.phone)} phone taps` : ''}</title></rect>`; });
+      const line = (key, color) => { if (!keys.includes(key)) return ''; const pts = series.map((p, i) => `${x(i).toFixed(1)},${y(p[key] || 0).toFixed(1)}`).join(' '); return `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>` + series.map((p, i) => (p[key] || 0) > 0 ? `<circle cx="${x(i).toFixed(1)}" cy="${y(p[key]).toFixed(1)}" r="2.5" fill="${color}"><title>${fmtDay(p.d)}: ${num(p[key])} ${key === 'site' ? 'site clicks' : 'phone taps'}</title></circle>` : '').join(''); };
+      s += line('site', '#A9694A') + line('phone', '#C99B5F');
+      const k = opts.every || (n > 60 ? 15 : n > 30 ? 7 : n > 14 ? 5 : 1);
+      series.forEach((p, i) => { if ((n - 1 - i) % k === 0) s += `<text x="${x(i).toFixed(1)}" y="${H - 9}" text-anchor="middle" font-size="10" fill="#23281F" fill-opacity=".55">${esc(opts.xlabel ? opts.xlabel(p) : fmtDay(p.d))}</text>`; });
+      el.innerHTML = s + '</svg>';
+    }
+    function rechart(){ Object.keys(CH).forEach(id => { const el = document.getElementById(id); if (el && el.clientWidth > 0) chart(id, CH[id].series, CH[id].opts); }); }
+    let rsz = null; window.addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(rechart, 150); });
+
+    // ---------- boot / auth ----------
+    function show(which){ for (const id of ['loading', 'auth', 'app']) document.getElementById('ad-' + id).classList.toggle('hidden', id !== which); }
+    async function loadAll(){
+      OV = await rpc('ceg_admin_overview', { p_token: tok() });
+      if (!OV) return false;
+      const [v, c] = await Promise.all([rpc('ceg_admin_vendors', { p_token: tok(), p_include_removed: true }), rpc('ceg_admin_couples', { p_token: tok() })]);
+      VL = Array.isArray(v) ? v : []; CP = c;
+      return true;
+    }
+    async function boot(){
+      if (!tok()) { show('auth'); return; }
+      const ok = await loadAll();
+      if (!ok) { localStorage.removeItem('ceg_admin'); show('auth'); const e = document.getElementById('aa-err'); e.textContent = 'Your session ended. Sign in again.'; e.classList.remove('hidden'); return; }
+      paintAll(); show('app'); setTab(activeTab);
+    }
+    async function signIn(){
+      const email = document.getElementById('aa-email').value.trim(), pass = document.getElementById('aa-pass').value;
+      const err = document.getElementById('aa-err'); err.classList.add('hidden');
+      const btn = document.getElementById('aa-submit'); btn.disabled = true; btn.textContent = 'Signing In…';
+      const res = await rpc('ceg_admin_login', { p_email: email, p_password: pass });
+      btn.disabled = false; btn.textContent = 'Sign In';
+      if (!res || res.error || !res.token) { err.textContent = (res && res.error) || 'Something went wrong. Try again.'; err.classList.remove('hidden'); return; }
+      localStorage.setItem('ceg_admin', res.token);
+      location.reload();
+    }
+    function paintAll(){
+      const t = OV.totals;
+      document.getElementById('ad-sub').textContent = `Live from the database · ${num(t.live_vendors)} live listings · updated ${fmtDT(OV.generated_at)}`;
+      document.getElementById('tab-vcount').textContent = `(${num(VL.length)})`;
+      document.getElementById('tab-ccount').textContent = CP ? `(${num(CP.counts.couples)})` : '';
+      paintOverview(); paintVendors(); paintCouples(); paintOutreach();
+    }
+    function setTab(t){
+      activeTab = t;
+      document.querySelectorAll('.tab-btn').forEach(b => { const on = b.dataset.tab === t; b.className = 'tab-btn px-5 py-3 text-sm font-medium rounded-t-xl whitespace-nowrap ' + (on ? 'bg-ink text-ivory' : 'text-ink/60 hover:bg-parchment'); });
+      document.querySelectorAll('.pane').forEach(p => p.classList.add('hidden'));
+      document.getElementById('pane-' + t).classList.remove('hidden');
+      rechart();
+    }
+
+    // ---------- overview ----------
+    function listCard(title, sub, items, labelFn, valFn, empty){
+      const max = Math.max(1, ...(items || []).map(valFn));
+      const rows = (items && items.length) ? items.map(it => `<li class="py-2 border-b border-hairline last:border-0"><div class="flex items-center justify-between gap-3 text-sm"><span class="truncate">${labelFn(it)}</span><span class="text-ink/60 tabular-nums shrink-0">${num(valFn(it))}</span></div><div class="mt-1.5 h-1 rounded-full bg-parchment overflow-hidden"><div class="h-full bg-spruce-700" style="width:${Math.round(100 * valFn(it) / max)}%"></div></div></li>`).join('') : `<li class="py-4 text-sm text-ink/50">${empty}</li>`;
+      return `<div class="rounded-3xl border border-hairline bg-white p-6"><p class="eyebrow text-clay-600">${title}</p><p class="text-xs text-ink/50 mt-1 mb-3">${sub}</p><ul>${rows}</ul></div>`;
+    }
+    function paintOverview(){
+      const t = OV.totals, w = OV.week, s = t.vendors_by_status || {};
+      const kpi = (label, val, sub) => `<div class="rounded-3xl border border-hairline bg-white p-5"><p class="eyebrow text-ink/50">${label}</p><p class="display text-4xl mt-2">${num(val)}</p>${sub ? `<p class="text-xs text-ink/50 mt-1.5 leading-relaxed">${sub}</p>` : ''}</div>`;
+      const cards = [
+        kpi('Live Vendors', t.live_vendors, `${num(s.seeded)} seeded · ${num(s.claimed)} claimed · ${num(s.featured)} featured · ${num(s.queued)} queued`),
+        kpi('Claimed', t.claimed, `${num(t.claims_total)} claim requests all time`),
+        kpi('Featured', t.featured, t.featured ? 'Paid placements live now' : 'No paid placements yet'),
+        kpi('Verified Accounts', t.accounts_verified, `${num(t.accounts_pending)} pending review`),
+        kpi('Couples', t.couples, `${num(t.saved_vendors)} saved vendors · ${num(t.booked)} booked`),
+        kpi('Subscribers', t.subscribers, 'Newsletter signups'),
+        kpi('Outreach Sent', t.outreach_sent_all, `${num(t.outreach_sent_7d)} in the last 7 days · ${num(t.outreach_sent_30d)} in 30`),
+        kpi('Profile Views, 30 Days', t.views_30d, `${num(t.site_30d)} site clicks · ${num(t.phone_30d)} phone taps · ${num(t.inquiries_total)} inquiries all time`)
+      ];
+      const strip = [['Claims', w.claims], ['New Vendor Accounts', w.vendor_accounts], ['New Couples', w.couples], ['Emails Sent', w.sends], ['Profile Views', w.views], ['Inquiries', w.inquiries], ['Subscribers', w.subscribers]];
+      document.getElementById('pane-overview').innerHTML = `
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">${cards.join('')}</div>
+        <div class="mt-6 rounded-3xl bg-spruce-900 text-ivory p-6">
+          <p class="eyebrow text-gold mb-4">This Week</p>
+          <div class="grid grid-cols-2 md:grid-cols-7 gap-4">${strip.map(([l, v]) => `<div><p class="display text-3xl">${num(v)}</p><p class="text-xs text-ivory/70 mt-1">${l}</p></div>`).join('')}</div>
+        </div>
+        <div class="mt-10 rounded-3xl border border-hairline bg-white p-6">
+          <div class="md:flex items-end justify-between gap-4 mb-5">
+            <div><p class="eyebrow text-clay-600">Last 90 Days</p><p class="display text-2xl mt-1">Profile views, <span class="serif-i">site and phone clicks</span></p></div>
+            <div class="text-xs text-ink/55 mt-3 md:mt-0 flex flex-wrap gap-4">${LEGEND}</div>
+          </div>
+          <div id="ch-overview"></div>
+          <p class="text-xs text-ink/45 mt-4">Days in Mountain time. Counts begin August 4, 2026, when bot filtering went live.</p>
+        </div>
+        <div class="grid md:grid-cols-2 gap-6 mt-6">
+          ${listCard('Top Referrers', 'Profile views in the last 30 days, outside our own pages', OV.referrers, r => hostLabel(r.host), r => r.n, 'No outside referrers yet.')}
+          ${listCard('Top Pages', 'Most viewed vendor pages in the last 30 days', OV.paths, p => `<a href="${esc(p.path)}" target="_blank" rel="noopener" class="hover:text-clay-700">${esc(p.path)}</a>`, p => p.n, 'No page views yet.')}
+        </div>`;
+      chart('ch-overview', OV.series || [], { h: 260, label: 'Profile views, site clicks and phone taps per day over the last 90 days' });
+    }
+
+    // ---------- vendors ----------
+    const COLS = [['name','Vendor',''], ['category','Category',''], ['sub_region','Region',''], ['status','Status',''], ['rating','Rating','r'], ['views_7d','Views 7d','r'], ['views_30d','Views 30d','r'], ['views_all','Views All','r'], ['site_clicks_30d','Clicks 30d','r'], ['account_email','Account',''], ['account_last_login','Last Login',''], ['outreach_status','Outreach','']];
+    function paintVendors(){
+      const pane = document.getElementById('pane-vendors');
+      pane.innerHTML = `
+        <div class="flex flex-wrap items-center gap-2.5 mb-5">
+          <input id="vf-q" type="search" placeholder="Search name, slug or email" class="rounded-full border border-hairline bg-white px-4 py-2.5 text-sm w-full md:w-64" />
+          <select id="vf-status" class="rounded-full border border-hairline bg-white px-4 py-2.5 text-sm"><option value="live">Live Listings</option><option value="">All Statuses</option>${Object.entries(STATUS_LABEL).map(([k, l]) => `<option value="${k}">${l}</option>`).join('')}</select>
+          <select id="vf-cat" class="rounded-full border border-hairline bg-white px-4 py-2.5 text-sm"><option value="">All Categories</option>${Object.entries(catNames).map(([k, n]) => `<option value="${k}">${esc(n)}</option>`).join('')}</select>
+          <select id="vf-reg" class="rounded-full border border-hairline bg-white px-4 py-2.5 text-sm"><option value="">All Regions</option>${Object.entries(regNames).map(([k, n]) => `<option value="${k}">${esc(n)}</option>`).join('')}</select>
+          <span id="vf-count" class="text-sm text-ink/50 ml-1"></span>
+          <button id="vf-csv" class="md:ml-auto rounded-full border border-ink/60 px-5 py-2.5 text-sm font-medium hover:bg-parchment">Export CSV</button>
+        </div>
+        <div id="vtable"></div>
+        <p class="text-xs text-ink/45 mt-3">Click a row for the 90 day chart, referrers, recent events and status controls. Views are bot filtered. Clicks 30d shows site clicks / phone taps.</p>`;
+      document.getElementById('vf-q').value = filters.q; document.getElementById('vf-status').value = filters.status; document.getElementById('vf-cat').value = filters.category; document.getElementById('vf-reg').value = filters.region;
+      paintVendorTable();
+    }
+    function filteredVendors(){
+      const q = filters.q.trim().toLowerCase();
+      const rows = VL.filter(v => {
+        if (filters.status === 'live') { if (!['seeded', 'claimed', 'featured'].includes(v.status)) return false; }
+        else if (filters.status && v.status !== filters.status) return false;
+        if (filters.category && v.category !== filters.category) return false;
+        if (filters.region && v.sub_region !== filters.region) return false;
+        if (q && !((v.name || '').toLowerCase().includes(q) || (v.slug || '').includes(q) || (v.account_email || '').toLowerCase().includes(q) || (v.contact_email || '').toLowerCase().includes(q))) return false;
+        return true;
+      });
+      rows.sort((a, b) => { let x = a[sortKey], y = b[sortKey]; if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1; if (typeof x === 'string' || typeof y === 'string') { x = String(x).toLowerCase(); y = String(y).toLowerCase(); return x < y ? -sortDir : x > y ? sortDir : 0; } return (x - y) * sortDir; });
+      return rows;
+    }
+    function paintVendorTable(){
+      const rows = filteredVendors();
+      document.getElementById('vf-count').textContent = `${num(rows.length)} of ${num(VL.length)}`;
+      const th = COLS.map(([k, l, a]) => `<th data-sort="${k}" class="${a === 'r' ? 'text-right' : 'text-left'} font-medium text-ink/55 px-3 py-3 whitespace-nowrap cursor-pointer select-none hover:text-ink">${l}${sortKey === k ? (sortDir < 0 ? ' ↓' : ' ↑') : ''}</th>`).join('');
+      const tr = rows.map(v => `<tr data-vid="${v.id}" class="border-t border-hairline hover:bg-parchment/60 cursor-pointer">
+        <td class="px-3 py-2.5 min-w-[200px]"><a href="/vendor/${esc(v.slug)}" target="_blank" rel="noopener" class="font-medium hover:text-clay-700" data-stop>${esc(v.name)}</a>${v.has_photo ? '' : '<span class="block text-[10px] text-ink/40">no photo</span>'}</td>
+        <td class="px-3 py-2.5 text-ink/70 whitespace-nowrap">${esc(catShort(v.category))}</td>
+        <td class="px-3 py-2.5 text-ink/70 whitespace-nowrap">${esc(regNames[v.sub_region] || v.sub_region || '')}</td>
+        <td class="px-3 py-2.5">${chip(v.status)}${v.status === 'featured' && v.featured_until ? `<span class="block text-[10px] text-ink/45 mt-1">until ${fmtDate(v.featured_until)}</span>` : ''}</td>
+        <td class="px-3 py-2.5 tabular-nums whitespace-nowrap text-right">${v.rating != null ? `${Number(v.rating).toFixed(1)} <span class="text-ink/45">(${num(v.reviews)})</span>` : '<span class="text-ink/35">none</span>'}</td>
+        <td class="px-3 py-2.5 tabular-nums text-right">${num(v.views_7d)}</td>
+        <td class="px-3 py-2.5 tabular-nums text-right">${num(v.views_30d)}</td>
+        <td class="px-3 py-2.5 tabular-nums text-right">${num(v.views_all)}</td>
+        <td class="px-3 py-2.5 tabular-nums text-right whitespace-nowrap">${num(v.site_clicks_30d)} <span class="text-ink/40">/</span> ${num(v.phone_clicks_30d)}</td>
+        <td class="px-3 py-2.5 whitespace-nowrap">${v.account_email ? `${esc(v.account_email)} ${v.account_verified ? '<span class="text-[10px] rounded-full border border-spruce-800/40 bg-spruce-800/10 text-spruce-800 px-2 py-0.5 ml-1">Verified</span>' : '<span class="text-[10px] rounded-full border border-gold/60 bg-gold/15 text-clay-700 px-2 py-0.5 ml-1">Pending</span>'}` : '<span class="text-ink/35">No account</span>'}</td>
+        <td class="px-3 py-2.5 text-ink/70 whitespace-nowrap">${v.account_email ? ago(v.account_last_login) : ''}</td>
+        <td class="px-3 py-2.5 text-ink/70 whitespace-nowrap">${esc(outLabel(v.outreach_status))}${v.contact_email ? '' : ' <span class="text-ink/35">(no email)</span>'}</td>
+      </tr>`).join('');
+      document.getElementById('vtable').innerHTML = `<div class="overflow-x-auto rounded-3xl border border-hairline bg-white"><table class="w-full min-w-[1180px] text-sm"><thead><tr class="bg-parchment/60">${th}</tr></thead><tbody>${tr || '<tr><td colspan="12" class="px-4 py-10 text-center text-ink/50">No vendors match these filters.</td></tr>'}</tbody></table></div>`;
+    }
+    function exportCsv(){
+      const rows = filteredVendors();
+      const cols = ['id','slug','name','category','sub_region','status','rating','reviews','featured_until','claimed_at','contact_email','outreach_status','account_email','account_verified','account_last_login','views_7d','views_30d','views_all','site_clicks_30d','phone_clicks_30d','inquiries_total','website','phone'];
+      const cell = v => { const s = v == null ? '' : String(v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+      const csv = [cols.join(',')].concat(rows.map(r => cols.map(c => cell(r[c])).join(','))).join('\n');
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `ceg-vendors-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    }
+
+    // ---------- drawer ----------
+    const kv = (label, val) => `<div><dt class="eyebrow text-ink/45" style="font-size:10px">${label}</dt><dd class="mt-1 break-words">${val || '<span class="text-ink/35">none</span>'}</dd></div>`;
+    function controls(v){
+      const b = [];
+      if (v.status !== 'featured' && v.status !== 'removed') b.push(['feature', 'Feature For 35 Days', 'bg-clay-500 text-ivory hover:bg-clay-600']);
+      if (v.status === 'featured') b.push(['unfeature', 'Unfeature', 'border border-ink/60 hover:bg-parchment']);
+      if (v.status === 'queued') b.push(['release', 'Release Now', 'bg-ink text-ivory hover:bg-spruce-800']);
+      if (v.status === 'removed') b.push(['restore', 'Restore', 'bg-ink text-ivory hover:bg-spruce-800']);
+      else b.push(['remove', 'Remove', 'border border-clay-500 text-clay-700 hover:bg-clay-50']);
+      return b;
+    }
+    async function openDrawer(id){
+      const v = VL.find(x => x.id === id); if (!v) return;
+      DRAWER = { id, v, d: null };
+      document.getElementById('drawer-wrap').classList.remove('hidden'); document.body.style.overflow = 'hidden';
+      paintDrawer();
+      const d = await rpc('ceg_admin_vendor_detail', { p_token: tok(), p_id: id });
+      if (DRAWER && DRAWER.id === id) { DRAWER.d = d; paintDrawer(); }
+    }
+    function closeDrawer(){ DRAWER = null; document.getElementById('drawer-wrap').classList.add('hidden'); document.body.style.overflow = ''; }
+    function paintDrawer(){
+      if (!DRAWER) return;
+      const v = DRAWER.v, d = DRAWER.d;
+      const ctl = controls(v).map(([act, label, cls]) => `<button data-act="${act}" class="rounded-full px-5 py-2.5 text-sm font-semibold transition-colors ${cls}">${label}</button>`).join('');
+      const msg = document.getElementById('drawer-msg') ? document.getElementById('drawer-msg').textContent : '';
+      document.getElementById('drawer').innerHTML = `
+        <div class="flex items-start justify-between gap-4">
+          <div class="min-w-0">
+            <p class="eyebrow text-clay-600 mb-2">Vendor Detail</p>
+            <h2 class="display text-2xl md:text-3xl leading-tight"><a href="/vendor/${esc(v.slug)}" target="_blank" rel="noopener" class="hover:text-clay-700">${esc(v.name)}</a></h2>
+            <div class="flex flex-wrap items-center gap-2 mt-3 text-xs text-ink/55">${chip(v.status)}<span>${esc(catShort(v.category))} · ${esc(regNames[v.sub_region] || v.sub_region || '')}</span>${v.rating != null ? `<span>· ${Number(v.rating).toFixed(1)} ★ (${num(v.reviews)} reviews)</span>` : ''}</div>
+          </div>
+          <button id="drawer-close" class="shrink-0 rounded-full border border-hairline w-9 h-9 flex items-center justify-center text-ink/60 hover:bg-parchment" aria-label="Close">✕</button>
+        </div>
+        <div class="mt-5 flex flex-wrap gap-2">${ctl}</div>
+        <p id="drawer-msg" class="text-xs text-ink/50 mt-2 min-h-4">${esc(msg)}</p>
+        <dl class="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 text-sm rounded-2xl border border-hairline bg-white p-5">
+          ${kv('Account', v.account_email ? `${esc(v.account_email)} · ${v.account_verified ? 'Verified' : 'Pending'}` : '')}
+          ${kv('Last Login', v.account_email ? ago(v.account_last_login) : '')}
+          ${kv('Contact Email', v.contact_email ? esc(v.contact_email) : '')}
+          ${kv('Outreach', esc(outLabel(v.outreach_status)))}
+          ${kv('Claimed', v.claimed_at ? fmtDate(v.claimed_at) : 'Not claimed')}
+          ${kv('Featured Until', v.featured_until ? fmtDate(v.featured_until) : '')}
+          ${kv('Website', v.website ? `<a href="${esc(v.website)}" target="_blank" rel="noopener" class="underline underline-offset-4 break-all">${esc(v.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''))}</a>` : '')}
+          ${kv('Phone', v.phone ? esc(v.phone) : '')}
+        </dl>
+        ${d ? detailBody(d) : '<p class="mt-6 text-sm text-ink/50">Loading traffic…</p>'}`;
+      if (d) chart('ch-drawer', d.series || [], { h: 160, every: 30, label: 'Daily views for the last 90 days' });
+    }
+    function detailBody(d){
+      const t = d.totals || {};
+      const mini = [['Views 7d', t.views_7d], ['Views 30d', t.views_30d], ['Views All', t.views_all], ['Site Clicks 30d', t.site_30d], ['Phone Taps 30d', t.phone_30d], ['Inquiries', t.inquiries_total]];
+      const refs = (d.referrers || []).length ? d.referrers.map(r => `<li class="flex justify-between gap-3 py-1.5 border-b border-hairline last:border-0"><span>${hostLabel(r.host)}</span><span class="text-ink/60 tabular-nums">${num(r.n)}</span></li>`).join('') : '<li class="py-2 text-ink/50">No referrer data yet.</li>';
+      const evs = (d.events || []).length ? d.events.map(e => `<tr class="border-t border-hairline"><td class="py-1.5 pr-3 whitespace-nowrap text-ink/70">${fmtDT(e.at)}</td><td class="py-1.5 pr-3 whitespace-nowrap">${EV_LABEL[e.type] || esc(e.type)}</td><td class="py-1.5 text-ink/60 whitespace-nowrap">${e.referrer ? esc(hostOf(e.referrer)) : '<span class="text-ink/35">direct</span>'}</td></tr>`).join('') : '<tr><td class="py-2 text-ink/50" colspan="3">No events since bot filtering began.</td></tr>';
+      const inqs = (d.inquiries || []).length ? `<p class="eyebrow text-clay-600 mt-8 mb-3">Inquiries</p><ul class="text-sm rounded-2xl border border-hairline bg-white px-5 py-2">${d.inquiries.map(i => `<li class="py-1.5 border-b border-hairline last:border-0">${esc(i.name || '')} · ${esc(i.email || '')}${i.event_date ? ' · ' + fmtDate(i.event_date) : ''} <span class="text-ink/45">· ${fmtDate(i.at)}</span></li>`).join('')}</ul>` : '';
+      const accts = (d.accounts || []).length > 1 ? `<p class="eyebrow text-clay-600 mt-8 mb-3">All Accounts</p><ul class="text-sm rounded-2xl border border-hairline bg-white px-5 py-2">${d.accounts.map(a => `<li class="py-1.5 border-b border-hairline last:border-0">${esc(a.email)} · ${a.verified ? 'Verified' : 'Pending'} · last login ${ago(a.last_login_at)}</li>`).join('')}</ul>` : '';
+      return `
+        <div class="mt-6 grid grid-cols-3 gap-3">${mini.map(([l, v]) => `<div class="rounded-2xl border border-hairline bg-white p-3 text-center"><p class="display text-2xl">${num(v)}</p><p class="text-[11px] text-ink/55 mt-0.5">${l}</p></div>`).join('')}</div>
+        <p class="text-xs text-ink/50 mt-3">Saved by ${num(t.saved_by)} couple${t.saved_by === 1 ? '' : 's'} in their planner.</p>
+        <p class="eyebrow text-clay-600 mt-8 mb-3">Last 90 Days</p>
+        <div class="rounded-2xl border border-hairline bg-white p-4"><div id="ch-drawer"></div><div class="text-xs text-ink/55 mt-3 flex flex-wrap gap-4">${LEGEND}</div></div>
+        <p class="eyebrow text-clay-600 mt-8 mb-3">Referrers, 90 Days</p>
+        <ul class="text-sm rounded-2xl border border-hairline bg-white px-5 py-2">${refs}</ul>
+        ${inqs}${accts}
+        <p class="eyebrow text-clay-600 mt-8 mb-3">Recent Events</p>
+        <div class="rounded-2xl border border-hairline bg-white px-5 py-2 overflow-x-auto"><table class="w-full text-sm"><tbody>${evs}</tbody></table></div>
+        ${d.vendor && d.vendor.description ? `<p class="eyebrow text-clay-600 mt-8 mb-3">Description</p><p class="text-sm text-ink/70 leading-relaxed">${esc(d.vendor.description)}</p>` : ''}`;
+    }
+    async function doStatus(act){
+      if (!DRAWER) return;
+      const v = DRAWER.v, back = (v.claimed_at || v.account_email) ? 'claimed' : 'seeded';
+      const status = { feature:'featured', unfeature:back, remove:'removed', restore:back, release:'seeded' }[act];
+      if (!status) return;
+      if (act === 'remove' && !confirm(`Remove ${v.name} from the site?`)) return;
+      const msg = document.getElementById('drawer-msg'); msg.textContent = 'Saving…';
+      const res = await rpc('ceg_admin_set_status', { p_token: tok(), p_id: v.id, p_status: status, p_featured_until: null });
+      if (!res || res.error) { msg.textContent = (res && res.error) || 'Could not save.'; return; }
+      v.status = res.status; v.featured_until = res.featured_until;
+      paintDrawer(); document.getElementById('drawer-msg').textContent = 'Saved ✓ · rebuilding site…';
+      try { fetch('/api/refresh-site', { method: 'POST' }); } catch (_) {}
+      paintVendorTable();
+      const ov = await rpc('ceg_admin_overview', { p_token: tok() });
+      if (ov) { OV = ov; paintOverview(); paintOutreach(); document.getElementById('ad-sub').textContent = `Live from the database · ${num(OV.totals.live_vendors)} live listings · updated ${fmtDT(OV.generated_at)}`; }
+    }
+
+    // ---------- couples ----------
+    function paintCouples(){
+      const pane = document.getElementById('pane-couples');
+      if (!CP) { pane.innerHTML = '<p class="text-sm text-ink/50">Could not load couples.</p>'; return; }
+      const c = CP.counts;
+      const card = (l, v, sub) => `<div class="rounded-3xl border border-hairline bg-white p-5"><p class="eyebrow text-ink/50">${l}</p><p class="display text-4xl mt-2">${num(v)}</p>${sub ? `<p class="text-xs text-ink/50 mt-1.5">${sub}</p>` : ''}</div>`;
+      const rows = (CP.couples || []).map(x => `<tr class="border-t border-hairline"><td class="px-3 py-2.5 whitespace-nowrap">${esc(x.email)}</td><td class="px-3 py-2.5">${esc(x.names || '')}</td><td class="px-3 py-2.5 whitespace-nowrap">${esc(regNames[x.region] || x.region || '')}</td><td class="px-3 py-2.5 whitespace-nowrap">${x.wedding_date ? fmtDate(x.wedding_date) : ''}</td><td class="px-3 py-2.5 text-right tabular-nums">${x.guests != null ? num(x.guests) : ''}</td><td class="px-3 py-2.5 text-right tabular-nums">${num(x.saved)}</td><td class="px-3 py-2.5 text-right tabular-nums">${num(x.booked)}</td><td class="px-3 py-2.5 whitespace-nowrap text-ink/70">${fmtDate(x.created_at)}</td><td class="px-3 py-2.5 whitespace-nowrap text-ink/70">${ago(x.last_login_at)}</td></tr>`).join('');
+      const subs = (CP.subscribers || []).map(x => `<tr class="border-t border-hairline"><td class="px-3 py-2.5">${esc(x.email)}</td><td class="px-3 py-2.5 text-ink/70">${esc(x.source || '')}</td><td class="px-3 py-2.5 whitespace-nowrap text-ink/70">${fmtDate(x.created_at)}</td></tr>`).join('');
+      pane.innerHTML = `
+        <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
+          ${card('Couples', c.couples, `${num(c.couples_7d)} new this week`)}${card('With Password', c.with_password, 'Others use email links')}${card('Active This Week', c.active_7d, 'Signed in within 7 days')}${card('Saved Vendors', c.saved_vendors, 'Across all planners')}${card('Booked', c.booked, 'Marked booked by couples')}${card('Subscribers', c.subscribers, 'Newsletter signups')}
+        </div>
+        <p class="eyebrow text-clay-600 mt-10 mb-4">Planner Accounts</p>
+        <div class="overflow-x-auto rounded-3xl border border-hairline bg-white"><table class="w-full min-w-[960px] text-sm"><thead><tr class="bg-parchment/60 text-ink/55 font-medium"><th class="text-left px-3 py-3">Email</th><th class="text-left px-3 py-3">Names</th><th class="text-left px-3 py-3">Region</th><th class="text-left px-3 py-3">Wedding Date</th><th class="text-right px-3 py-3">Guests</th><th class="text-right px-3 py-3">Saved</th><th class="text-right px-3 py-3">Booked</th><th class="text-left px-3 py-3">Created</th><th class="text-left px-3 py-3">Last Login</th></tr></thead><tbody>${rows || '<tr><td colspan="9" class="px-4 py-10 text-center text-ink/50">No couple accounts yet.</td></tr>'}</tbody></table></div>
+        <p class="eyebrow text-clay-600 mt-10 mb-4">Subscribers</p>
+        <div class="overflow-x-auto rounded-3xl border border-hairline bg-white"><table class="w-full min-w-[480px] text-sm"><thead><tr class="bg-parchment/60 text-ink/55 font-medium"><th class="text-left px-3 py-3">Email</th><th class="text-left px-3 py-3">Source</th><th class="text-left px-3 py-3">Created</th></tr></thead><tbody>${subs || '<tr><td colspan="3" class="px-4 py-10 text-center text-ink/50">No subscribers yet.</td></tr>'}</tbody></table></div>`;
+    }
+
+    // ---------- outreach ----------
+    function paintOutreach(){
+      const f = OV.outreach_funnel || {}, t = OV.totals, os = t.outreach_status || {};
+      const steps = [['Queued', f.queued, 'Not released to the site yet'], ['Ready To Send', f.pending_with_email, 'Live, has an email, never contacted'], ['No Email Found', f.no_email, 'Live, no contact address'], ['Sent', f.sent, 'Claim invite delivered'], ['Claimed', f.claimed, 'Listing claimed by the vendor'], ['Unsubscribed', f.unsubscribed, 'Asked not to be contacted'], ['Removed', f.removed, 'Taken off the site']];
+      const max = Math.max(1, ...steps.map(s => s[1] || 0));
+      document.getElementById('pane-outreach').innerHTML = `
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="rounded-3xl border border-hairline bg-white p-5"><p class="eyebrow text-ink/50">Emails Sent, 7 Days</p><p class="display text-4xl mt-2">${num(t.outreach_sent_7d)}</p><p class="text-xs text-ink/50 mt-1.5">Cap is 25 per day</p></div>
+          <div class="rounded-3xl border border-hairline bg-white p-5"><p class="eyebrow text-ink/50">Emails Sent, 30 Days</p><p class="display text-4xl mt-2">${num(t.outreach_sent_30d)}</p></div>
+          <div class="rounded-3xl border border-hairline bg-white p-5"><p class="eyebrow text-ink/50">Emails Sent, All Time</p><p class="display text-4xl mt-2">${num(t.outreach_sent_all)}</p></div>
+          <div class="rounded-3xl border border-hairline bg-white p-5"><p class="eyebrow text-ink/50">Claimed After Outreach</p><p class="display text-4xl mt-2">${num(os.claimed)}</p><p class="text-xs text-ink/50 mt-1.5">${f.sent ? Math.round(100 * (os.claimed || 0) / ((f.sent || 0) + (os.claimed || 0))) + '% of contacted vendors' : 'No sends recorded yet'}</p></div>
+        </div>
+        <div class="grid md:grid-cols-5 gap-6 mt-6">
+          <div class="md:col-span-2 rounded-3xl border border-hairline bg-white p-6">
+            <p class="eyebrow text-clay-600">Funnel</p><p class="text-xs text-ink/50 mt-1 mb-4">Where every vendor stands</p>
+            <ul>${steps.map(([l, v, sub]) => `<li class="py-2.5 border-b border-hairline last:border-0"><div class="flex items-center justify-between gap-3 text-sm"><span>${l}<span class="block text-[11px] text-ink/45">${sub}</span></span><span class="display text-2xl tabular-nums">${num(v)}</span></div><div class="mt-1.5 h-1 rounded-full bg-parchment overflow-hidden"><div class="h-full bg-clay-500" style="width:${Math.round(100 * (v || 0) / max)}%"></div></div></li>`).join('')}</ul>
+          </div>
+          <div class="md:col-span-3 rounded-3xl border border-hairline bg-white p-6">
+            <p class="eyebrow text-clay-600">Sends Per Week</p><p class="text-xs text-ink/50 mt-1 mb-4">Last 8 weeks, from the outreach log, weeks starting Monday</p>
+            <div id="ch-outreach"></div>
+            <p class="eyebrow text-clay-600 mt-8 mb-3">Outreach Status Counts</p>
+            <table class="w-full text-sm"><tbody>${Object.entries(os).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<tr class="border-t border-hairline"><td class="py-2">${esc(outLabel(k))} <span class="text-ink/40">(${esc(k)})</span></td><td class="py-2 text-right tabular-nums">${num(v)}</td></tr>`).join('')}</tbody></table>
+          </div>
+        </div>`;
+      chart('ch-outreach', (OV.outreach_weekly || []).map(w => ({ d: w.week, views: w.sent })), { h: 200, keys: ['views'], unit: 'emails', every: 1, label: 'Outreach emails sent per week', xlabel: p => fmtDay(p.d) });
+    }
+
+    // ---------- events ----------
+    document.addEventListener('click', async e => {
+      const t = e.target;
+      if (t.closest('#aa-submit')) { signIn(); return; }
+      if (t.closest('#ad-signout')) { localStorage.removeItem('ceg_admin'); location.reload(); return; }
+      if (t.closest('#ad-refresh')) { const b = t.closest('#ad-refresh'); b.textContent = 'Refreshing…'; const ok = await loadAll(); b.textContent = 'Refresh'; if (ok) { paintAll(); setTab(activeTab); } else { localStorage.removeItem('ceg_admin'); location.reload(); } return; }
+      if (t.closest('#ad-pwtoggle')) { document.getElementById('ad-pw').classList.toggle('hidden'); return; }
+      if (t.closest('#pw-save')) {
+        const a = document.getElementById('pw-new').value, b = document.getElementById('pw-confirm').value, msg = document.getElementById('pw-msg');
+        if (a.length < 12) { msg.textContent = 'Use at least 12 characters.'; return; }
+        if (a !== b) { msg.textContent = 'The two passwords do not match.'; return; }
+        msg.textContent = 'Saving…';
+        const res = await rpc('ceg_admin_set_password', { p_token: tok(), p_new: a });
+        msg.textContent = res && res.ok ? 'Saved ✓' : ((res && res.error) || 'Could not save.');
+        if (res && res.ok) { document.getElementById('pw-new').value = ''; document.getElementById('pw-confirm').value = ''; }
+        return;
+      }
+      const tab = t.closest('[data-tab]'); if (tab) { setTab(tab.dataset.tab); return; }
+      if (t.closest('#vf-csv')) { exportCsv(); return; }
+      const th = t.closest('th[data-sort]'); if (th) { const k = th.dataset.sort; if (sortKey === k) sortDir = -sortDir; else { sortKey = k; sortDir = ['name', 'category', 'sub_region', 'status', 'account_email', 'outreach_status'].includes(k) ? 1 : -1; } paintVendorTable(); return; }
+      if (t.closest('[data-stop]')) return;
+      const row = t.closest('tr[data-vid]'); if (row) { openDrawer(Number(row.dataset.vid)); return; }
+      if (t.closest('#drawer-close') || t.closest('#drawer-bg')) { closeDrawer(); return; }
+      const act = t.closest('[data-act]'); if (act) { doStatus(act.dataset.act); return; }
+    });
+    document.addEventListener('input', e => {
+      if (e.target.id === 'vf-q') { clearTimeout(qTimer); qTimer = setTimeout(() => { filters.q = e.target.value; paintVendorTable(); }, 150); }
+    });
+    document.addEventListener('change', e => {
+      if (e.target.id === 'vf-status') { filters.status = e.target.value; paintVendorTable(); }
+      if (e.target.id === 'vf-cat') { filters.category = e.target.value; paintVendorTable(); }
+      if (e.target.id === 'vf-reg') { filters.region = e.target.value; paintVendorTable(); }
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && DRAWER) closeDrawer();
+      if (e.key === 'Enter' && (e.target.id === 'aa-email' || e.target.id === 'aa-pass')) signIn();
+    });
+    document.addEventListener('DOMContentLoaded', boot);
+  </script>
+</Base>
