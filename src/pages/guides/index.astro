@@ -1,0 +1,72 @@
+---
+import Base from '../../layouts/Base.astro';
+import EmailCapture from '../../components/EmailCapture.astro';
+import { getCollection } from 'astro:content';
+import { allVendors } from '../../lib/vendors';
+import { REGIONS } from '../../lib/taxonomy';
+import { regionImg } from '../../lib/assets';
+
+const order = Object.keys(REGIONS);
+const guides = (await getCollection('guides'))
+  .filter(g => g.data.region in REGIONS && g.data.region !== 'other-colorado')
+  .sort((a, b) => order.indexOf(a.data.region) - order.indexOf(b.data.region));
+const vendors = await allVendors();
+
+const ld = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: 'Colorado Elopement Planning Guides',
+  description: 'Region-by-region Colorado elopement planning guides covering ceremony spots, permits, marriage license rules, timing and travel.',
+  url: 'https://coloradoelopementguide.com/guides/',
+  hasPart: guides.map(g => ({ '@type': 'Article', headline: g.data.headline.replace(/\*/g, ''), url: `https://coloradoelopementguide.com/guides/${g.data.region}/`, datePublished: g.data.datePublished }))
+};
+---
+<Base title="Colorado Elopement Planning Guides by Region | Colorado Elopement Guide"
+  description="Eight region planning guides for eloping in Colorado: where to say your vows, which permits apply, how the marriage license works, when to go and how to get there.">
+  <script is:inline type="application/ld+json" slot="head" set:html={JSON.stringify(ld)} />
+
+  <div class="max-w-7xl mx-auto px-5 md:px-8 pt-14">
+    <p class="eyebrow text-clay-600 mb-3">Eight Regions, Real Rules</p>
+    <h1 class="display text-4xl md:text-5xl leading-tight">Colorado elopement <span class="serif-i">planning guides</span></h1>
+    <p class="text-ink/65 mt-4 max-w-2xl leading-relaxed">Each guide is written for a couple planning one specific corner of the state: the ceremony spots worth the drive, the permit that actually applies (with the official page linked), where to get your license, what the weather does month by month, and how to time the day. No fluff, no made-up fees.</p>
+
+    <div class="grid md:grid-cols-2 gap-5 md:gap-6 mt-10">
+      {guides.map(g => (
+        <a href={`/guides/${g.data.region}`} class="group rounded-3xl border border-hairline bg-white overflow-hidden hover:shadow-md transition-shadow">
+          <div class="img-tile relative h-56 md:h-64">
+            <img src={regionImg(g.data.region)} alt={REGIONS[g.data.region].name} loading="lazy" class="absolute inset-0 w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent"></div>
+            <div class="absolute bottom-0 p-5">
+              <p class="eyebrow text-gold mb-1.5">{REGIONS[g.data.region].name}</p>
+              <p class="display text-ivory text-2xl leading-tight">{g.data.headline.replace(/\*/g, '')}</p>
+            </div>
+          </div>
+          <div class="p-6">
+            <p class="text-sm text-ink/70 leading-relaxed">{g.data.dek}</p>
+            <div class="mt-4 flex items-center justify-between text-xs text-ink/50">
+              <span>{vendors.filter(v => v.sub_region === g.data.region).length} vendors based in this region</span>
+              <span class="text-sm font-medium text-ink underline underline-offset-4 group-hover:text-clay-700">Read the guide →</span>
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+
+    <section class="mt-16 rounded-3xl border border-hairline bg-white p-7 md:p-9 md:grid md:grid-cols-3 gap-8">
+      <div>
+        <p class="eyebrow text-clay-600 mb-2">The License, Statewide</p>
+        <p class="text-sm text-ink/70 leading-relaxed">Any Colorado county clerk can issue your license, it costs $30, there is no waiting period, no witnesses are required, you can solemnize the marriage yourselves, and it must be used within 35 days. Every guide names the clerk offices nearest its region.</p>
+      </div>
+      <div>
+        <p class="eyebrow text-clay-600 mb-2">Permits, Honestly</p>
+        <p class="text-sm text-ink/70 leading-relaxed">National park sites need a special use permit, some Forest Service overlooks are reservation only, several city parks are free and first come. Each guide says which applies and links the office that sets the rule.</p>
+      </div>
+      <div>
+        <p class="eyebrow text-clay-600 mb-2">Then Book</p>
+        <p class="text-sm text-ink/70 leading-relaxed">When you know the where and the when, the <a href="/checklist" class="underline underline-offset-4 hover:text-clay-700">planning checklist</a> covers booking order, and your <a href="/account" class="underline underline-offset-4 hover:text-clay-700">free planner</a> keeps vendors, quotes and notes together.</p>
+      </div>
+    </section>
+
+    <div class="pt-16"><EmailCapture /></div>
+  </div>
+</Base>

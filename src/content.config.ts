@@ -1,4 +1,5 @@
 import { defineCollection, z } from 'astro:content';
+import { glob } from 'astro/loaders';
 import { SB_URL, SB_KEY } from './lib/supabase';
 
 const vendors = defineCollection({
@@ -26,4 +27,22 @@ const vendors = defineCollection({
     place_id: z.string().nullable(), source: z.string(), source_query: z.string()
   }).passthrough()
 });
-export const collections = { vendors };
+const guides = defineCollection({
+  loader: glob({ pattern: '*.md', base: './src/content/guides' }),
+  schema: z.object({
+    region: z.string().min(1),
+    title: z.string().min(1),
+    headline: z.string().min(1),
+    dek: z.string().min(40),
+    description: z.string().min(60).max(170),
+    datePublished: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    dateModified: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    facts: z.object({
+      license: z.string(),
+      permit: z.string(),
+      season: z.string(),
+      airport: z.string()
+    })
+  })
+});
+export const collections = { vendors, guides };

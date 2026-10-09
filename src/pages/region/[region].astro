@@ -29,6 +29,12 @@ const sparse = region === 'other-colorado' ? [] : Object.keys(CATEGORIES)
     </div>
   </section>
   <div class="max-w-7xl mx-auto px-5 md:px-8">
+    {region !== 'other-colorado' && (
+      <a href={`/guides/${region}`} class="mt-10 block rounded-2xl border border-hairline bg-parchment/60 px-6 py-5 md:flex items-center justify-between gap-6 hover:bg-parchment transition-colors">
+        <p class="text-sm text-ink/75"><span class="eyebrow text-clay-600 mr-3">Planning Guide</span>Ceremony spots, permits, the marriage license, when to go and how to time the day in {meta.name}.</p>
+        <span class="text-sm font-medium underline underline-offset-4 shrink-0 mt-2 md:mt-0 inline-block">Read the {meta.name} planning guide →</span>
+      </a>
+    )}
     {byCat.map(([c, vs]) => (
       <section class="pt-14">
         <div class="flex items-end justify-between gap-6 mb-6">
