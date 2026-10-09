@@ -10,5 +10,9 @@
       "destination": "/for-vendors",
       "permanent": true
     }
+  ],
+  "crons": [
+    { "path": "/api/cron/daily", "schedule": "0 15 * * *" },
+    { "path": "/api/cron/weekly", "schedule": "0 14 * * 1" }
   ]
 }

@@ -7,7 +7,7 @@ export default defineConfig({
   site: 'https://coloradoelopementguide.com',
   output: 'static',
   security: { checkOrigin: false },
-  adapter: vercel(),
+  adapter: vercel({ maxDuration: 300 }),
   integrations: [sitemap()],
   vite: { plugins: [tailwindcss()] }
 });
