@@ -8,6 +8,6 @@ export default defineConfig({
   output: 'static',
   security: { checkOrigin: false },
   adapter: vercel({ maxDuration: 300 }),
-  integrations: [sitemap({ filter: (page) => !/\/admin\/?$/.test(page) })],
+  integrations: [sitemap({ filter: (page) => !/\/(admin|account|vendor-dashboard|my-vendors|thanks|claim(\/.*)?|lt\/.*|vd\/.*)\/?$/.test(page) })],
   vite: { plugins: [tailwindcss()] }
 });
