@@ -250,13 +250,13 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
         <td class="px-3 py-2.5 tabular-nums text-right whitespace-nowrap">${num(v.site_clicks_30d)} <span class="text-ink/40">/</span> ${num(v.phone_clicks_30d)}</td>
         <td class="px-3 py-2.5 whitespace-nowrap">${v.account_email ? `${esc(v.account_email)} ${v.account_verified ? '<span class="text-[10px] rounded-full border border-spruce-800/40 bg-spruce-800/10 text-spruce-800 px-2 py-0.5 ml-1">Verified</span>' : '<span class="text-[10px] rounded-full border border-gold/60 bg-gold/15 text-clay-700 px-2 py-0.5 ml-1">Pending</span>'}` : '<span class="text-ink/35">No account</span>'}</td>
         <td class="px-3 py-2.5 text-ink/70 whitespace-nowrap">${v.account_email ? ago(v.account_last_login) : ''}</td>
-        <td class="px-3 py-2.5 text-ink/70 whitespace-nowrap">${esc(outLabel(v.outreach_status))}${v.contact_email ? '' : ' <span class="text-ink/35">(no email)</span>'}</td>
+        <td class="px-3 py-2.5 text-ink/70 whitespace-nowrap">${esc(outLabel(v.outreach_status))}${v.contact_email ? '' : ' <span class="text-ink/35">(no email)</span>'}${v.outreach_sent_at ? `<span class="block text-[10px] text-ink/45">sent ${fmtDate(v.outreach_sent_at)}</span>` : ''}</td>
       </tr>`).join('');
       document.getElementById('vtable').innerHTML = `<div class="overflow-x-auto rounded-3xl border border-hairline bg-white"><table class="w-full min-w-[1180px] text-sm"><thead><tr class="bg-parchment/60">${th}</tr></thead><tbody>${tr || '<tr><td colspan="12" class="px-4 py-10 text-center text-ink/50">No vendors match these filters.</td></tr>'}</tbody></table></div>`;
     }
     function exportCsv(){
       const rows = filteredVendors();
-      const cols = ['id','slug','name','category','sub_region','status','rating','reviews','featured_until','claimed_at','contact_email','outreach_status','account_email','account_verified','account_last_login','views_7d','views_30d','views_all','site_clicks_30d','phone_clicks_30d','inquiries_total','website','phone'];
+      const cols = ['id','slug','name','category','sub_region','status','rating','reviews','featured_until','claimed_at','contact_email','outreach_status','outreach_sent_at','account_email','account_verified','account_last_login','views_7d','views_30d','views_all','site_clicks_30d','phone_clicks_30d','inquiries_total','website','phone'];
       const cell = v => { const s = v == null ? '' : String(v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
       const csv = [cols.join(',')].concat(rows.map(r => cols.map(c => cell(r[c])).join(','))).join('\n');
       const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `ceg-vendors-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
@@ -302,7 +302,7 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
           ${kv('Account', v.account_email ? `${esc(v.account_email)} · ${v.account_verified ? 'Verified' : 'Pending'}` : '')}
           ${kv('Last Login', v.account_email ? ago(v.account_last_login) : '')}
           ${kv('Contact Email', v.contact_email ? esc(v.contact_email) : '')}
-          ${kv('Outreach', esc(outLabel(v.outreach_status)))}
+          ${kv('Outreach', esc(outLabel(v.outreach_status)) + (v.outreach_sent_at ? ' · sent ' + fmtDate(v.outreach_sent_at) : '') + (v.account_unsubscribed ? ' · account unsubscribed from drips' : ''))}
           ${kv('Claimed', v.claimed_at ? fmtDate(v.claimed_at) : 'Not claimed')}
           ${kv('Featured Until', v.featured_until ? fmtDate(v.featured_until) : '')}
           ${kv('Website', v.website ? `<a href="${esc(v.website)}" target="_blank" rel="noopener" class="underline underline-offset-4 break-all">${esc(v.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''))}</a>` : '')}
