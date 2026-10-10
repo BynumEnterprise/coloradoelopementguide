@@ -185,6 +185,20 @@ export const GET: APIRoute = async ({ request }) => {
 
   // 3. Deploy hook
   run.deploy = dry ? false : await fireDeployHook();
+  // IndexNow: tell Bing and partners about every sitemap URL. Pages from this release go live after the
+  // rebuild, so this mostly covers last week's additions; next week's run picks up today's.
+  if (!dry) {
+    try {
+      const sm = await (await fetchWithTimeout(`${SITE}/sitemap-0.xml`, 15000)).text();
+      const urlList = [...sm.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]).slice(0, 10000);
+      const r = await fetchWithTimeout('https://api.indexnow.org/indexnow', 20000, {
+        method: 'POST', headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: JSON.stringify({ host: 'coloradoelopementguide.com', key: '3a4203094b53f1f173f0062193ed4b17',
+          keyLocation: `${SITE}/3a4203094b53f1f173f0062193ed4b17.txt`, urlList })
+      });
+      run.indexnow = { status: r.status, urls: urlList.length };
+    } catch (e) { run.indexnow = { error: String(e).slice(0, 200) }; }
+  }
 
   // 4. Owner digest (date written without dashes: "Oct 12, 2026")
   const date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/Denver' });
