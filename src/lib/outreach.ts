@@ -201,8 +201,8 @@ If the free listing is already bringing you what you need, ignore this. It stays
 
 ${dripFooter(u.token)}`;
   }
-  naturalCheck(subject, `drip ${u.step} subject (${u.slug})`);
-  naturalCheck(text, `drip ${u.step} body (${u.slug})`);
+  naturalCheck(subject, `drip ${u.step} subject (${u.slug})`, [u.vendor_name]);
+  naturalCheck(text, `drip ${u.step} body (${u.slug})`, [u.vendor_name]);
   return { subject, text, html: textToHtml(text) };
 }
 
