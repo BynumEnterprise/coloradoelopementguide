@@ -111,7 +111,7 @@ ${SITE_URL}/vendor/${v.slug}
 
 ${personal}
 
-If you want to take over the listing, you can fix any details, add photos and packages, and see how many couples open your page and click through to your site or phone number. That part is free as well. Your page to claim it is here:
+Couples can also send you an availability question straight from the page. If you want to take over the listing, you can fix any details, add photos and packages, read those inquiries, and see how many couples open your page and click through to your site or phone number. That part is free as well. Your page to claim it is here:
 ${SITE_URL}/claim/${v.slug}
 
 No card and no catch. If you would rather not be listed at all, reply with the word remove and I will take it down within a business day.
