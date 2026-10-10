@@ -1,0 +1,99 @@
+---
+import Base from '../../layouts/Base.astro';
+import EmailCapture from '../../components/EmailCapture.astro';
+import { getCollection } from 'astro:content';
+import { regionImg } from '../../lib/assets';
+import { REGIONS } from '../../lib/taxonomy';
+
+const ORDER = [
+  'colorado-marriage-license',
+  'self-solemnization-colorado',
+  'rocky-mountain-national-park-wedding-permit',
+  'maroon-bells-elopement-permit',
+  'garden-of-the-gods-elopement',
+  'national-forest-and-blm-elopements',
+  'colorado-state-parks-elopements',
+  'colorado-elopement-cost'
+];
+const all = await getCollection('resources');
+const resources = [...all].sort((a, b) => {
+  const ia = ORDER.indexOf(a.id), ib = ORDER.indexOf(b.id);
+  return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+});
+const KIND_LABEL: Record<string, string> = { permits: 'Permits', legal: 'Legal', budget: 'Budget' };
+const groups = [
+  { kind: 'legal', title: 'The license', blurb: 'What the state requires of every couple, wherever in Colorado you marry.' },
+  { kind: 'permits', title: 'Permission to use the place', blurb: 'Each land manager has its own rule. These pages quote the rule and link the office.' },
+  { kind: 'budget', title: 'The money', blurb: 'Honest ranges, marked as estimates, with the fixed fees called out.' }
+];
+
+const ld = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: 'Colorado Elopement Permits, Licenses and Legal Resources',
+  description: 'Verified guides to the Colorado marriage license, self solemnization, Rocky Mountain National Park and Maroon Bells permits, Garden of the Gods rules, national forest and state park ceremonies, and elopement costs.',
+  url: 'https://coloradoelopementguide.com/resources/',
+  hasPart: resources.map(r => ({ '@type': 'Article', headline: r.data.headline.replace(/\*/g, ''), url: `https://coloradoelopementguide.com/resources/${r.id}/`, datePublished: r.data.datePublished }))
+};
+---
+<Base title="Colorado Elopement Permits, Marriage License and Legal Resources | Colorado Elopement Guide"
+  description="Verified permit and legal guides for eloping in Colorado: the marriage license, self solemnization, RMNP and Maroon Bells permits, Garden of the Gods, national forests, state parks and costs.">
+  <script is:inline type="application/ld+json" slot="head" set:html={JSON.stringify(ld)} />
+
+  <div class="max-w-7xl mx-auto px-5 md:px-8 pt-14">
+    <p class="eyebrow text-clay-600 mb-3">Permits And Licenses</p>
+    <h1 class="display text-4xl md:text-5xl leading-tight">The paperwork, <span class="serif-i">verified</span></h1>
+    <p class="text-ink/65 mt-4 max-w-2xl leading-relaxed">Eight short references for the legal and permit side of eloping in Colorado. Each one was written from the official page that sets the rule, quotes the fee the agency publishes, and links that page so you can check it yourself. Where a fact could not be verified, the page says so and points you to the office instead of guessing.</p>
+
+    {groups.map(g => {
+      const items = resources.filter(r => r.data.kind === g.kind);
+      if (!items.length) return null;
+      return (
+        <section class="mt-14">
+          <div class="flex flex-wrap items-baseline justify-between gap-3 mb-6">
+            <h2 class="display text-2xl md:text-3xl leading-tight">{g.title}</h2>
+            <p class="text-sm text-ink/55 max-w-md">{g.blurb}</p>
+          </div>
+          <div class={`grid gap-5 md:gap-6 ${items.length === 1 ? 'md:grid-cols-1 max-w-3xl' : 'md:grid-cols-2'}`}>
+            {items.map(r => (
+              <a href={`/resources/${r.id}`} class="group rounded-3xl border border-hairline bg-white overflow-hidden hover:shadow-md transition-shadow">
+                <div class="img-tile relative h-44 md:h-52">
+                  <img src={regionImg(r.data.hero in REGIONS ? r.data.hero : 'estes-park')} alt={r.data.headline.replace(/\*/g, '')} loading="lazy" class="absolute inset-0 w-full h-full object-cover" />
+                  <div class="absolute inset-0 bg-gradient-to-t from-ink/75 via-transparent to-transparent"></div>
+                  <div class="absolute bottom-0 p-5">
+                    <p class="eyebrow text-gold mb-1.5">{KIND_LABEL[r.data.kind]}</p>
+                    <p class="display text-ivory text-2xl leading-tight">{r.data.headline.replace(/\*/g, '')}</p>
+                  </div>
+                </div>
+                <div class="p-6">
+                  <p class="text-sm text-ink/70 leading-relaxed">{r.data.dek}</p>
+                  <div class="mt-4 flex items-center justify-between text-xs text-ink/50">
+                    <span>{r.data.sources.length} official sources linked</span>
+                    <span class="text-sm font-medium text-ink underline underline-offset-4 group-hover:text-clay-700">Read it →</span>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      );
+    })}
+
+    <section class="mt-16 rounded-3xl border border-hairline bg-white p-7 md:p-9 md:grid md:grid-cols-3 gap-8">
+      <div>
+        <p class="eyebrow text-clay-600 mb-2">By Region</p>
+        <p class="text-sm text-ink/70 leading-relaxed">The <a href="/guides" class="underline underline-offset-4 hover:text-clay-700">region planning guides</a> put these rules in order for one corner of the state at a time: ceremony spots, the permit that applies, the nearest clerk, and the weather.</p>
+      </div>
+      <div>
+        <p class="eyebrow text-clay-600 mb-2">In Order</p>
+        <p class="text-sm text-ink/70 leading-relaxed">The <a href="/checklist" class="underline underline-offset-4 hover:text-clay-700">planning checklist</a> sequences the license, the permit and the vendor bookings so nothing lands late.</p>
+      </div>
+      <div>
+        <p class="eyebrow text-clay-600 mb-2">Then Book</p>
+        <p class="text-sm text-ink/70 leading-relaxed">Photographers, officiants and planners who work these permits weekly are in the <a href="/vendors" class="underline underline-offset-4 hover:text-clay-700">directory</a>, and your <a href="/account" class="underline underline-offset-4 hover:text-clay-700">free planner</a> keeps quotes and dates together.</p>
+      </div>
+    </section>
+
+    <div class="pt-16"><EmailCapture /></div>
+  </div>
+</Base>

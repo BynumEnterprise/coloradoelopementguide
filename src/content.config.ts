@@ -45,4 +45,21 @@ const guides = defineCollection({
     })
   })
 });
-export const collections = { vendors, guides };
+const resources = defineCollection({
+  loader: glob({ pattern: '*.md', base: './src/content/resources' }),
+  schema: z.object({
+    title: z.string().min(1),
+    headline: z.string().min(1),
+    dek: z.string().min(40),
+    description: z.string().min(60).max(160),
+    datePublished: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    dateModified: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    kind: z.enum(['permits', 'legal', 'budget']),
+    hero: z.string().min(1),
+    regions: z.array(z.string()).default([]),
+    categories: z.array(z.string()).default([]),
+    facts: z.array(z.object({ label: z.string(), value: z.string() })).length(4),
+    sources: z.array(z.object({ label: z.string(), url: z.string().url() })).min(1)
+  })
+});
+export const collections = { vendors, guides, resources };

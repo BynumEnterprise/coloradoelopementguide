@@ -96,6 +96,24 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
             <a href="https://buy.stripe.com/7sYaEZffj1AaaWr93A9oc02" rel="noopener" class="inline-block mt-5 rounded-full bg-clay-500 text-ivory px-6 py-3 text-sm font-semibold hover:bg-clay-600 transition-colors">Go Featured, First Month $1 →</a>
             <p class="mt-3 text-xs text-ink/50">Use code <strong>FIRSTMONTH1</strong> at checkout.</p>
           </div>
+
+          <!-- BADGE -->
+          <div id="vd-badge" class="hidden mt-8">
+            <p class="eyebrow text-clay-600 mb-4">Put Our Badge On Your Site</p>
+            <div class="rounded-3xl border border-hairline bg-white p-6">
+              <div class="flex items-center gap-4">
+                <img src="/badge/listed.svg" alt="Listed on Colorado Elopement Guide" width="180" height="60" class="shrink-0" />
+                <p class="text-sm text-ink/70 leading-relaxed">A small badge that links back to your listing. Couples who see it on your site can read your reviews and reach you here, and the link helps your listing rank.</p>
+              </div>
+              <label class="eyebrow text-ink/60 block mt-5 mb-2">Paste This Into Your Website</label>
+              <textarea id="vd-badge-code" readonly rows="3" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-xs font-mono text-ink/80" spellcheck="false"></textarea>
+              <div class="flex items-center gap-4 mt-3">
+                <button id="vd-badge-copy" type="button" class="rounded-full bg-ink text-ivory px-6 py-2.5 text-sm font-semibold hover:bg-spruce-800">Copy Code</button>
+                <span id="vd-badge-msg" class="text-sm text-ink/50"></span>
+              </div>
+              <p class="mt-3 text-xs text-ink/45">Works in Squarespace, Wix, WordPress and Showit code blocks. Footers and About pages are the usual spots.</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -243,6 +261,8 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
       document.getElementById('ve-desc-count').textContent = num((v.description||'').length);
       const editable = VD.verified;
       ['ve-desc','ve-phone','ve-web','ve-save'].forEach(id=>{ document.getElementById(id).disabled = !editable; });
+      document.getElementById('vd-badge').classList.toggle('hidden', !VD.verified);
+      document.getElementById('vd-badge-code').value = '<a href="https://coloradoelopementguide.com/vendor/' + v.slug + '?ref=badge"><img src="https://coloradoelopementguide.com/badge/listed.svg" alt="Listed on Colorado Elopement Guide" width="180"></a>';
     }
     document.addEventListener('input', e => { if (e.target.id === 've-desc') document.getElementById('ve-desc-count').textContent = num(e.target.value.length); });
     document.addEventListener('click', async e=>{
@@ -263,6 +283,13 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
         if(!res || res.error){ err.textContent=(res&&res.error)||'Something went wrong. Try again.'; err.classList.remove('hidden'); return; }
         localStorage.setItem('ceg_vtoken',res.token);
         location.reload();
+      }
+      if(e.target.closest('#vd-badge-copy')){
+        const ta=document.getElementById('vd-badge-code'), msg=document.getElementById('vd-badge-msg');
+        try{ await navigator.clipboard.writeText(ta.value); msg.textContent='Copied ✓'; }
+        catch(_){ ta.focus(); ta.select(); msg.textContent='Select the code and copy it'; }
+        setTimeout(()=>{ msg.textContent=''; }, 2500);
+        return;
       }
       if(e.target.closest('#sp-save')){
         const pass=document.getElementById('sp-pass').value;
