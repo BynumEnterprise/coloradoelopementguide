@@ -203,3 +203,52 @@ ${dripFooter(u.token)}`;
   naturalCheck(text, `drip ${u.step} body (${u.slug})`);
   return { subject, text, html: textToHtml(text) };
 }
+
+export type FollowupVendor = { id: number; name: string; slug: string; category: string; sub_region: string; contact_email: string; followups: number };
+
+// Follow ups to vendors who never answered the claim invite. Two at most, then we leave them alone.
+export function renderFollowup(v: FollowupVendor): RenderedMail {
+  const business = displayName(v.name);
+  const plural = categoryPlural(v.category);
+  const region = regionName(v.sub_region);
+  const where = region ? `${region} ${plural}` : `Colorado ${plural}`;
+  let subject: string; let text: string;
+  if (v.followups === 0) {
+    subject = `Quick one on the ${business.replace(/^the\s+/i, '')} listing`;
+    text = `${greetingFor(v.contact_email, business)}
+
+I wrote a few days ago about the free ${business} listing on Colorado Elopement Guide. No pressure either way, I know inboxes get buried.
+
+The short version: the listing is already live for couples looking at ${where}, and taking it over lets you fix the details, add photos, and see how many couples open your page and click through to your site. It takes about a minute and there is no card involved:
+${SITE_URL}/claim/${v.slug}
+
+If you would rather I leave it alone, no reply needed. If you want it gone, reply remove and I will take it down.
+
+Thanks,
+Ryan
+Colorado Elopement Guide
+${POSTAL_ADDRESS}
+
+Reply unsubscribe and you will not hear from me again.
+`;
+  } else {
+    subject = `Last note from me about ${business.replace(/^the\s+/i, '')}`;
+    text = `${greetingFor(v.contact_email, business)}
+
+This is the last time I will write about this, so I will keep it short. Your free ${business} listing stays up either way at ${SITE_URL}/vendor/${v.slug} and couples can find you there.
+
+If you ever want to manage it yourself, add photos, or check how many couples are clicking through to you, the page to claim it is ${SITE_URL}/claim/${v.slug} and it stays free.
+
+Thanks for reading, and best of luck with the season.
+
+Ryan
+Colorado Elopement Guide
+${POSTAL_ADDRESS}
+
+Reply remove to take the listing down, or unsubscribe to stop emails.
+`;
+  }
+  naturalCheck(subject, `followup subject (${v.slug})`);
+  naturalCheck(text, `followup body (${v.slug})`);
+  return { subject, text, html: textToHtml(text) };
+}

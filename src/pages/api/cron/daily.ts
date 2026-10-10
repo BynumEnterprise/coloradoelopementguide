@@ -2,7 +2,7 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { json, rpc, sleep, authSecret, cronAuthorized, fetchWithTimeout, mapLimit } from '../../../lib/cron';
 import { sendMailResult } from '../../../lib/mail';
-import { renderV4, renderDrip, type OutreachVendor, type DripUser } from '../../../lib/outreach';
+import { renderV4, renderDrip, renderFollowup, type OutreachVendor, type DripUser, type FollowupVendor } from '../../../lib/outreach';
 
 // Daily P2 automation (Vercel cron, 15:00 UTC):
 //   1. contact discovery for up to 12 seeded vendors with a website and no email
@@ -158,6 +158,35 @@ export const GET: APIRoute = async ({ request }) => {
       }
     }
     summary.outreach = o;
+  }
+
+
+  // 2b. Follow ups (day 4 and day 10) to invited vendors who never answered
+  if (run('followups')) {
+    const f: Record<string, unknown> = { batch: 0, sent: [] as unknown[], failed: [] as unknown[], blocked: [] as unknown[], marked: 0 };
+    const doneIds: number[] = [];
+    try {
+      const batch = await rpc<FollowupVendor[]>('ceg_cron_followup_batch', { p_secret: secret, p_limit: 25 });
+      f.batch = batch.length;
+      for (const v of batch) {
+        if (Date.now() - started > 230_000) { f.stopped_early = 'time budget'; break; }
+        let mail;
+        try { mail = renderFollowup(v); }
+        catch (e) { (f.blocked as unknown[]).push({ id: v.id, reason: String((e as Error).message || e).slice(0, 200) }); continue; }
+        if (dry) { (f.sent as unknown[]).push({ id: v.id, step: v.followups + 1, subject: mail.subject }); continue; }
+        const res = await sendMailResult(v.contact_email, mail.subject, mail.text, mail.html);
+        if (res.ok) { doneIds.push(v.id); (f.sent as unknown[]).push({ id: v.id, slug: v.slug, step: v.followups + 1 }); }
+        else (f.failed as unknown[]).push({ id: v.id, status: res.status, error: res.error });
+        await sleep(300);
+      }
+    } catch (e) { f.fatal = String(e).slice(0, 300); summary.ok = false; }
+    finally {
+      if (doneIds.length) {
+        try { f.marked = await rpc<number>('ceg_cron_followup_mark', { p_secret: secret, p_ids: doneIds }); }
+        catch (e) { f.mark_error = String(e).slice(0, 300); summary.ok = false; }
+      }
+    }
+    summary.followups = f;
   }
 
   // 3. Onboarding drips
