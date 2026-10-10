@@ -20,8 +20,10 @@ const URL_RE = /https?:\/\/[^\s<>"')\]]+/g;
 const EMOJI_RE = /\p{Extended_Pictographic}/u;
 
 // Throws when the text would read as AI generated or breaks an owner directive. Returns the text otherwise.
-export function naturalCheck(text: string, label = 'text'): string {
-  const prose = text.replace(URL_RE, ' ');
+export function naturalCheck(text: string, label = 'text', allow: string[] = []): string {
+  // Business names are allowed to contain words from the AI tell list (a vendor called Elevate Photography is not an AI tell).
+  let prose = text.replace(URL_RE, ' ');
+  for (const a of allow) { if (a && a.trim()) prose = prose.split(a).join(' '); }
   const m = DASH_RE.exec(prose);
   if (m) throw new Error(`naturalCheck ${label}: dash near "${prose.slice(Math.max(0, m.index - 25), m.index + 25).replace(/\s+/g, ' ')}"`);
   if (prose.includes('--')) throw new Error(`naturalCheck ${label}: double hyphen`);
@@ -121,8 +123,8 @@ ${POSTAL_ADDRESS}
 
 You are getting this one note because your business is publicly listed as a Colorado wedding vendor. Reply unsubscribe and you will not hear from me again.
 `;
-  naturalCheck(subject, `subject (${v.slug})`);
-  naturalCheck(text, `body (${v.slug})`);
+  naturalCheck(subject, `subject (${v.slug})`, [v.name, business]);
+  naturalCheck(text, `body (${v.slug})`, [v.name, business]);
   return { subject, text, html: textToHtml(text) };
 }
 
@@ -248,7 +250,7 @@ ${POSTAL_ADDRESS}
 Reply remove to take the listing down, or unsubscribe to stop emails.
 `;
   }
-  naturalCheck(subject, `followup subject (${v.slug})`);
-  naturalCheck(text, `followup body (${v.slug})`);
+  naturalCheck(subject, `followup subject (${v.slug})`, [v.name, business]);
+  naturalCheck(text, `followup body (${v.slug})`, [v.name, business]);
   return { subject, text, html: textToHtml(text) };
 }
