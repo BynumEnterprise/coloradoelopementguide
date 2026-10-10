@@ -5,6 +5,7 @@ import VendorCard from '../../components/VendorCard.astro';
 import { allVendors } from '../../lib/vendors';
 import { CATEGORIES, REGIONS } from '../../lib/taxonomy';
 import { regionImg, gimg } from '../../lib/assets';
+import { slotLine, FEATURED_CAP } from '../../lib/outreach';
 export async function getStaticPaths() {
   const vendors = await allVendors();
   return vendors.map(v => ({ params: { slug: v.slug }, props: { v, all: vendors } }));
@@ -19,6 +20,8 @@ const jsonld = {
   geo: (v.lat && v.lng) ? {"@type":"GeoCoordinates", latitude: v.lat, longitude: v.lng} : undefined
 };
 const telHref = v.phone ? 'tel:+1' + String(v.phone).replace(/[^0-9]/g,'').replace(/^1/,'') : '';
+const slotTemplate = slotLine(999, v.category, v.sub_region);
+const isFeatured = v.status === 'featured';
 const metaDesc = v.description.length > 155 ? v.description.slice(0, 152).replace(/\s+\S*$/, '') + '…' : v.description;
 ---
 <Base title={`${v.name} — ${cat.singular} · ${reg.name} | Colorado Elopement Guide`} description={metaDesc}>
@@ -54,13 +57,109 @@ const metaDesc = v.description.length > 155 ? v.description.slice(0, 152).replac
             <p class="eyebrow text-clay-600 mb-1.5">Planning here?</p>
             <p class="font-medium">Every vendor in {reg.name} →</p>
           </a>
+          {!isFeatured && <div id="slot-box" class="hidden mt-4 rounded-2xl border border-hairline p-5 text-sm">
+            <p class="eyebrow text-clay-600 mb-1.5">For Vendors</p>
+            <p id="slot-line" class="font-medium"></p>
+            <p class="text-xs text-ink/50 mt-1">Featured listings show first on category and region pages, always labeled. $40 a month, cancel anytime.</p>
+            <a id="slot-buy" href="https://buy.stripe.com/7sYaEZffj1AaaWr93A9oc02" rel="noopener" class="hidden mt-3 inline-block text-clay-700 underline underline-offset-4">Go Featured, First Month $1 →</a>
+            <form id="slot-wait" class="hidden mt-3 space-y-2">
+              <input type="text" name="company_site" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
+              <input type="email" name="email" required placeholder="you@yourbusiness.com" class="w-full rounded-xl border border-hairline bg-ivory px-3 py-2 text-sm" />
+              <button class="w-full rounded-full border border-ink/60 px-4 py-2 text-sm font-medium hover:bg-parchment">Join the Waitlist</button>
+              <p id="slot-msg" class="text-xs text-ink/55"></p>
+            </form>
+          </div>}
         </div>
       </div>
     </div>
+    <section id="inquiry" class="mt-10 rounded-3xl border border-hairline bg-white p-6 md:p-9">
+      <div class="md:grid md:grid-cols-3 md:gap-10">
+        <div>
+          <p class="eyebrow text-clay-600 mb-2">Ask About Your Date</p>
+          <h2 class="display text-2xl leading-tight">Check availability with <span class="serif-i">{v.name}</span></h2>
+          <p class="text-sm text-ink/60 mt-3 leading-relaxed">Your note goes to this vendor so they can reply to you directly. We never sell your email or add you to a mailing list.</p>
+        </div>
+        <form id="inq-form" class="md:col-span-2 mt-6 md:mt-0 space-y-4" novalidate>
+          <input type="hidden" name="slug" value={v.slug} />
+          <div class="hidden" aria-hidden="true"><label>Company website<input type="text" name="company_site" tabindex="-1" autocomplete="off" /></label></div>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div><label for="inq-names" class="eyebrow text-ink/60 block mb-2">Your Names</label>
+              <input id="inq-names" name="names" required maxlength="120" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" placeholder="Sam and Alex" /></div>
+            <div><label for="inq-email" class="eyebrow text-ink/60 block mb-2">Email</label>
+              <input id="inq-email" name="email" type="email" required maxlength="200" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" placeholder="you@example.com" /></div>
+            <div><label for="inq-date" class="eyebrow text-ink/60 block mb-2">Wedding Date <span class="normal-case tracking-normal text-ink/40">(optional)</span></label>
+              <input id="inq-date" name="wedding_date" type="date" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" /></div>
+            <div><label for="inq-guests" class="eyebrow text-ink/60 block mb-2">Guests <span class="normal-case tracking-normal text-ink/40">(optional)</span></label>
+              <input id="inq-guests" name="guests" type="number" min="1" max="500" inputmode="numeric" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" placeholder="12" /></div>
+          </div>
+          <div><label for="inq-msg" class="eyebrow text-ink/60 block mb-2">Message</label>
+            <textarea id="inq-msg" name="message" required minlength="20" maxlength="1500" rows="5" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" placeholder="Where you are thinking of getting married, what you have in mind, and any questions."></textarea>
+            <p class="text-xs text-ink/40 mt-1.5"><span id="inq-count">0</span> of 1,500 characters</p></div>
+          <p id="inq-err" class="hidden text-sm rounded-xl border border-clay-500 bg-clay-50 text-clay-700 px-4 py-3"></p>
+          <button id="inq-btn" class="rounded-full bg-ink text-ivory px-7 py-3.5 text-sm font-semibold hover:bg-spruce-800 transition-colors">Check Availability</button>
+          <p class="text-xs text-ink/40">By sending, you agree we share your note and email with this vendor. <a href="/privacy" class="underline">Privacy</a></p>
+        </form>
+        <div id="inq-done" class="hidden md:col-span-2 mt-6 md:mt-0 rounded-2xl bg-parchment/70 border border-hairline p-6">
+          <p class="display text-xl" id="inq-done-title">Sent.</p>
+          <p class="text-sm text-ink/70 mt-2 leading-relaxed" id="inq-done-body"></p>
+        </div>
+      </div>
+    </section>
     {related.length > 0 && <section class="pt-14">
       <h2 class="display text-2xl mb-6">More {cat.name.toLowerCase()} in <span class="serif-i">{reg.name}</span></h2>
       <div class="grid gap-5 md:grid-cols-3">{related.map(r => <VendorCard v={r} />)}</div>
     </section>}
   </div>
+  <script is:inline define:vars={{ slug: v.slug, vname: v.name, category: v.category, subRegion: v.sub_region, isFeatured, slotTemplate, cap: FEATURED_CAP }}>
+  (function(){
+    var t0 = Date.now();
+    var f = document.getElementById('inq-form'); if (!f) return;
+    var msg = document.getElementById('inq-msg'), cnt = document.getElementById('inq-count'), err = document.getElementById('inq-err'), btn = document.getElementById('inq-btn');
+    msg.addEventListener('input', function(){ cnt.textContent = msg.value.length.toLocaleString('en-US'); });
+    f.addEventListener('submit', function(e){
+      e.preventDefault(); err.classList.add('hidden');
+      var d = Object.fromEntries(new FormData(f).entries());
+      d.elapsed_ms = Date.now() - t0;
+      var m = String(d.message || '').trim();
+      if (String(d.names || '').trim().length < 2) return fail('Add your names.');
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(d.email || '').trim())) return fail('Check your email address.');
+      if (m.length < 20 || m.length > 1500) return fail('Your message should be between 20 and 1,500 characters.');
+      btn.disabled = true; btn.textContent = 'Sending…';
+      fetch('/api/inquiry', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) })
+        .then(function(r){ return r.json().catch(function(){ return { ok: false }; }); })
+        .then(function(res){
+          if (!res || !res.ok) { btn.disabled = false; btn.textContent = 'Check Availability'; return fail((res && res.error) || 'Something went wrong. Please try again.'); }
+          var em = String(d.email || '').trim();
+          document.getElementById('inq-done-body').textContent = res.mode === 'account'
+            ? vname + ' will reply to ' + em + ' directly.'
+            : 'We passed your note along. If they do not reply within a few days, try their website or phone listed above.';
+          f.classList.add('hidden'); document.getElementById('inq-done').classList.remove('hidden');
+        })
+        .catch(function(){ btn.disabled = false; btn.textContent = 'Check Availability'; fail('Could not send. Check your connection and try again.'); });
+    });
+    function fail(t){ err.textContent = t; err.classList.remove('hidden'); }
+  })();
+  (function(){
+    if (isFeatured) return;
+    var box = document.getElementById('slot-box'); if (!box) return;
+    var K = 'sb_publishable_acsHsb9mrZ756aT12EgAPQ_GugWXmjM';
+    fetch('https://yucgsuzveabsgntlmste.supabase.co/rest/v1/rpc/ceg_featured_slots', { method: 'POST', headers: { apikey: K, Authorization: 'Bearer ' + K, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_category: category, p_sub_region: subRegion }) })
+      .then(function(r){ return r.ok ? r.json() : null; }).then(function(s){
+        if (!s) return;
+        document.getElementById('slot-line').textContent = slotTemplate.replace('999', String(s.open));
+        document.getElementById(s.open > 0 ? 'slot-buy' : 'slot-wait').classList.remove('hidden');
+        box.classList.remove('hidden');
+      }).catch(function(){});
+    var w = document.getElementById('slot-wait');
+    w.addEventListener('submit', function(e){
+      e.preventDefault();
+      var d = Object.fromEntries(new FormData(w).entries()); d.slug = slug;
+      var out = document.getElementById('slot-msg');
+      fetch('/api/featured-waitlist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) })
+        .then(function(r){ return r.json(); }).then(function(res){ out.textContent = res && res.ok ? 'You are on the list. We will email you when a spot opens.' : ((res && res.error) || 'Could not save. Try again.'); })
+        .catch(function(){ out.textContent = 'Could not save. Try again.'; });
+    });
+  })();
+  </script>
   <Tracker vendorId={v.db_id ?? null} eventType="profile_view" />
 </Base>

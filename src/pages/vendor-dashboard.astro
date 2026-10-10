@@ -2,10 +2,13 @@
 import Base from '../layouts/Base.astro';
 import { allVendors } from '../lib/vendors';
 import { CATEGORIES, REGIONS } from '../lib/taxonomy';
+import { slotLine } from '../lib/outreach';
 const vendors = await allVendors();
 const vlist = vendors.map(v => ({ s: v.slug, n: v.name }));
 const catNames = Object.fromEntries(Object.entries(CATEGORIES).map(([k,c]) => [k, c.name]));
 const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r.name]));
+// Slot line templates per category and region ("999 of 3 Featured spots open for Estes Park photographers").
+const slotTemplates = Object.fromEntries(Object.keys(CATEGORIES).flatMap(c => Object.keys(REGIONS).map(r => [`${c}|${r}`, slotLine(999, c, r)])));
 ---
 <Base title="Vendor Dashboard | Colorado Elopement Guide" description="Manage your free listing: update your details and see how many couples click through to you." noindex={true}>
   <div class="max-w-5xl mx-auto px-5 md:px-8 pt-12 pb-4">
@@ -63,6 +66,10 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
       <p class="eyebrow text-clay-600 mt-10 mb-4">Your Traffic</p>
       <div id="vd-traffic"></div>
 
+      <!-- INQUIRIES -->
+      <p class="eyebrow text-clay-600 mt-10 mb-4">Inquiries</p>
+      <div id="vd-inq" class="rounded-3xl border border-hairline bg-white p-5 md:p-6 text-sm text-ink/55">Loading inquiries…</div>
+
       <div class="md:grid md:grid-cols-5 gap-6 mt-10">
         <div class="md:col-span-3">
           <p class="eyebrow text-clay-600 mb-4">Your Listing</p>
@@ -93,7 +100,10 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
               <li>✓ Homepage rotation</li>
               <li>✓ Cancel anytime, no contract</li>
             </ul>
-            <a href="https://buy.stripe.com/7sYaEZffj1AaaWr93A9oc02" rel="noopener" class="inline-block mt-5 rounded-full bg-clay-500 text-ivory px-6 py-3 text-sm font-semibold hover:bg-clay-600 transition-colors">Go Featured, First Month $1 →</a>
+            <p id="vd-slot" class="hidden mt-4 text-sm font-medium text-spruce-800"></p>
+            <button id="vd-wait" type="button" class="hidden mt-5 rounded-full border border-ink/60 px-6 py-3 text-sm font-semibold hover:bg-parchment">Join the Waitlist</button>
+            <p id="vd-wait-msg" class="mt-2 text-xs text-ink/55"></p>
+            <a id="vd-buy" href="https://buy.stripe.com/7sYaEZffj1AaaWr93A9oc02" rel="noopener" class="inline-block mt-5 rounded-full bg-clay-500 text-ivory px-6 py-3 text-sm font-semibold hover:bg-clay-600 transition-colors">Go Featured, First Month $1 →</a>
             <p class="mt-3 text-xs text-ink/50">Use code <strong>FIRSTMONTH1</strong> at checkout.</p>
           </div>
 
@@ -119,7 +129,7 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
     </div>
   </div>
 
-  <script is:inline define:vars={{ vlist, catNames, regNames }}>
+  <script is:inline define:vars={{ vlist, catNames, regNames, slotTemplates }}>
     const SB = 'https://yucgsuzveabsgntlmste.supabase.co/rest/v1/rpc/';
     const SBK = 'sb_publishable_acsHsb9mrZ756aT12EgAPQ_GugWXmjM';
     const rpc = (fn, args) => fetch(SB + fn, { method:'POST', headers:{ apikey:SBK, Authorization:'Bearer '+SBK, 'Content-Type':'application/json' }, body: JSON.stringify(args) }).then(r => r.ok ? r.json() : null).catch(()=>null);
@@ -148,7 +158,37 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
       if (!vtok()) { show('auth'); paintMode(); return; }
       VD = await rpc('ceg_vendor_get', { p_token: vtok() });
       if (!VD) { localStorage.removeItem('ceg_vtoken'); show('auth'); paintMode(); return; }
-      paint(); show('app'); drawChart();
+      paint(); show('app'); drawChart(); loadExtras();
+    }
+
+    // ---------- inquiries and Featured slots ----------
+    const fmtWhen = d => d ? new Date(String(d).length <= 10 ? d + 'T12:00:00' : d).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '';
+    async function loadExtras(){
+      const v = VD.vendor;
+      const box = document.getElementById('vd-inq');
+      const inq = await rpc('ceg_vendor_inquiries', { p_token: vtok() });
+      if (!inq) { box.textContent = 'Could not load inquiries right now.'; }
+      else if (!inq.verified) {
+        box.innerHTML = `<p class="text-ink/75"><span class="display text-3xl text-ink">${num(inq.count)}</span> ${inq.count === 1 ? 'inquiry' : 'inquiries'} from couples so far.</p><p class="mt-2">You can read and answer them as soon as your account is verified.</p>`;
+      } else if (!inq.items.length) {
+        box.innerHTML = '<p>No inquiries yet. When a couple uses Check Availability on your listing, their note shows up here and in your email.</p>';
+      } else {
+        box.innerHTML = `<p class="text-xs text-ink/50 mb-3">${num(inq.count)} ${inq.count === 1 ? 'inquiry' : 'inquiries'}. Reply goes straight to the couple.</p><ul>` + inq.items.map(i => {
+          const subj = encodeURIComponent('Re: your inquiry to ' + v.name);
+          const meta = [fmtWhen(i.created_at), i.wedding_date ? 'Wedding ' + fmtWhen(i.wedding_date) : null, i.guests ? num(i.guests) + ' guests' : null].filter(Boolean).join(' · ');
+          return `<li class="py-4 border-b border-hairline last:border-0">
+            <div class="flex flex-wrap items-baseline justify-between gap-3"><p class="font-semibold text-ink">${esc(i.names)}</p><a href="mailto:${esc(i.email)}?subject=${subj}" class="rounded-full bg-ink text-ivory px-5 py-2 text-xs font-semibold hover:bg-spruce-800">Reply</a></div>
+            <p class="text-xs text-ink/50 mt-1">${esc(meta)} · ${esc(i.email)}</p>
+            <p class="mt-2 text-ink/80 whitespace-pre-line leading-relaxed">${esc(i.message)}</p></li>`;
+        }).join('') + '</ul>';
+      }
+      const slot = document.getElementById('vd-slot');
+      if (v.status === 'featured') { slot.textContent = 'You are Featured' + (v.featured_until ? ' through ' + fmtWhen(v.featured_until) : '') + '.'; slot.classList.remove('hidden'); document.getElementById('vd-buy').classList.add('hidden'); return; }
+      const s = await rpc('ceg_featured_slots', { p_category: v.category, p_sub_region: v.sub_region });
+      if (!s) return;
+      const tpl = slotTemplates[v.category + '|' + v.sub_region];
+      if (tpl) { slot.textContent = tpl.replace('999', String(s.open)); slot.classList.remove('hidden'); }
+      if (s.open <= 0) { document.getElementById('vd-buy').classList.add('hidden'); document.getElementById('vd-wait').classList.remove('hidden'); }
     }
 
     // ---------- inline SVG chart: bars for views, thin lines for site clicks and phone taps ----------
@@ -283,6 +323,12 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
         if(!res || res.error){ err.textContent=(res&&res.error)||'Something went wrong. Try again.'; err.classList.remove('hidden'); return; }
         localStorage.setItem('ceg_vtoken',res.token);
         location.reload();
+      }
+      if(e.target.closest('#vd-wait')){
+        const out=document.getElementById('vd-wait-msg'); out.textContent='Saving…';
+        try{ const r=await fetch('/api/featured-waitlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:vtok()})}); const res=await r.json(); out.textContent = res&&res.ok ? 'You are on the waitlist. We will email you when a spot opens.' : ((res&&res.error)||'Could not save. Try again.'); }
+        catch(_){ out.textContent='Could not save. Try again.'; }
+        return;
       }
       if(e.target.closest('#vd-badge-copy')){
         const ta=document.getElementById('vd-badge-code'), msg=document.getElementById('vd-badge-msg');

@@ -254,3 +254,95 @@ Reply remove to take the listing down, or unsubscribe to stop emails.
   naturalCheck(text, `followup body (${v.slug})`, [v.name, business]);
   return { subject, text, html: textToHtml(text) };
 }
+
+// ---------- Couple inquiries (vendor lead form) and the Featured slot cap ----------
+
+export const FEATURED_CAP = 3;
+
+// Short place names for the slot line: "2 of 3 Featured spots open for Estes Park photographers".
+const REGION_SHORT: Record<string, string> = {
+  'estes-park': 'Estes Park', 'summit-county': 'Summit County', 'vail-aspen': 'Vail and Aspen',
+  'telluride-san-juans': 'Telluride and the San Juans', 'colorado-springs': 'Colorado Springs', 'boulder': 'Boulder',
+  'denver-foothills': 'Denver and the foothills', 'northern-colorado': 'Northern Colorado'
+};
+const CATEGORY_SHORT: Record<string, string> = {
+  photographers: 'photographers', venues: 'venues', florists: 'florists', 'hair-makeup': 'hair and makeup artists',
+  officiants: 'officiants', planners: 'planners'
+};
+
+export function slotLine(open: number, category: string, sub_region: string): string {
+  const cat = CATEGORY_SHORT[category] || 'vendors';
+  const where = sub_region === 'other-colorado' || !REGION_SHORT[sub_region] ? `${cat} statewide` : `${REGION_SHORT[sub_region]} ${cat}`;
+  return `${open} of ${FEATURED_CAP} Featured spots open for ${where}`;
+}
+
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+export function fmtDateLong(iso: string | null | undefined): string | null {
+  const m = /^(\d{4})(?:\D(\d{2})\D(\d{2}))?/.exec(iso || ''); if (!m || !m[2]) return null;
+  return `${MONTHS[Number(m[2]) - 1]} ${Number(m[3])}, ${m[1]}`;
+}
+export function fmtMonthYear(iso: string | null | undefined): string | null {
+  const m = /^(\d{4})\D(\d{2})/.exec(iso || ''); if (!m) return null;
+  return `${MONTHS[Number(m[2]) - 1]} ${m[1]}`;
+}
+
+export type InquiryIn = { slug: string; vendorName: string; names: string; email: string; weddingDate: string | null; guests: number | null; message: string; sub_region: string; category: string };
+
+// Full inquiry to a claimed or Featured vendor's account email. Reply To is the couple.
+export function inquiryVendorEmail(q: InquiryIn): { subject: string; text: string; html: string } {
+  const business = displayName(q.vendorName);
+  const subject = `New inquiry from ${q.names} via Colorado Elopement Guide`;
+  const text = `Hello ${business},
+
+A couple sent this through your listing on Colorado Elopement Guide. Reply to this email and your answer goes straight to them at ${q.email}.
+
+Names: ${q.names}
+Email: ${q.email}
+Wedding date: ${fmtDateLong(q.weddingDate) || 'not given'}
+Guests: ${q.guests ?? 'not given'}
+
+Their message:
+${q.message}
+
+Every inquiry also stays in your dashboard, where you can manage email from us: ${SITE_URL}/vendor-dashboard
+
+Colorado Elopement Guide
+${POSTAL_ADDRESS}
+`;
+  const allow = [q.vendorName, business, q.names, q.email, q.message];
+  naturalCheck(subject, `inquiry subject (${q.slug})`, allow);
+  naturalCheck(text, `inquiry body (${q.slug})`, allow);
+  return { subject, text, html: textToHtml(text) };
+}
+
+// Short notice to an unclaimed listing: no couple contact details, the full message waits behind the free claim.
+export function inquiryNoticeEmail(q: InquiryIn): { subject: string; text: string; html: string } {
+  const business = displayName(q.vendorName);
+  const when = fmtMonthYear(q.weddingDate);
+  const region = regionName(q.sub_region);
+  const details = [
+    when ? `Wedding: ${when}` : null,
+    q.guests ? `Guests: ${q.guests}` : null,
+    `Region: ${region || 'Colorado'}`
+  ].filter(Boolean).join('\n');
+  const subject = `A couple asked about availability with ${business}`;
+  const text = `Hello,
+
+A couple asked about your availability${when ? ` for ${when}` : ''} through the free ${business} listing on Colorado Elopement Guide.
+
+${details}
+
+Claim the free listing to read their message and reply: ${SITE_URL}/vendor-dashboard?vendor=${q.slug}
+
+The full inquiry waits in your dashboard. Claiming costs nothing and takes about a minute.
+
+Colorado Elopement Guide
+${POSTAL_ADDRESS}
+
+Reply unsubscribe and we will not email you again.
+`;
+  const allow = [q.vendorName, business];
+  naturalCheck(subject, `inquiry notice subject (${q.slug})`, allow);
+  naturalCheck(text, `inquiry notice body (${q.slug})`, allow);
+  return { subject, text, html: textToHtml(text) };
+}

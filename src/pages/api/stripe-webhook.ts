@@ -56,6 +56,15 @@ export const POST: APIRoute = async ({ request }) => {
       const periodEnd = obj.lines?.data?.find((l: any) => l?.period?.end)?.period?.end;
       if (periodEnd) until = new Date(Number(periodEnd) * 1000).toISOString().slice(0, 10);
       if (!until) until = addDays(new Date(), 35);
+      // Slot cap: three Featured per category per region. A new Featured vendor in a full slot is waitlisted, not flipped.
+      const guard = await rpc<any>('ceg_cron_featured_guard', { p_secret: secret, p_email: email || null, p_name: name || null });
+      if (guard?.full) {
+        await rpc('ceg_featured_waitlist_add', { p_secret: secret, p_slug: guard.slug, p_token: null, p_email: email || null, p_source: 'stripe', p_note: `paid while cap full (${type})` });
+        out.waitlisted = guard.vendor_id; out.email = email;
+        await sendMailResult(OWNER_EMAIL, `[CEG] Featured cap full, refund or hold: ${name || email}`,
+          `Stripe ${type} for ${email || 'unknown email'}${name ? ` (${name})` : ''} matched vendor ${guard.name} (id ${guard.vendor_id}), but all 3 Featured spots for ${guard.category} in ${guard.sub_region} are taken.\nThey were NOT flipped to Featured and are on the waitlist. Refund the payment in Stripe or hold it until a spot opens.`);
+        return json(out);
+      }
       const vendorId = await rpc<number | null>('ceg_cron_set_featured', { p_secret: secret, p_email: email || null, p_name: name || null, p_until: until });
       out.vendor_id = vendorId; out.featured_until = until; out.email = email;
       // Remember the Stripe customer so a later subscription.deleted (which carries no email) can be resolved.
