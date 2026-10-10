@@ -6,7 +6,7 @@ dek: "The most photographed peaks in Colorado come with a reservation system, we
 description: "How to elope in Aspen and Vail: Maroon Bells Amphitheater reservations and rules, Independence Pass, Vail Valley options, license offices, timing and a sample day."
 datePublished: "2026-10-09"
 facts:
-  license: "Pitkin County Clerk in Aspen or Eagle County Clerk in Eagle, Avon or El Jebel; $30, use within 35 days"
+  license: "Pitkin County Clerk in Aspen or Eagle County Clerk in Eagle or El Jebel; $30, use within 35 days"
   permit: "Maroon Bells Amphitheater reserved on Recreation.gov, no Fri/Sat June to August, no Fri to Sun in September"
   season: "Late June to early October; the Bells road closes to cars in winter"
   airport: "Aspen/Pitkin County (ASE) 15 minutes; Eagle County Regional (EGE) 35 minutes to Vail; Denver 2 to 4 hours"
@@ -40,7 +40,7 @@ Elsewhere on the White River National Forest, non-commercial groups under 75 peo
 
 Any Colorado county clerk can issue a license that works statewide. You both appear with photo ID (a notarized absentee affidavit covers a partner who cannot), the fee is $30, there is no waiting period, blood test or witness requirement, and under C.R.S. 14-2-109 you may solemnize your own marriage. Use the license within 35 days and return the signed certificate to the issuing clerk within 63 days of the ceremony.
 
-The Pitkin County Clerk and Recorder is on Main Street in Aspen. The Eagle County Clerk has offices in Eagle, Avon and El Jebel, so Vail couples use Avon and Basalt couples use El Jebel. Statewide rules are spelled out on any clerk's page, such as [Larimer County's](https://www.larimer.gov/clerk/recording/marriage).
+The Pitkin County Clerk and Recorder is on Main Street in Aspen. The Eagle County Clerk has offices in Eagle and El Jebel (its Avon office closed in 2026), so Vail couples drive to Eagle and Basalt couples use El Jebel. Statewide rules are spelled out on any clerk's page, such as [Larimer County's](https://www.larimer.gov/clerk/recording/marriage).
 
 ## When to go
 

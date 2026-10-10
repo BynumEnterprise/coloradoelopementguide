@@ -12,6 +12,7 @@ export type VenuePage = {
   towns?: string[];           // primary towns (address town); shown first
   strictTowns?: boolean;      // only list venues whose address town is in towns
   groups?: string[];          // multi region page: one section per sub_region
+  pick?: string[];            // curated page: only these vendor slugs (still must be live)
   h1: [string, string];       // [plain, italic]
   title: string;              // {n} is replaced with the venue count
   description: string;        // under 160 characters
@@ -30,6 +31,10 @@ export function addressTown(address: string | null | undefined): string | null {
 
 export function matchVenues(page: VenuePage, all: any[]) {
   const live = all.filter(v => v.category === 'venues' && ['seeded', 'claimed', 'featured'].includes(v.status));
+  if (page.pick) {
+    const picked = live.filter(v => page.pick!.includes(v.slug));
+    return page.groups ? picked.filter(v => page.groups!.includes(v.sub_region)) : picked;
+  }
   if (page.groups) return live.filter(v => page.groups!.includes(v.sub_region));
   const inRegion = live.filter(v => v.sub_region === page.region);
   if (page.strictTowns && page.towns) return inRegion.filter(v => page.towns!.includes(addressTown(v.address) || ''));
@@ -214,7 +219,7 @@ export const VENUE_PAGES: VenuePage[] = [
       'Vail Village sits at about 8,150 feet in a narrow valley along Gore Creek, with the ski mountain rising directly behind it. For a small wedding, that layout is the appeal: your hotel, your ceremony and your dinner can all be a short walk apart, and the gondola puts a mountaintop within reach of guests who would never hike to one. Eagle County Regional Airport is about 35 minutes away, and Denver is roughly two hours in good weather.',
       'The venues below are in Vail itself and down valley in Avon and Beaver Creek. In Vail you will find the alpine gardens and the outdoor amphitheater in Ford Park, the village hotels with terraces over the creek, and the resort itself. In Avon and Beaver Creek the options lean toward large resorts with smaller spaces for intimate groups, including a mountainside hotel at Bachelor Gulch.',
       'Much of the land around Vail is White River National Forest. A small ceremony on forest land generally needs no permit, but larger gatherings and commercial vendors may; our <a href="/resources/national-forest-and-blm-elopements">national forest ceremony guide</a> explains the 75 person rule. The resort venues handle all of that for you and add an indoor fallback, which matters here because summer storms build most afternoons above treeline.',
-      'Summer runs from late June to early October, and the aspens usually turn in the second half of September. Winter weddings are a real option in Vail in a way they are not in most of the state: the lifts are running, the village is lit and the hotels are set up for snow. Shoulder months in spring and late fall are quiet, and some venues close or reduce service. Licenses come from the Eagle County Clerk, with offices in Eagle, Avon and El Jebel. The <a href="/guides/vail-aspen">Vail and Aspen planning guide</a> covers ceremony sites and timing on both sides of the valley.'
+      'Summer runs from late June to early October, and the aspens usually turn in the second half of September. Winter weddings are a real option in Vail in a way they are not in most of the state: the lifts are running, the village is lit and the hotels are set up for snow. Shoulder months in spring and late fall are quiet, and some venues close or reduce service. Licenses come from the Eagle County Clerk, with offices in Eagle and El Jebel. The <a href="/guides/vail-aspen">Vail and Aspen planning guide</a> covers ceremony sites and timing on both sides of the valley.'
     ],
     choose: [
       { h: 'Ask for the intimate space', p: 'Big resorts here have terraces, private dining rooms and small lawns that suit twenty or thirty guests better than the main ballroom.' },
@@ -227,7 +232,7 @@ export const VENUE_PAGES: VenuePage[] = [
       { q: 'How many wedding venues are listed in Vail?', a: 'We list {n} live wedding venues in Vail, Avon and Beaver Creek, ranked by Google rating and review count. Featured venues are shown first and labeled.' },
       { q: 'Can we have a winter wedding in Vail?', a: 'Yes. Vail is one of the few Colorado towns where winter weddings are routine, because the village hotels and the resort are fully open in ski season. Spring and late fall shoulder seasons are when some venues reduce service.' },
       { q: 'Do we need a permit to marry on national forest land near Vail?', a: 'Small noncommercial gatherings on national forest land generally do not need a special use permit, while groups of 75 or more do. Check our national forest page and ask the ranger district if your plans are close to that line.' },
-      { q: 'Where do we get a marriage license for Vail?', a: 'From the Eagle County Clerk, with offices in Eagle, Avon and El Jebel. The license must be used within 35 days.' }
+      { q: 'Where do we get a marriage license for Vail?', a: 'From the Eagle County Clerk, with offices in Eagle and El Jebel. The license must be used within 35 days.' }
     ]
   },
   {
@@ -309,7 +314,7 @@ export const VENUE_PAGES: VenuePage[] = [
     permit: { href: '/resources/national-forest-and-blm-elopements', label: 'national forest ceremony rules' },
     intro: [
       'A mountain wedding in Colorado almost always means a venue above 7,500 feet, and that changes the practical questions. Weather moves faster, roads close for the season, and getting guests up from Denver is part of the plan. This page groups our live mountain venues by region so you can compare them side by side: Breckenridge and Summit County, Estes Park and Rocky Mountain National Park, Vail and Aspen, and Telluride.',
-      'Breckenridge and Summit County are the closest high mountain towns to Denver, about an hour and forty five minutes on Interstate 70 in good conditions. The venues there are ski lodges, a Nordic center and resort spaces in Breckenridge, with Sapphire Point overlook near Dillon available for ceremonies through a Recreation.gov reservation in two hour blocks for up to 35 people. Licenses come from the Summit County Clerk in Breckenridge, and the <a href="/guides/summit-county">Summit County planning guide</a> covers Sapphire Point, Loveland Pass and timing.',
+      'Breckenridge and Summit County are the closest high mountain towns to Denver, about an hour and forty five minutes on Interstate 70 in good conditions. The venues there are ski lodges, a Nordic center and resort spaces in Breckenridge, with Sapphire Point overlook near Dillon available for ceremonies through a Recreation.gov reservation in three hour blocks for up to 30 people. Licenses come from the Summit County Clerk in Breckenridge, and the <a href="/guides/summit-county">Summit County planning guide</a> covers Sapphire Point, Loveland Pass and timing.',
       'Each region has its own character. Estes Park pairs a strict national park permit with lodges and inns in the valley. Vail and Aspen offer the most polished hotels and the easiest winter weddings. Telluride is the most dramatic and the hardest to reach. If you already know your town, the dedicated pages for <a href="/venues/estes-park-wedding-venues">Estes Park</a>, <a href="/venues/vail-wedding-venues">Vail</a>, <a href="/venues/aspen-wedding-venues">Aspen</a> and <a href="/venues/telluride-wedding-venues">Telluride</a> go deeper.',
       'Across all of these regions, late June to early October is the outdoor season and the aspens turn in the second half of September. Summer afternoons bring thunderstorms above treeline almost daily, so morning ceremonies and venues with real indoor space are the norm. Winter weddings are realistic in the ski towns, where hotels and lifts are open, and much harder where passes close. Much of the surrounding land is national forest, where small noncommercial gatherings usually need no permit; our <a href="/resources/national-forest-and-blm-elopements">national forest guide</a> explains the 75 person rule.'
     ],
@@ -322,9 +327,50 @@ export const VENUE_PAGES: VenuePage[] = [
     ],
     faqs: [
       { q: 'How many mountain wedding venues are listed?', a: 'We list {n} live mountain wedding venues across Summit County, Estes Park, Vail and Aspen, and Telluride, ranked by Google rating and review count within each region.' },
-      { q: 'Can we get married at Sapphire Point near Breckenridge?', a: 'Yes. Sapphire Point is reserved on Recreation.gov in two hour blocks with a limit of 35 people. Our Summit County guide covers the details.' },
+      { q: 'Can we get married at Sapphire Point near Breckenridge?', a: 'Yes. Sapphire Point is reserved on Recreation.gov in three hour blocks with a limit of 30 people, and the site stays open to the public. Our Sapphire Point page covers the details.' },
       { q: 'What is the best season for a Colorado mountain wedding?', a: 'Late June through early October for outdoor ceremonies, with aspens turning in the second half of September. Ski towns such as Breckenridge, Vail and Aspen also host winter weddings.' },
       { q: 'Do we need a permit to marry on national forest land?', a: 'Small noncommercial gatherings on national forest land generally do not need a special use permit, but groups of 75 or more do. Reservable sites such as Sapphire Point and the Maroon Bells Amphitheater have their own rules.' }
+    ]
+  },
+  {
+    slug: 'micro-wedding-venues-colorado',
+    town: 'Colorado',
+    term: 'small wedding venues colorado',
+    volume: 1190,
+    region: 'estes-park',
+    groups: ['estes-park', 'boulder', 'denver-foothills', 'colorado-springs', 'northern-colorado', 'summit-county', 'vail-aspen', 'telluride-san-juans'],
+    pick: [
+      'riversong-inn-retreat', 'saint-catherine-s-chapel-on-the-rock', 'wild-basin-lodge', 'black-canyon-inn', 'the-inn-on-fall-river-fall-river-cabins', 'historic-crags-lodge',
+      'chautauqua-dining-hall', 'sunrise-amphitheater', 'the-greenbriar-inn', 'flagstaff-house',
+      'boettcher-mansion-lookout-mt', 'evergreen-lake-house', 'the-barn-at-evergreen-memorial-park', 'blackstone-rivers-ranch', 'woodlands',
+      'pikes-peak-ranch', 'spruce-mountain-events', 'the-cliff-house-at-pikes-peak',
+      'edwards-house', 'sylvan-dale-guest-ranch-retreat-wedding-venue', 'wolverine-farm-publick-house',
+      'breckenridge-nordic-center', 'mountain-thunder-lodge',
+      'betty-ford-alpine-gardens', 'avalanche-ranch', 'john-denver-sanctuary', 'sonnenalp-vail',
+      'beaumont-hotel-spa', 'new-sheridan-hotel'
+    ],
+    h1: ['Micro Wedding Venues in Colorado', 'for Small Weddings of 2 to 50'],
+    title: 'Micro Wedding Venues in Colorado: {n} Small Wedding Venues by Region | Colorado Elopement Guide',
+    description: 'Small and micro wedding venues in Colorado, hand picked by region: inns, lodges, chapels, ranches and gardens that suit a guest list of 2 to 50.',
+    permit: { href: '/resources/best-places-to-elope-in-colorado', label: 'Best places to elope in Colorado, with permit status' },
+    intro: [
+      'A micro wedding sits between an elopement and a traditional wedding: usually somewhere between ten and fifty people, one long table, and a day that feels like a gathering rather than a production. The hard part in Colorado is not finding a venue. It is finding one that does not swallow your group. Many of the best known venues in the state are built for 150 guests, and twenty people in a ballroom feels like a rehearsal.',
+      'This page is a curated short list, not everything we have. We picked live venues from our directory whose format suits a small group: inns and lodges with a private room, chapels, guest ranches, gardens, historic houses and a few restaurants that seat a long table. We left out convention spaces, stadiums, theaters and big resort ballrooms, even when they host weddings. We do not publish capacities or prices for these venues, because they change by season and by room, so treat every card as a place to ask, not a promise.',
+      'The list is grouped by region because the region decides more than the venue does. Estes Park and Rocky Mountain National Park pair a strict park permit with cozy valley inns. Boulder and the Denver foothills keep guests close to the airport. Colorado Springs adds red rock and mild winters. Northern Colorado is farmhouses and breweries. Summit County, Vail and Aspen, and Telluride bring the high peaks and the longer drives.',
+      'If you are still deciding between a venue and public land, read our guide to the <a href="/resources/best-places-to-elope-in-colorado">best places to elope in Colorado</a>, which notes the permit status of each spot. Many couples hold a short ceremony at an overlook and then bring everyone to one of the venues below for dinner. If you would rather have someone else handle the whole day, our page on <a href="/resources/elopement-packages-colorado">Colorado elopement packages</a> explains what venue and all inclusive packages usually cover.'
+    ],
+    choose: [
+      { h: 'Ask for the smallest room first', p: 'Tell the venue your real number and ask which space they would put you in. A room that seats your group snugly will feel warmer than a big one with empty tables. Check with the venue on minimums for that room.' },
+      { h: 'Ask about weekday and off season pricing', p: 'Small groups have leverage on Sundays through Thursdays and outside June to October. Many venues have a separate small wedding or elopement package; ask whether one exists rather than assuming.' },
+      { h: 'Confirm the weather plan', p: 'Afternoon storms are routine in summer above about 7,000 feet. Ask to see the indoor or covered backup and decide now whether you would be happy using it.' },
+      { h: 'Look for lodging on site or nearby', p: 'With a small guest list, an inn or ranch where everyone sleeps under one roof turns a dinner into a weekend and removes the late drive on mountain roads.' },
+      { h: 'Check what you may bring in', p: 'Ask whether you can bring your own caterer, florist, officiant and photographer, and whether outside alcohol is allowed. Policies vary widely and are the main source of surprise costs.' }
+    ],
+    faqs: [
+      { q: 'What counts as a micro wedding venue?', a: 'There is no official definition. We use the term for venues whose format suits roughly 2 to 50 guests: inns, lodges, chapels, ranches, gardens, historic houses and restaurants with a private room. Capacity and minimums vary by room and season, so check with the venue.' },
+      { q: 'How many venues are on this list?', a: 'This curated list has {n} live venues grouped by region. It is a hand picked selection, not every venue we list; the town pages and the full venues category show the rest.' },
+      { q: 'Can we hold the ceremony on public land and the dinner at a venue?', a: 'Yes, and many couples do. National park, national forest, state park and city park sites each have their own permit rules, so confirm the ceremony site first and then book a venue within a short drive.' },
+      { q: 'Do small wedding venues in Colorado have lower prices?', a: 'Sometimes. Many venues offer weekday, off season or small wedding packages, but pricing depends on the room, the date and food and drink minimums. We do not publish prices; ask each venue for its current small wedding rates.' }
     ]
   }
 ];

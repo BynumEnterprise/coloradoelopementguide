@@ -7,7 +7,7 @@ description: "How to elope in Summit County: Sapphire Point reservations, Lovela
 datePublished: "2026-10-09"
 facts:
   license: "Summit County Clerk and Recorder in Breckenridge, $30, use within 35 days"
-  permit: "Sapphire Point reserved on Recreation.gov in two-hour blocks, 35 people max"
+  permit: "Sapphire Point reserved on Recreation.gov in three hour blocks, 30 people max"
   season: "Late June to early October; winter for snow and quiet weekdays"
   airport: "Denver International, about 1 hour 45 minutes; Eagle County Regional, 1 hour"
 ---
@@ -20,7 +20,7 @@ Three things make Summit work for small weddings. Access: Swan Mountain Road, Lo
 
 ## Best ceremony spots
 
-**Sapphire Point Overlook.** A short loop trail on Swan Mountain Road between Keystone and Breckenridge leads to a rocky point with Dillon Reservoir below and the Gore and Tenmile ranges beyond. The Forest Service calls it the only designated wedding site on the Dillon Ranger District. It is reserved in two-hour blocks for up to 35 people, it is non-exclusive (hikers will walk through), and the small lot is shared with the public. Portable chairs are allowed.
+**Sapphire Point Overlook.** A short loop trail on Swan Mountain Road between Keystone and Breckenridge leads to a rocky point with Dillon Reservoir below and the Gore and Tenmile ranges beyond. The Forest Service calls it the only designated wedding site on the Dillon Ranger District. It is reserved in three hour blocks for up to 30 people, it is non exclusive (hikers will walk through), reserved events get just two parking spaces, and chairs are not allowed. From June 14, 2026 all reservations use the new north overlook. Our [Sapphire Point guide](/resources/sapphire-point-overlook-elopement) has every rule.
 
 **Loveland Pass.** The summit of US 6 sits on the Continental Divide at 11,990 feet, with a pullout, the sign everyone photographs and a short ridge walk to views of Arapahoe Basin. There is nothing to book. The east side is Arapaho National Forest's Clear Creek district and the west side is the White River's Dillon district, so a tiny ceremony with no props falls under general Forest Service group rules, but because the Dillon district points couples to Sapphire Point, call before you plan around it. Expect wind, thin air, snow in any month and company on weekends.
 
@@ -30,7 +30,7 @@ Three things make Summit work for small weddings. Access: Swan Mountain Road, Lo
 
 ## Permits and rules
 
-Sapphire Point reservations are made on [Recreation.gov](https://www.recreation.gov/camping/campgrounds/234489), where the window opens six months ahead and the fee is set by the Forest Service. Summer weekend sunrise blocks go the morning they open, so set a reminder. Your reservation does not close the site to the public and does not allow amplified sound, thrown petals or anything staked into the ground. Vendors delivering chairs, arches or food must hold their own Forest Service permit, a good question for every rental company before you sign.
+Sapphire Point reservations are made on [Recreation.gov](https://www.recreation.gov/venues/VR22273), where the listing shows a fee of about $120 to $142 per block. Summer weekend sunrise blocks go the morning they open, so set a reminder. Your reservation does not close the site to the public and does not allow amplified sound, chairs, food or drink, tents, thrown petals or anything staked into the ground. Recreation.gov also notes that commercial use at the site is prohibited, so ask your vendors how they work there and call the Dillon Ranger District if anything is unclear.
 
 Elsewhere on national forest land, the rule of thumb is that non-commercial groups under 75 people without props generally do not need a permit, while anything with structures, chairs or a paid vendor on site may. The Dillon Ranger District in Silverthorne (970-468-5400) decides, and the [White River National Forest](https://www.fs.usda.gov/r02/whiteriver) posts closures. Drones are prohibited in the Eagles Nest Wilderness.
 
@@ -38,7 +38,7 @@ Elsewhere on national forest land, the rule of thumb is that non-commercial grou
 
 Any Colorado county clerk can issue your license and it works statewide. You both appear with photo ID (an absentee affidavit covers a partner who cannot), the fee is $30, there is no waiting period, blood test or witness requirement, and under C.R.S. 14-2-109 you may solemnize your own marriage. The license must be used within 35 days of issue, and the signed certificate is returned to the issuing clerk within 63 days of the ceremony.
 
-The Summit County Clerk and Recorder is in Breckenridge, a few blocks off Main Street. Flying into Eagle County? The Eagle County Clerk has offices in Eagle, Avon and El Jebel, and Clear Creek County's clerk in Georgetown is on the way up from Denver. The statewide rules are laid out on any clerk's page, such as [Larimer County's](https://www.larimer.gov/clerk/recording/marriage), and your clerk hands you self-solemnization instructions with the license.
+The Summit County Clerk and Recorder is in Breckenridge, a few blocks off Main Street, and non residents need one of four daily appointment slots; our [Summit County license page](/resources/summit-county-marriage-license) explains. Flying into Eagle County? The Eagle County Clerk has offices in Eagle and El Jebel, and Clear Creek County's clerk in Georgetown is on the way up from Denver. The statewide rules are laid out on any clerk's page, such as [Larimer County's](https://www.larimer.gov/clerk/recording/marriage), and your clerk hands you self-solemnization instructions with the license.
 
 ## When to go
 
@@ -58,7 +58,7 @@ The Summit County Clerk and Recorder is in Breckenridge, a few blocks off Main S
 
 Sapphire Point faces west over the reservoir, which makes it a classic sunset spot, but sunset is also when the lot is fullest and storms linger. Sunrise gives you alpenglow on the Gore Range behind the water and an empty trail. Loveland Pass is a sunrise site, full stop; afternoon wind up there will take your veil to Kansas.
 
-A July day built around a 6 to 8 a.m. Sapphire Point block:
+A July day built around a 6 to 9 a.m. Sapphire Point block:
 
 1. 4:15 a.m. Hair and makeup in Frisco or Breckenridge.
 2. 5:30 a.m. Depart. Swan Mountain Road is fifteen minutes from either town.

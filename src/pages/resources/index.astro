@@ -6,25 +6,35 @@ import { regionImg } from '../../lib/assets';
 import { REGIONS } from '../../lib/taxonomy';
 
 const ORDER = [
+  'how-to-get-married-in-colorado',
   'colorado-marriage-license',
+  'denver-marriage-license',
+  'jefferson-county-marriage-license',
+  'summit-county-marriage-license',
+  'colorado-marriage-laws',
   'self-solemnization-colorado',
   'rocky-mountain-national-park-wedding-permit',
   'maroon-bells-elopement-permit',
   'garden-of-the-gods-elopement',
   'national-forest-and-blm-elopements',
   'colorado-state-parks-elopements',
-  'colorado-elopement-cost'
+  'sapphire-point-overlook-elopement',
+  'red-rocks-and-denver-foothills-ceremony-sites',
+  'colorado-elopement-cost',
+  'elopement-packages-colorado',
+  'best-places-to-elope-in-colorado'
 ];
 const all = await getCollection('resources');
 const resources = [...all].sort((a, b) => {
   const ia = ORDER.indexOf(a.id), ib = ORDER.indexOf(b.id);
   return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
 });
-const KIND_LABEL: Record<string, string> = { permits: 'Permits', legal: 'Legal', budget: 'Budget' };
+const KIND_LABEL: Record<string, string> = { permits: 'Permits', legal: 'Legal', budget: 'Budget', planning: 'Planning' };
 const groups = [
   { kind: 'legal', title: 'The license', blurb: 'What the state requires of every couple, wherever in Colorado you marry.' },
   { kind: 'permits', title: 'Permission to use the place', blurb: 'Each land manager has its own rule. These pages quote the rule and link the office.' },
-  { kind: 'budget', title: 'The money', blurb: 'Honest ranges, marked as estimates, with the fixed fees called out.' }
+  { kind: 'budget', title: 'The money', blurb: 'Honest ranges, marked as estimates, with the fixed fees called out.' },
+  { kind: 'planning', title: 'Choosing the place', blurb: 'Where to say your vows, region by region, with the permit status of every spot.' }
 ];
 
 const ld = {
@@ -43,7 +53,7 @@ const ld = {
   <div class="max-w-7xl mx-auto px-5 md:px-8 pt-14">
     <p class="eyebrow text-clay-600 mb-3">Permits And Licenses</p>
     <h1 class="display text-4xl md:text-5xl leading-tight">The paperwork, <span class="serif-i">verified</span></h1>
-    <p class="text-ink/65 mt-4 max-w-2xl leading-relaxed">Eight short references for the legal and permit side of eloping in Colorado. Each one was written from the official page that sets the rule, quotes the fee the agency publishes, and links that page so you can check it yourself. Where a fact could not be verified, the page says so and points you to the office instead of guessing.</p>
+    <p class="text-ink/65 mt-4 max-w-2xl leading-relaxed">Short, sourced references for the legal, permit and money side of eloping in Colorado. Each one was written from the official page that sets the rule, quotes the fee the agency publishes, and links that page so you can check it yourself. Where a fact could not be verified, the page says so and points you to the office instead of guessing.</p>
 
     {groups.map(g => {
       const items = resources.filter(r => r.data.kind === g.kind);

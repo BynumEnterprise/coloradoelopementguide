@@ -39,7 +39,7 @@ These are the only numbers on this page that are not estimates.
 - **Marriage license**: $30 at any Colorado county clerk. Certified copies run about $1.25 to $3 each; Summit County bundles three into a $39 counter price. See the [marriage license page](/resources/colorado-marriage-license).
 - **Rocky Mountain National Park wedding permit**: $300 administrative fee, non refundable, plus the park entrance fee for each vehicle. See the [RMNP permit page](/resources/rocky-mountain-national-park-wedding-permit).
 - **Maroon Bells Amphitheatre**: $200 per day on Recreation.gov, before reservation fees and taxes, plus shuttle fares of $16 per adult for guests beyond your five vehicle passes. See the [Maroon Bells page](/resources/maroon-bells-elopement-permit).
-- **Sapphire Point Overlook**: a reservation fee on Recreation.gov for a two hour block; check the current amount on the listing.
+- **Sapphire Point Overlook**: a reservation fee on Recreation.gov for a three hour block, listed at about $120 to $142. See the [Sapphire Point page](/resources/sapphire-point-overlook-elopement).
 - **Garden of the Gods**: $0 for a small ceremony at one of the six designated areas. See the [Garden of the Gods page](/resources/garden-of-the-gods-elopement).
 - **Colorado state parks**: a daily vehicle pass of $10 to $17 per car depending on the park, plus any facility fee for a reserved amphitheater or overlook. See the [state parks page](/resources/colorado-state-parks-elopements).
 - **National Forest overlooks**: $0 for a small ceremony with no props, apart from any timed entry or parking reservation the site requires. See the [national forest page](/resources/national-forest-and-blm-elopements).

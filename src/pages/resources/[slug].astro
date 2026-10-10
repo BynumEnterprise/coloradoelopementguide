@@ -16,7 +16,7 @@ const data = resource.data;
 const { Content, headings } = await render(resource);
 const toc = headings.filter(h => h.depth === 2);
 
-const KIND_LABEL: Record<string, string> = { permits: 'Permits', legal: 'Legal', budget: 'Budget' };
+const KIND_LABEL: Record<string, string> = { permits: 'Permits', legal: 'Legal', budget: 'Budget', planning: 'Planning' };
 const regions = data.regions.filter(r => r in REGIONS && r !== 'other-colorado');
 const categories = data.categories.filter(c => c in CATEGORIES);
 const heroImg = regionImg(data.hero in REGIONS ? data.hero : 'estes-park');

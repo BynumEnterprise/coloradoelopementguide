@@ -54,7 +54,7 @@ const resources = defineCollection({
     description: z.string().min(60).max(160),
     datePublished: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
     dateModified: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-    kind: z.enum(['permits', 'legal', 'budget']),
+    kind: z.enum(['permits', 'legal', 'budget', 'planning']),
     hero: z.string().min(1),
     regions: z.array(z.string()).default([]),
     categories: z.array(z.string()).default([]),
