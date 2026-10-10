@@ -1,0 +1,155 @@
+---
+import Base from '../../layouts/Base.astro';
+import VendorCard from '../../components/VendorCard.astro';
+import EmailCapture from '../../components/EmailCapture.astro';
+import { allVendors } from '../../lib/vendors';
+import { REGIONS } from '../../lib/taxonomy';
+import { regionImg } from '../../lib/assets';
+import { VENUE_PAGES, MIN_VENUES, matchVenues, addressTown } from '../../data/venue-pages';
+
+export async function getStaticPaths() {
+  const all = await allVendors();
+  const built = VENUE_PAGES
+    .map(page => ({ page, venues: matchVenues(page, all) }))
+    .filter(({ venues }) => venues.length >= MIN_VENUES);
+  const live = built.map(b => b.page.slug);
+  return built.map(({ page, venues }) => ({ params: { slug: page.slug }, props: { page, venues, live } }));
+}
+
+const { page, venues, live } = Astro.props;
+const n = venues.length;
+const fill = (s: string) => s.replace(/\{n\}/g, String(n));
+const site = 'https://coloradoelopementguide.com';
+const pageUrl = `${site}/venues/${page.slug}/`;
+
+// Sections: grouped by region (mountain page), split into town and nearby, or one grid.
+type Section = { title: string; italic?: string; note?: string; vs: any[] };
+let sections: Section[];
+if (page.groups) {
+  sections = page.groups.map(g => ({ title: REGIONS[g].name, vs: venues.filter(v => v.sub_region === g), note: g === 'summit-county' ? 'Breckenridge and the Summit County resorts' : undefined }))
+    .filter(s => s.vs.length);
+} else if (page.towns && !page.strictTowns) {
+  const inTown = venues.filter(v => page.towns!.includes(addressTown(v.address) || ''));
+  const nearby = venues.filter(v => !inTown.includes(v));
+  sections = [{ title: `In ${page.town}`, vs: inTown }, { title: 'Nearby', italic: `within an easy drive of ${page.town}`, vs: nearby }].filter(s => s.vs.length);
+} else {
+  sections = [{ title: `${page.town} venues`, vs: venues }];
+}
+const ordered = sections.flatMap(s => s.vs);
+const featuredCount = venues.filter(v => v.status === 'featured').length;
+
+const faqs = page.faqs.map(f => ({ q: f.q, a: fill(f.a) }));
+const ldFaq = {
+  '@context': 'https://schema.org', '@type': 'FAQPage',
+  mainEntity: faqs.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } }))
+};
+const ldList = {
+  '@context': 'https://schema.org', '@type': 'ItemList',
+  name: `${page.h1[0]} ${page.h1[1]}`, numberOfItems: n,
+  itemListElement: ordered.map((v, i) => ({ '@type': 'ListItem', position: i + 1, name: v.name, url: `${site}/vendor/${v.slug}/` }))
+};
+const ldCrumbs = {
+  '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: `${site}/` },
+    { '@type': 'ListItem', position: 2, name: 'Wedding Venues', item: `${site}/venues/` },
+    { '@type': 'ListItem', position: 3, name: page.h1[0], item: pageUrl }
+  ]
+};
+const regionName = REGIONS[page.region]?.name;
+const others = VENUE_PAGES.filter(p => p.slug !== page.slug && live.includes(p.slug));
+---
+<Base dark={true} title={fill(page.title)} description={page.description}>
+  <script is:inline type="application/ld+json" slot="head" set:html={JSON.stringify(ldFaq)} />
+  <script is:inline type="application/ld+json" slot="head" set:html={JSON.stringify(ldList)} />
+  <script is:inline type="application/ld+json" slot="head" set:html={JSON.stringify(ldCrumbs)} />
+
+  <section class="relative min-h-[50vh] flex items-end">
+    <img src={regionImg(page.region)} alt={`${page.town} wedding venue setting`} class="absolute inset-0 w-full h-full object-cover" fetchpriority="high" />
+    <div class="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/25 to-black/30"></div>
+    <div class="relative z-10 max-w-7xl mx-auto px-5 md:px-8 pb-12 md:pb-16 w-full">
+      <nav aria-label="Breadcrumb" class="eyebrow text-gold mb-3"><a href="/" class="hover:text-ivory">Home</a> · <a href="/venues" class="hover:text-ivory">Wedding Venues</a> · {page.town}</nav>
+      <h1 class="display text-white text-4xl md:text-6xl leading-[1.05] max-w-4xl">{page.h1[0]} <span class="serif-i">{page.h1[1]}</span></h1>
+      <p class="mt-4 text-white/80 text-sm">{n} live venues{featuredCount > 0 && `, ${featuredCount} featured`} · ranked by Google rating and review count</p>
+    </div>
+  </section>
+
+  <article class="guide-body max-w-3xl mx-auto px-5 md:px-8 pt-12">
+    {page.intro.map(p => <p set:html={p} />)}
+  </article>
+
+  <section class="max-w-3xl mx-auto px-5 md:px-8 pt-6">
+    <h2 class="display text-2xl md:text-3xl mb-6">How to choose <span class="serif-i">a venue</span></h2>
+    <ol class="space-y-5">
+      {page.choose.map((c, i) => (
+        <li class="flex gap-4">
+          <span class="display text-clay-600 text-xl leading-none w-6 shrink-0">{i + 1}</span>
+          <div><p class="font-medium text-ink">{c.h}</p><p class="text-ink/70 leading-relaxed mt-1">{c.p}</p></div>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <div class="max-w-7xl mx-auto px-5 md:px-8" id="venues">
+    {sections.map(s => (
+      <section class="pt-16">
+        <div class="flex items-end justify-between gap-6 mb-6 border-b border-hairline pb-3">
+          <h2 class="display text-2xl md:text-3xl">{s.title} {s.italic && <span class="serif-i text-ink/60 text-lg">{s.italic}</span>} <span class="text-ink/40 text-base">({s.vs.length})</span></h2>
+          {s.note && <p class="text-sm text-ink/55 hidden md:block">{s.note}</p>}
+        </div>
+        <div class="grid gap-5 md:grid-cols-3">{s.vs.map(v => <VendorCard v={v} />)}</div>
+      </section>
+    ))}
+    <p class="mt-6 text-xs text-ink/50">Ratings come from Google and are refreshed weekly. Tap the heart on any venue to save it to your planner. Run a venue here? <a href="/for-vendors" class="underline">Claim your free listing</a>.</p>
+  </div>
+
+  <section class="max-w-3xl mx-auto px-5 md:px-8 pt-16">
+    <h2 class="display text-2xl md:text-3xl mb-6">Questions <span class="serif-i">couples ask</span></h2>
+    <div class="divide-y divide-hairline border-y border-hairline">
+      {faqs.map(f => (
+        <details class="group py-5">
+          <summary class="cursor-pointer list-none flex justify-between gap-6 font-medium text-ink">{f.q}<span class="text-clay-600 group-open:rotate-45 transition-transform">+</span></summary>
+          <p class="mt-3 text-ink/70 leading-relaxed">{f.a}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <section class="max-w-3xl mx-auto px-5 md:px-8 pt-14">
+    <p class="eyebrow text-clay-600 mb-4">Keep Planning</p>
+    <div class="grid sm:grid-cols-2 gap-px bg-hairline border border-hairline rounded-2xl overflow-hidden text-sm">
+      {page.guide && <a href={`/guides/${page.guide}`} class="bg-ivory hover:bg-parchment p-5"><p class="display text-lg">Planning guide</p><p class="text-ink/55 mt-1">Ceremony spots, permits and timing in {REGIONS[page.guide]?.name}</p></a>}
+      {!page.groups && <a href={`/region/${page.region}`} class="bg-ivory hover:bg-parchment p-5"><p class="display text-lg">Every vendor in {regionName}</p><p class="text-ink/55 mt-1">Photographers, florists, officiants and planners based here</p></a>}
+      {page.groups && <a href="/regions" class="bg-ivory hover:bg-parchment p-5"><p class="display text-lg">Browse every region</p><p class="text-ink/55 mt-1">Vendors in each corner of Colorado</p></a>}
+      <a href="/category/photographers" class="bg-ivory hover:bg-parchment p-5"><p class="display text-lg">Elopement photographers</p><p class="text-ink/55 mt-1">Photographers who shoot small weddings, grouped by region</p></a>
+      {page.permit && <a href={page.permit.href} class="bg-ivory hover:bg-parchment p-5"><p class="display text-lg">Permits</p><p class="text-ink/55 mt-1">{page.permit.label}</p></a>}
+    </div>
+  </section>
+
+  <section class="max-w-3xl mx-auto px-5 md:px-8 pt-14">
+    <div class="rounded-3xl bg-spruce-900 text-ivory p-8 md:p-10 md:flex items-center justify-between gap-8">
+      <div>
+        <p class="eyebrow text-gold mb-3">Your Free Planner</p>
+        <h2 class="display text-2xl md:text-3xl leading-tight">Shortlist venues and <span class="serif-i">compare quotes</span></h2>
+        <p class="text-sm text-ivory/75 mt-3 leading-relaxed max-w-md">Heart the venues you like, then track quotes, notes and bookings next to the Colorado checklist. Free, synced to your email.</p>
+      </div>
+      <div class="mt-6 md:mt-0 shrink-0"><a href="/account" class="inline-block rounded-full bg-ivory text-ink px-7 py-3.5 text-sm font-semibold hover:bg-white transition-colors">Start My Planner</a></div>
+    </div>
+  </section>
+
+  <section class="max-w-7xl mx-auto px-5 md:px-8 pt-16">
+    <p class="eyebrow text-clay-600 mb-4">More Wedding Venues</p>
+    <div class="flex flex-wrap gap-2 text-sm">
+      {others.map(p => <a href={`/venues/${p.slug}`} class="rounded-full border border-hairline bg-white px-4 py-2 hover:border-ink/40">{p.h1[0]}</a>)}
+    </div>
+  </section>
+
+  <div class="max-w-7xl mx-auto px-5 md:px-8 pt-16"><EmailCapture /></div>
+</Base>
+
+<style is:global>
+  .guide-body p { color: rgb(35 40 31 / 0.78); font-size: 1.02rem; line-height: 1.8; margin: 0 0 1.15rem; }
+  .guide-body > p:first-of-type { font-size: 1.12rem; color: rgb(35 40 31 / 0.88); }
+  .guide-body a { text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--color-gold); color: var(--color-ink); }
+  .guide-body a:hover { color: var(--color-clay-700); }
+</style>

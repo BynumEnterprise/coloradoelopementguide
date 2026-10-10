@@ -5,6 +5,7 @@ import EmailCapture from '../../components/EmailCapture.astro';
 import { allVendors } from '../../lib/vendors';
 import { CATEGORIES, REGIONS } from '../../lib/taxonomy';
 import { regionImg } from '../../lib/assets';
+import { VENUE_PAGES, REGION_VENUE_LINKS, MIN_VENUES, matchVenues } from '../../data/venue-pages';
 export async function getStaticPaths() {
   return Object.keys(REGIONS).map(region => ({ params: { region } }));
 }
@@ -12,6 +13,7 @@ const { region } = Astro.params;
 const meta = REGIONS[region];
 const all = await allVendors();
 const vendors = all.filter(v => v.sub_region === region);
+const venueLinks = (REGION_VENUE_LINKS[region] || []).map(s => VENUE_PAGES.find(p => p.slug === s)!).filter(p => p && matchVenues(p, all).length >= MIN_VENUES);
 const byCat = Object.keys(CATEGORIES).map(c => [c, vendors.filter(v => v.category===c)]).filter(([,vs]) => vs.length);
 const sparse = region === 'other-colorado' ? [] : Object.keys(CATEGORIES)
   .map(c => [c, vendors.filter(v => v.category===c).length, all.filter(v => v.sub_region==='other-colorado' && v.category===c)])
@@ -34,6 +36,14 @@ const sparse = region === 'other-colorado' ? [] : Object.keys(CATEGORIES)
         <p class="text-sm text-ink/75"><span class="eyebrow text-clay-600 mr-3">Planning Guide</span>Ceremony spots, permits, the marriage license, when to go and how to time the day in {meta.name}.</p>
         <span class="text-sm font-medium underline underline-offset-4 shrink-0 mt-2 md:mt-0 inline-block">Read the {meta.name} planning guide →</span>
       </a>
+    )}
+    {venueLinks.length > 0 && (
+      <div class="mt-4 rounded-2xl border border-hairline bg-white px-6 py-5 md:flex items-center justify-between gap-6">
+        <p class="text-sm text-ink/75"><span class="eyebrow text-clay-600 mr-3">Wedding Venues</span>Every venue we list here, with a town guide, a storm plan checklist and common questions.</p>
+        <div class="flex flex-wrap gap-4 mt-2 md:mt-0 shrink-0">
+          {venueLinks.map(p => <a href={`/venues/${p.slug}`} class="text-sm font-medium underline underline-offset-4 hover:text-clay-700">Browse {p.slug === 'colorado-mountain-wedding-venues' ? 'Breckenridge and mountain' : p.town} wedding venues →</a>)}
+        </div>
+      </div>
     )}
     {byCat.map(([c, vs]) => (
       <section class="pt-14">
