@@ -171,6 +171,7 @@ const metaDesc = v.description.length > 155 ? v.description.slice(0, 152).replac
         .then(function(r){ return r.json().catch(function(){ return { ok: false }; }); })
         .then(function(res){
           if (!res || !res.ok) { btn.disabled = false; btn.textContent = 'Check Availability'; return fail((res && res.error) || 'Something went wrong. Please try again.'); }
+          if (window.cegTrack) cegTrack('inquiry_submitted', slug, 'generate_lead', { vendor_slug: slug, category: category, region: subRegion });
           var em = String(d.email || '').trim();
           document.getElementById('inq-done-body').textContent = res.mode === 'account'
             ? vname + ' will reply to ' + em + ' directly.'

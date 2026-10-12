@@ -344,6 +344,7 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
         const res=await rpc(authMode==='signup'?'ceg_signup':'ceg_login',{p_email:email,p_password:pass});
         if(!res || res.error){ err.textContent=(res&&res.error)||'Something went wrong. Try again.'; err.classList.remove('hidden'); return; }
         localStorage.setItem('ceg_token',res.token);
+        if(authMode==='signup' && window.cegTrack) cegTrack('planner_signup','/account','sign_up',{method:'couple_planner'});
         const local=(window.CEG?CEG.get():[]);
         if(local.length) await rpc('ceg_merge_vendors',{p_token:res.token,p_slugs:local});
         localStorage.removeItem('ceg_shortlist');
