@@ -6,6 +6,7 @@ import { allVendors } from '../../lib/vendors';
 import { CATEGORIES, REGIONS } from '../../lib/taxonomy';
 import { regionImg } from '../../lib/assets';
 import { VENUE_PAGES, REGION_VENUE_LINKS, MIN_VENUES, matchVenues } from '../../data/venue-pages';
+import { livePhotographerPages } from '../../data/category-copy';
 export async function getStaticPaths() {
   return Object.keys(REGIONS).map(region => ({ params: { region } }));
 }
@@ -14,6 +15,7 @@ const meta = REGIONS[region];
 const all = await allVendors();
 const vendors = all.filter(v => v.sub_region === region);
 const venueLinks = (REGION_VENUE_LINKS[region] || []).map(s => VENUE_PAGES.find(p => p.slug === s)!).filter(p => p && matchVenues(p, all).length >= MIN_VENUES);
+const photoPage = livePhotographerPages(all).find(p => p.region === region);
 const byCat = Object.keys(CATEGORIES).map(c => [c, vendors.filter(v => v.category===c)]).filter(([,vs]) => vs.length);
 const sparse = region === 'other-colorado' ? [] : Object.keys(CATEGORIES)
   .map(c => [c, vendors.filter(v => v.category===c).length, all.filter(v => v.sub_region==='other-colorado' && v.category===c)])
@@ -43,6 +45,12 @@ const sparse = region === 'other-colorado' ? [] : Object.keys(CATEGORIES)
         <div class="flex flex-wrap gap-4 mt-2 md:mt-0 shrink-0">
           {venueLinks.map(p => <a href={`/venues/${p.slug}`} class="text-sm font-medium underline underline-offset-4 hover:text-clay-700">Browse {p.slug === 'colorado-mountain-wedding-venues' ? 'Breckenridge and mountain' : p.town} wedding venues →</a>)}
         </div>
+      </div>
+    )}
+    {photoPage && (
+      <div class="mt-4 rounded-2xl border border-hairline bg-white px-6 py-5 md:flex items-center justify-between gap-6">
+        <p class="text-sm text-ink/75"><span class="eyebrow text-clay-600 mr-3">Photographers</span>Elopement photographers based in {photoPage.place}, with permit, light and timing advice for this region.</p>
+        <a href={`/photographers/${photoPage.region}`} class="text-sm font-medium underline underline-offset-4 hover:text-clay-700 shrink-0 mt-2 md:mt-0 inline-block">Browse {photoPage.h1[0]} →</a>
       </div>
     )}
     {byCat.map(([c, vs]) => (

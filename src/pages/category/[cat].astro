@@ -4,28 +4,173 @@ import VendorCard from '../../components/VendorCard.astro';
 import EmailCapture from '../../components/EmailCapture.astro';
 import { allVendors } from '../../lib/vendors';
 import { CATEGORIES, REGIONS } from '../../lib/taxonomy';
+import { CATEGORY_COPY, livePhotographerPages, photographersIn } from '../../data/category-copy';
 export async function getStaticPaths() {
   return Object.keys(CATEGORIES).map(cat => ({ params: { cat } }));
 }
 const { cat } = Astro.params;
 const meta = CATEGORIES[cat];
-const vendors = (await allVendors()).filter(v => v.category === cat);
-const byRegion = Object.keys(REGIONS).map(r => [r, vendors.filter(v => v.sub_region===r)]).filter(([,vs]) => vs.length);
+const copy = CATEGORY_COPY[cat];
+const all = await allVendors();
+const vendors = all.filter(v => v.category === cat);
+const n = vendors.length;
+const fill = (s: string) => s.replace(/\{n\}/g, String(n));
+
+// Featured listings first and labeled; then every other listing grouped by home region.
+const featured = vendors.filter(v => v.status === 'featured');
+const rest = vendors.filter(v => v.status !== 'featured');
+const byRegion = Object.keys(REGIONS)
+  .map(r => [r, rest.filter(v => v.sub_region === r)] as [string, any[]])
+  .filter(([, vs]) => vs.length);
+const ordered = [...featured, ...byRegion.flatMap(([, vs]) => vs)];
+
+// Region filter row: per region photographer pages where they exist, region pages otherwise.
+const photoPages = cat === 'photographers' ? livePhotographerPages(all) : [];
+const regionHref = (r: string) => photoPages.some(p => p.region === r) ? `/photographers/${r}` : `/region/${r}`;
+const chips = Object.keys(REGIONS)
+  .map(r => ({ r, count: vendors.filter(v => v.sub_region === r).length }))
+  .filter(c => c.count > 0);
+
+const site = 'https://coloradoelopementguide.com';
+const pageUrl = `${site}/category/${cat}/`;
+const ldFaq = {
+  '@context': 'https://schema.org', '@type': 'FAQPage',
+  mainEntity: copy.faqs.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: fill(f.a) } }))
+};
+const ldList = {
+  '@context': 'https://schema.org', '@type': 'ItemList',
+  name: copy.h1[0], numberOfItems: ordered.length,
+  itemListElement: ordered.map((v, i) => ({ '@type': 'ListItem', position: i + 1, name: v.name, url: `${site}/vendor/${v.slug}/` }))
+};
+const ldCrumbs = {
+  '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: `${site}/` },
+    { '@type': 'ListItem', position: 2, name: 'Find Vendors', item: `${site}/vendors/` },
+    { '@type': 'ListItem', position: 3, name: copy.crumb, item: pageUrl }
+  ]
+};
+const otherCats = Object.keys(CATEGORIES).filter(c => c !== cat);
 ---
-<Base title={`${meta.name} in Colorado — elopement & micro-wedding | Colorado Elopement Guide`} description={meta.blurb}>
-  <div class="max-w-7xl mx-auto px-5 md:px-8 pt-14">
-    <p class="eyebrow text-clay-600 mb-3">{vendors.length} listed statewide</p>
-    <h1 class="display text-4xl md:text-5xl leading-tight">{meta.name} <span class="serif-i">in Colorado</span></h1>
-    <p class="text-ink/65 mt-3 max-w-2xl leading-relaxed">{meta.blurb}</p>
-    {byRegion.map(([r, vs]) => (
+<Base title={fill(copy.title)} description={copy.description}>
+  <script is:inline type="application/ld+json" slot="head" set:html={JSON.stringify(ldFaq)} />
+  <script is:inline type="application/ld+json" slot="head" set:html={JSON.stringify(ldList)} />
+  <script is:inline type="application/ld+json" slot="head" set:html={JSON.stringify(ldCrumbs)} />
+
+  <div class="max-w-7xl mx-auto px-5 md:px-8 pt-12">
+    <nav aria-label="Breadcrumb" class="eyebrow text-ink/50 mb-5"><a href="/" class="hover:text-clay-700">Home</a> · <a href="/vendors" class="hover:text-clay-700">Find Vendors</a> · <span class="text-clay-600">{copy.crumb}</span></nav>
+    <h1 class="display text-4xl md:text-6xl leading-[1.05] max-w-4xl">{copy.h1[0]} <span class="serif-i">{copy.h1[1]}</span></h1>
+    <p class="mt-4 text-sm text-ink/60">{n} {n === 1 ? meta.singular : meta.name.toLowerCase()} listed statewide{featured.length > 0 && `, ${featured.length} featured`} · ranked by Google rating and review count</p>
+
+    <div class="mt-8 border-y border-hairline py-4" id="regions">
+      <p class="eyebrow text-clay-600 mb-3">Browse By Region</p>
+      <div class="flex flex-wrap gap-2 text-sm">
+        {chips.map(c => (
+          <a href={regionHref(c.r)} class="rounded-full border border-hairline bg-white px-4 py-2 hover:border-ink/40">{REGIONS[c.r].name} <span class="text-ink/40">{c.count}</span></a>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-5 md:px-8 pt-12 grid gap-10 md:grid-cols-12">
+    <article class="cat-body md:col-span-7">
+      {copy.intro.map(p => <p set:html={p} />)}
+    </article>
+    <aside class="md:col-span-5">
+      <div class="rounded-3xl bg-parchment/70 border border-hairline p-7 md:sticky md:top-6">
+        <p class="eyebrow text-clay-600 mb-2">Before You Book</p>
+        <h2 class="display text-2xl leading-tight mb-5">Questions to ask <span class="serif-i">every {meta.singular}</span></h2>
+        <ol class="space-y-4">
+          {copy.questions.map((q, i) => (
+            <li class="flex gap-3 text-[0.95rem] leading-relaxed text-ink/80"><span class="display text-clay-600 text-lg leading-none w-5 shrink-0 pt-0.5">{i + 1}</span><span>{q}</span></li>
+          ))}
+        </ol>
+      </div>
+    </aside>
+  </div>
+
+  {photoPages.length > 0 && (
+    <section class="max-w-7xl mx-auto px-5 md:px-8 pt-12">
+      <p class="eyebrow text-clay-600 mb-4">Photographers By Area</p>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-hairline border border-hairline rounded-2xl overflow-hidden text-sm">
+        {photoPages.map(p => (
+          <a href={`/photographers/${p.region}`} class="bg-ivory hover:bg-parchment p-5">
+            <p class="display text-lg leading-snug">{p.h1[0]}</p>
+            <p class="text-ink/55 mt-1">{photographersIn(p.region, all).length} based in {p.place}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <div class="max-w-7xl mx-auto px-5 md:px-8" id="listings">
+    {featured.length > 0 && (
       <section class="pt-14">
-        <div class="flex items-end justify-between gap-6 mb-6">
-          <h2 class="display text-2xl">{REGIONS[r].name} <span class="text-ink/40 text-base">({vs.length})</span></h2>
-          <a href={`/region/${r}`} class="text-sm font-medium underline underline-offset-4 hover:text-clay-700 shrink-0">Everything in this region →</a>
+        <div class="flex items-end justify-between gap-6 mb-6 border-b border-hairline pb-3">
+          <h2 class="display text-2xl md:text-3xl">Featured <span class="serif-i text-ink/60 text-lg">{meta.name.toLowerCase()}</span></h2>
+          <p class="text-xs text-ink/50">Featured listings are paid placements and are always labeled.</p>
+        </div>
+        <div class="grid gap-5 md:grid-cols-3">{featured.map(v => <VendorCard v={v} />)}</div>
+      </section>
+    )}
+    {byRegion.map(([r, vs]) => (
+      <section class="pt-14" id={`in-${r}`}>
+        <div class="flex items-end justify-between gap-6 mb-6 border-b border-hairline pb-3">
+          <h2 class="display text-2xl md:text-3xl">{r === 'other-colorado' ? <>Serving <span class="serif-i">all of Colorado</span></> : REGIONS[r].name} <span class="text-ink/40 text-base">({vs.length})</span></h2>
+          <a href={regionHref(r)} class="text-sm font-medium underline underline-offset-4 hover:text-clay-700 shrink-0">{regionHref(r).startsWith('/photographers') ? `${REGIONS[r].name} photographers →` : 'Everything in this region →'}</a>
         </div>
         <div class="grid gap-5 md:grid-cols-3">{vs.map(v => <VendorCard v={v} />)}</div>
       </section>
     ))}
-    <div class="pt-16"><EmailCapture /></div>
+    <p class="mt-6 text-xs text-ink/50">Ratings come from Google and are refreshed weekly. Tap the heart on any listing to save it to your planner. Are you a {meta.singular}? <a href="/for-vendors" class="underline">Claim or add your free listing</a>.</p>
   </div>
+
+  <section class="max-w-3xl mx-auto px-5 md:px-8 pt-16">
+    <h2 class="display text-2xl md:text-3xl mb-6">Questions <span class="serif-i">couples ask</span></h2>
+    <div class="divide-y divide-hairline border-y border-hairline">
+      {copy.faqs.map(f => (
+        <details class="group py-5">
+          <summary class="cursor-pointer list-none flex justify-between gap-6 font-medium text-ink">{f.q}<span class="text-clay-600 group-open:rotate-45 transition-transform">+</span></summary>
+          <p class="mt-3 text-ink/70 leading-relaxed">{fill(f.a)}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <section class="max-w-3xl mx-auto px-5 md:px-8 pt-14">
+    <p class="eyebrow text-clay-600 mb-4">Keep Planning</p>
+    <div class="grid sm:grid-cols-2 gap-px bg-hairline border border-hairline rounded-2xl overflow-hidden text-sm">
+      {copy.links.map(l => (
+        <a href={l.href} class="bg-ivory hover:bg-parchment p-5"><p class="display text-lg">{l.label}</p><p class="text-ink/55 mt-1">{l.note}</p></a>
+      ))}
+    </div>
+  </section>
+
+  <section class="max-w-3xl mx-auto px-5 md:px-8 pt-14">
+    <div class="rounded-3xl bg-spruce-900 text-ivory p-8 md:p-10 md:flex items-center justify-between gap-8">
+      <div>
+        <p class="eyebrow text-gold mb-3">Your Free Planner</p>
+        <h2 class="display text-2xl md:text-3xl leading-tight">Shortlist {meta.name.toLowerCase()} and <span class="serif-i">compare quotes</span></h2>
+        <p class="text-sm text-ivory/75 mt-3 leading-relaxed max-w-md">Heart the {meta.name.toLowerCase()} you like, then track quotes, notes and bookings next to the Colorado checklist. Free, synced to your email.</p>
+      </div>
+      <div class="mt-6 md:mt-0 shrink-0"><a href="/account" class="inline-block rounded-full bg-ivory text-ink px-7 py-3.5 text-sm font-semibold hover:bg-white transition-colors">Start My Planner</a></div>
+    </div>
+  </section>
+
+  <section class="max-w-7xl mx-auto px-5 md:px-8 pt-16">
+    <p class="eyebrow text-clay-600 mb-4">More Colorado Vendors</p>
+    <div class="flex flex-wrap gap-2 text-sm">
+      {otherCats.map(c => <a href={`/category/${c}`} class="rounded-full border border-hairline bg-white px-4 py-2 hover:border-ink/40">{CATEGORY_COPY[c].h1[0]}</a>)}
+      <a href="/venues" class="rounded-full border border-hairline bg-white px-4 py-2 hover:border-ink/40">Wedding Venues By Town</a>
+    </div>
+  </section>
+
+  <div class="max-w-7xl mx-auto px-5 md:px-8 pt-16"><EmailCapture /></div>
 </Base>
+
+<style is:global>
+  .cat-body p { color: rgb(35 40 31 / 0.78); font-size: 1.02rem; line-height: 1.8; margin: 0 0 1.15rem; }
+  .cat-body > p:first-of-type { font-size: 1.12rem; color: rgb(35 40 31 / 0.88); }
+  .cat-body a { text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--color-gold); color: var(--color-ink); }
+  .cat-body a:hover { color: var(--color-clay-700); }
+</style>

@@ -1,0 +1,137 @@
+---
+import Base from '../../layouts/Base.astro';
+import VendorCard from '../../components/VendorCard.astro';
+import EmailCapture from '../../components/EmailCapture.astro';
+import { allVendors } from '../../lib/vendors';
+import { REGIONS } from '../../lib/taxonomy';
+import { regionImg } from '../../lib/assets';
+import { livePhotographerPages, photographersIn, LIVE_STATUSES } from '../../data/category-copy';
+
+export async function getStaticPaths() {
+  const all = await allVendors();
+  const pages = livePhotographerPages(all);
+  return pages.map(page => ({ params: { region: page.region }, props: { page, others: pages.filter(p => p.region !== page.region) } }));
+}
+
+const { page, others } = Astro.props;
+const all = await allVendors();
+const local = photographersIn(page.region, all);
+const featured = local.filter(v => v.status === 'featured');
+const ordered = [...featured, ...local.filter(v => v.status !== 'featured')];
+const travelers = all.filter(v => v.category === 'photographers' && v.sub_region === 'other-colorado' && LIVE_STATUSES.includes(v.status)).slice(0, 6);
+const n = local.length;
+const fill = (s: string) => s.replace(/\{n\}/g, String(n));
+
+const site = 'https://coloradoelopementguide.com';
+const pageUrl = `${site}/photographers/${page.region}/`;
+const faqs = page.faqs.map(f => ({ q: f.q, a: fill(f.a) }));
+const ldFaq = {
+  '@context': 'https://schema.org', '@type': 'FAQPage',
+  mainEntity: faqs.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } }))
+};
+const ldList = {
+  '@context': 'https://schema.org', '@type': 'ItemList',
+  name: page.h1[0], numberOfItems: n,
+  itemListElement: ordered.map((v, i) => ({ '@type': 'ListItem', position: i + 1, name: v.name, url: `${site}/vendor/${v.slug}/` }))
+};
+const ldCrumbs = {
+  '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: `${site}/` },
+    { '@type': 'ListItem', position: 2, name: 'Elopement Photographers', item: `${site}/category/photographers/` },
+    { '@type': 'ListItem', position: 3, name: page.place, item: pageUrl }
+  ]
+};
+---
+<Base dark={true} title={fill(page.title)} description={page.description}>
+  <script is:inline type="application/ld+json" slot="head" set:html={JSON.stringify(ldFaq)} />
+  <script is:inline type="application/ld+json" slot="head" set:html={JSON.stringify(ldList)} />
+  <script is:inline type="application/ld+json" slot="head" set:html={JSON.stringify(ldCrumbs)} />
+
+  <section class="relative min-h-[50vh] flex items-end">
+    <img src={regionImg(page.region)} alt={`${page.place} elopement photography setting`} class="absolute inset-0 w-full h-full object-cover" fetchpriority="high" />
+    <div class="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/25 to-black/30"></div>
+    <div class="relative z-10 max-w-7xl mx-auto px-5 md:px-8 pb-12 md:pb-16 w-full">
+      <nav aria-label="Breadcrumb" class="eyebrow text-gold mb-3"><a href="/" class="hover:text-ivory">Home</a> · <a href="/category/photographers" class="hover:text-ivory">Elopement Photographers</a> · {page.place}</nav>
+      <h1 class="display text-white text-4xl md:text-6xl leading-[1.05] max-w-4xl">{page.h1[0]} <span class="serif-i">{page.h1[1]}</span></h1>
+      <p class="mt-4 text-white/80 text-sm">{n} photographers based in {page.place}{featured.length > 0 && `, ${featured.length} featured`} · ranked by Google rating and review count</p>
+    </div>
+  </section>
+
+  <article class="cat-body max-w-3xl mx-auto px-5 md:px-8 pt-12">
+    {page.intro.map(p => <p set:html={p} />)}
+  </article>
+
+  <div class="max-w-7xl mx-auto px-5 md:px-8" id="photographers">
+    <section class="pt-12">
+      <div class="flex items-end justify-between gap-6 mb-6 border-b border-hairline pb-3">
+        <h2 class="display text-2xl md:text-3xl">Based in <span class="serif-i">{page.place}</span> <span class="text-ink/40 text-base">({n})</span></h2>
+        {featured.length > 0 && <p class="text-xs text-ink/50">Featured listings appear first and are always labeled.</p>}
+      </div>
+      <div class="grid gap-5 md:grid-cols-3">{ordered.map(v => <VendorCard v={v} />)}</div>
+    </section>
+    {travelers.length > 0 && (
+      <section class="pt-14">
+        <div class="flex items-end justify-between gap-6 mb-2 border-b border-hairline pb-3">
+          <h2 class="display text-2xl">Photographers <span class="serif-i text-ink/60 text-lg">serving all of Colorado</span></h2>
+          <a href="/category/photographers" class="text-sm font-medium underline underline-offset-4 hover:text-clay-700 shrink-0">All photographers →</a>
+        </div>
+        <p class="text-sm text-ink/55 mb-6">These photographers travel statewide; ask each one about travel fees to {REGIONS[page.region].name}.</p>
+        <div class="grid gap-5 md:grid-cols-3">{travelers.map(v => <VendorCard v={v} />)}</div>
+      </section>
+    )}
+    <p class="mt-6 text-xs text-ink/50">Ratings come from Google and are refreshed weekly. Tap the heart on any photographer to save them to your planner. Shoot here? <a href="/for-vendors" class="underline">Claim your free listing</a>.</p>
+  </div>
+
+  <section class="max-w-3xl mx-auto px-5 md:px-8 pt-16">
+    <h2 class="display text-2xl md:text-3xl mb-6">Questions <span class="serif-i">couples ask</span></h2>
+    <div class="divide-y divide-hairline border-y border-hairline">
+      {faqs.map(f => (
+        <details class="group py-5">
+          <summary class="cursor-pointer list-none flex justify-between gap-6 font-medium text-ink">{f.q}<span class="text-clay-600 group-open:rotate-45 transition-transform">+</span></summary>
+          <p class="mt-3 text-ink/70 leading-relaxed">{f.a}</p>
+        </details>
+      ))}
+    </div>
+    <p class="mt-6 text-sm text-ink/65">Choosing between photographers? Our <a href="/category/photographers" class="underline underline-offset-4">Colorado elopement photographers guide</a> lists the six questions to ask before you book.</p>
+  </section>
+
+  <section class="max-w-3xl mx-auto px-5 md:px-8 pt-14">
+    <p class="eyebrow text-clay-600 mb-4">Keep Planning</p>
+    <div class="grid sm:grid-cols-2 gap-px bg-hairline border border-hairline rounded-2xl overflow-hidden text-sm">
+      {page.links.map(l => (
+        <a href={l.href} class="bg-ivory hover:bg-parchment p-5"><p class="display text-lg">{l.label}</p><p class="text-ink/55 mt-1">{l.note}</p></a>
+      ))}
+    </div>
+  </section>
+
+  <section class="max-w-3xl mx-auto px-5 md:px-8 pt-14">
+    <div class="rounded-3xl bg-spruce-900 text-ivory p-8 md:p-10 md:flex items-center justify-between gap-8">
+      <div>
+        <p class="eyebrow text-gold mb-3">Your Free Planner</p>
+        <h2 class="display text-2xl md:text-3xl leading-tight">Shortlist photographers and <span class="serif-i">compare quotes</span></h2>
+        <p class="text-sm text-ivory/75 mt-3 leading-relaxed max-w-md">Heart the photographers you like, then track quotes, notes and bookings next to the Colorado checklist. Free, synced to your email.</p>
+      </div>
+      <div class="mt-6 md:mt-0 shrink-0"><a href="/account" class="inline-block rounded-full bg-ivory text-ink px-7 py-3.5 text-sm font-semibold hover:bg-white transition-colors">Start My Planner</a></div>
+    </div>
+  </section>
+
+  {others.length > 0 && (
+    <section class="max-w-7xl mx-auto px-5 md:px-8 pt-16">
+      <p class="eyebrow text-clay-600 mb-4">Photographers In Other Regions</p>
+      <div class="flex flex-wrap gap-2 text-sm">
+        {others.map(p => <a href={`/photographers/${p.region}`} class="rounded-full border border-hairline bg-white px-4 py-2 hover:border-ink/40">{p.h1[0]}</a>)}
+        <a href="/category/photographers" class="rounded-full border border-hairline bg-white px-4 py-2 hover:border-ink/40">All Colorado Photographers</a>
+      </div>
+    </section>
+  )}
+
+  <div class="max-w-7xl mx-auto px-5 md:px-8 pt-16"><EmailCapture /></div>
+</Base>
+
+<style is:global>
+  .cat-body p { color: rgb(35 40 31 / 0.78); font-size: 1.02rem; line-height: 1.8; margin: 0 0 1.15rem; }
+  .cat-body > p:first-of-type { font-size: 1.12rem; color: rgb(35 40 31 / 0.88); }
+  .cat-body a { text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--color-gold); color: var(--color-ink); }
+  .cat-body a:hover { color: var(--color-clay-700); }
+</style>
