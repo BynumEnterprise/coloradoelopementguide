@@ -13,7 +13,7 @@ const { v } = Astro.props;
   <div class="max-w-2xl mx-auto px-5 md:px-8 pt-14">
     <p class="eyebrow text-clay-600 mb-3">Free, forever</p>
     <h1 class="display text-4xl leading-tight">Claim <span class="serif-i">{v.name}</span></h1>
-    <p class="text-ink/65 mt-4 leading-relaxed">This claims your listing as a {CATEGORIES[v.category]?.singular} in {REGIONS[v.sub_region]?.name}. Claiming lets you correct your description, phone and website, receive couple inquiries, and see a 30 day chart of your views and clicks. No credit card, no obligation.</p>
+    <p class="text-ink/65 mt-4 leading-relaxed">This claims your listing as a {CATEGORIES[v.category]?.singular} in {REGIONS[v.sub_region]?.name}. Claiming lets you correct your description, phone and website, add your own photos, receive couple inquiries, and see a 30 day chart of your views and clicks. No credit card, no obligation.</p>
     <div class="mt-6 rounded-2xl border border-clay-500/40 bg-clay-50 p-5 text-sm">
       <strong>Fastest option:</strong> <a href={`/vendor-dashboard?vendor=${v.slug}`} class="underline underline-offset-4">create your free vendor account now</a> and manage this listing yourself, with live click stats. Use an email at your business domain for instant verification.
     </div>
