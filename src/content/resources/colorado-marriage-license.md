@@ -82,6 +82,8 @@ A practical pattern: if you are flying into Denver, Jefferson County in Golden i
 
 The 35 day window is generous for most elopements. Get the license a day or two after you land, or pick it up on a weekday before a weekend ceremony. Remember that several mountain offices close Fridays, including Boulder, Jefferson and San Miguel, and that Summit County may send you elsewhere if its appointment slots are gone. Our [region guides](/guides) name the nearest offices for each area, and the [planning checklist](/checklist) puts the license in the right order with your permit and vendor bookings.
 
+If you live out of state, read [eloping in Colorado from out of state](/resources/elope-in-colorado-from-out-of-state) for the airport, altitude and appointment timing that fit around a short trip.
+
 ## Where the permit fits
 
 The license is a legal document; a permit is permission to use a place. Rocky Mountain National Park, the Maroon Bells amphitheater and most state parks need a permit or reservation on top of your license. Start with the [permits and legal resources index](/resources) or go straight to the [RMNP permit page](/resources/rocky-mountain-national-park-wedding-permit).

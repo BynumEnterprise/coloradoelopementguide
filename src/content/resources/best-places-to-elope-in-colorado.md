@@ -49,11 +49,11 @@ A flat, accessible loop around a lake that mirrors Hallett Peak, the easiest RMN
 **Permit:** RMNP special use permit required, $300; 15 people in summer, 30 in winter. [RMNP permit guide](/resources/rocky-mountain-national-park-wedding-permit)
 
 ### 3M Curve
-A Trail Ridge Road pullout looking across Moraine Park to Longs Peak, and the park's signature winter site because the road stays open to here. Expect wind.
-**Permit:** RMNP permit required; 15 people and three vehicles. [RMNP permit guide](/resources/rocky-mountain-national-park-wedding-permit)
+A pullout on US 36 between Upper Beaver Meadows and Deer Ridge Junction, looking across the meadows and moraines, and the park's signature winter site because the road stays open to here. Expect wind.
+**Permit:** RMNP permit required; 15 people and three vehicles. [RMNP wedding sites compared](/resources/rocky-mountain-national-park-wedding-sites)
 
 ### Lily Lake
-Outside the main entrance stations south of town, with the postcard view of Longs Peak and three permitted spots of different sizes. Good for grandparents.
+Outside the main entrance stations south of town, with the postcard view of Longs Peak and three permitted spots of different sizes. The dock is wheelchair accessible, which makes it good for grandparents.
 **Permit:** RMNP permit required; 10, 20 or 30 people depending on the spot. [Estes Park guide](/guides/estes-park)
 
 ## Boulder
@@ -87,8 +87,8 @@ A paved road to 11,670 feet south of Georgetown with Mount Bierstadt across the 
 ## Colorado Springs and Pikes Peak
 
 ### Garden of the Gods
-Red sandstone fins with Pikes Peak behind them and six designated wedding areas, from Jaycee Plaza to High Point. Mild enough for a January ceremony.
-**Permit:** none; free and first come, no decorations, posted capacities of 25 or 50. [Garden of the Gods guide](/resources/garden-of-the-gods-elopement)
+Red sandstone fins with Pikes Peak behind them and six designated wedding areas, from Chuckwagon Plaza to High Point. Mild enough for a January ceremony.
+**Permit:** none; free and first come, no decorations, posted capacities of 20 to 40. [Garden of the Gods guide](/resources/garden-of-the-gods-elopement)
 
 ### Cheyenne Mountain State Park
 A state park on the south edge of the city with an amphitheater facing the mountain and room for a real guest list.

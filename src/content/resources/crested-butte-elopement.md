@@ -4,6 +4,7 @@ headline: "Eloping in *Crested Butte*"
 dek: "Wildflower meadows, Kebler Pass aspens and a ski town with no stoplights. Here is how the Gunnison County license, the national forest rules, the Land Trust ceremony sites and the seasonal roads fit together."
 description: "Crested Butte elopement guide: Gunnison County license by appointment, national forest permit rules, Land Trust ceremony sites, Kebler Pass and wildflowers."
 datePublished: "2026-10-12"
+dateModified: "2026-10-12"
 kind: permits
 hero: vail-aspen
 regions: [vail-aspen, telluride-san-juans]
@@ -30,6 +31,13 @@ sources:
     url: "https://www.gunnisoncounty.org/alertcenter.aspx?CID=7"
   - label: "Crested Butte Land Trust: Wedding Ceremonies"
     url: "https://www.cblandtrust.org/weddings/"
+nearby:
+  title: "Crested Butte and Gunnison"
+  italic: "vendors"
+  lat: 38.70
+  lng: -106.95
+  km: 45
+  note: "Photographers, venues, planners, florists and hair and makeup artists based in Crested Butte, Mt. Crested Butte, Almont and Gunnison. Every listing links to its own page with contact details."
 ---
 
 Crested Butte sits at the end of the road in the Elk Mountains, ringed by national forest and some of the best summer wildflower country in Colorado. Most elopements here happen on public land a few minutes from town: an aspen grove on Kebler Pass, a meadow in Washington Gulch, the road toward Gothic. The paperwork is simple. The logistics depend almost entirely on the season and on which roads are open.
@@ -95,4 +103,4 @@ The Land Trust's rules: book at least seven days ahead, one event per site per d
 
 When you interview a Crested Butte elopement photographer, ask which roads they will drive in your month, how they plan around afternoon storms, and how they handle commercial photography on forest land.
 
-We are still adding Gunnison County vendors. Many [photographers](/category/photographers) and [officiants](/category/officiants) in the [Vail and Aspen region](/region/vail-aspen) travel here, and the [Vail and Aspen guide](/guides/vail-aspen) covers the neighboring valleys. Save your dates, permits and vendor shortlist in the free [planner](/account).
+We now list [Crested Butte and Gunnison vendors](#local-vendors) below this guide: local photographers such as [Mountain Magic Media](/vendor/mountain-magic-media), [Jessa Rae Photography](/vendor/jessa-rae-photography) and [KiKi Creates](/vendor/kiki-creates), planners such as [Lucky Penny Events](/vendor/lucky-penny-events) and [Alpenglow Events](/vendor/alpenglow-events), florists including [Bramble and Bloom](/vendor/bramble-and-bloom-floral), and the [Crested Butte Land Trust](/vendor/crested-butte-land-trust) ceremony sites. For a reception, see our [Crested Butte wedding venues](/venues/crested-butte-wedding-venues) list. Many [photographers](/category/photographers) and [officiants](/category/officiants) in the [Vail and Aspen region](/region/vail-aspen) travel here too, and the [Vail and Aspen guide](/guides/vail-aspen) covers the neighboring valleys. Save your dates, permits and vendor shortlist in the free [planner](/account).

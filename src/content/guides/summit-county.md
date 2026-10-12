@@ -68,6 +68,8 @@ A July day built around a 6 to 9 a.m. Sapphire Point block:
 6. 8:30 a.m. Loveland Pass before the wind builds.
 7. 10:30 a.m. Brunch in Frisco, then the Breckenridge dinner you booked weeks ago.
 
+Loveland Pass has its own page: [the Loveland Pass elopement guide](/resources/loveland-pass-elopement) covers parking, wind, winter closures and Forest Service rules at the summit.
+
 ## Where to stay
 
 Breckenridge has the widest range of lodging and the best walkable dinner scene, at the highest prices. Frisco is the local favorite: a real main street, the marina, and the shortest drive to Sapphire Point. Dillon and Silverthorne are quieter and cheaper with the same views. Keystone is resort condos, convenient if you are marrying on the mountain.

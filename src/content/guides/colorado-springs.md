@@ -20,13 +20,13 @@ The region trades alpine drama for accessibility. No permit for a small ceremony
 
 ## Best ceremony spots
 
-**Garden of the Gods, Jaycee Plaza.** The paved plaza beside the Chuckwagon pavilion with the Kissing Camels and Pikes Peak lined up behind you. Capacity 50, the largest of the park's six wedding areas, and fully accessible from the central lot.
+**Garden of the Gods, Chuckwagon Plaza.** The paved plaza beside the Chuckwagon pavilion (older guides call it Jaycee Plaza) with the Kissing Camels and Pikes Peak lined up behind you. Capacity 40, the largest of the park's six wedding areas, and fully accessible from the central lot.
 
 **Garden of the Gods, Sentinel Plaza and Three Graces Plaza.** Two smaller paved overlooks, each capped at 25 people, with the spires close enough to touch the light. Three Graces faces the thin, elegant fins on the park's south end and is the quieter of the two.
 
-**Garden of the Gods, High Point.** The overlook at parking lot 9 on the park's southwest edge, capacity 50, with the whole garden spread below and the peak behind it. The best sunrise view in the park and the easiest spot to keep a small group together.
+**Garden of the Gods, High Point.** The overlook at parking lot 9 on the park's southwest edge, capacity 20, with the whole garden spread below and the peak behind it. The best sunrise view in the park and the easiest spot to keep a small group together.
 
-**Garden of the Gods, Scotsman and South Spring Canyon picnic areas.** Capacity 25 and 50, and the only two places in the park where a picnic afterward is allowed. No alcohol anywhere in the park.
+**Garden of the Gods, Scotsman and South Spring Canyon picnic areas.** Capacity 20 and 30, and the only two places in the park where a picnic afterward is allowed. No alcohol anywhere in the park.
 
 **North Cheyenne Cañon Park.** A city park on the south side of town with Helen Hunt Falls, granite walls and a shaded canyon road. Under the same city rules as any neighborhood park: fewer than 50 people and no decor means no reservation. Parking at the falls is tight by mid-morning.
 
@@ -69,9 +69,11 @@ A weekday in early October:
 1. 5:15 a.m. Hair and makeup in Manitou Springs or Old Colorado City.
 2. 6:30 a.m. Park at High Point. Walk to the overlook as the sky lightens.
 3. 7:05 a.m. Sunrise on the fins. Vows with the garden below you.
-4. 7:45 a.m. Portraits at Jaycee Plaza and the Siamese Twins trail.
+4. 7:45 a.m. Portraits at Chuckwagon Plaza and the Siamese Twins trail.
 5. 9:30 a.m. Breakfast in Manitou, then an afternoon at the hot springs or the cog railway.
 6. 6:00 p.m. Dinner at a venue in Old Colorado City that you booked ahead.
+
+Beyond the Garden, the city also books ceremony sites on Pikes Peak, rents a pavilion in North Cheyenne Cañon, and some popular photo spots do not allow weddings at all. Our guide to [Colorado Springs ceremony sites beyond Garden of the Gods](/resources/colorado-springs-ceremony-sites) sorts out who manages what.
 
 ## Where to stay
 

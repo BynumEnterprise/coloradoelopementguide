@@ -22,11 +22,11 @@ Rocky Mountain National Park runs one of the most organized wedding permit progr
 
 Every ceremony inside the park must happen at a designated site. These are the ones couples ask about most, with the park's published group limits.
 
-**3M Curve.** A pullout on Trail Ridge Road with a wide view across Moraine Park to Longs Peak. Fifteen people, three vehicles. The road stays open year round, which makes it the park's signature winter site. Expect wind.
+**3M Curve.** A pullout on US 36 between Upper Beaver Meadows and Deer Ridge Junction with a wide view across Moraine Park to Longs Peak. Fifteen people, three vehicles. The road stays open year round, which makes it the park's signature winter site. Expect wind.
 
 **Sprague Lake.** A flat, accessible half-mile loop around a lake that reflects Hallett Peak. Fifteen people in summer, 30 in winter, because Bear Lake Road is jammed by 8 a.m. all summer. Sunrise only.
 
-**Lily Lake.** Off Highway 7 south of town, outside the main entrance stations, with three permitted spots: the dock (10 people), the trail (20) and the south side picnic area (30). The easiest site for guests with limited mobility, with the postcard view of Longs Peak.
+**Lily Lake.** Off Highway 7 south of town, outside the main entrance stations, with three permitted spots: the dock (10 people), the trail (20) and the south side picnic area (30). The dock is wheelchair accessible; the south side picnic area is up a rocky path and is not. All three have the postcard view of Longs Peak.
 
 **Upper Beaver Meadows.** A broad aspen-edged meadow at the end of a dirt road. Thirty people. In late September the elk rut plays out here at dusk.
 
@@ -74,6 +74,8 @@ A late-September day with a sunrise permit at Sprague Lake:
 4. 7:30 a.m. Portraits around the loop, then up Trail Ridge Road.
 5. 9:30 a.m. Breakfast in town. Nap.
 6. 5:30 p.m. Upper Beaver Meadows for elk at dusk and more photos.
+
+For every designated site side by side, with group limits, parking and accessibility, see [RMNP wedding sites compared](/resources/rocky-mountain-national-park-wedding-sites). The west side of the park and Grand Lake have their own guide: [eloping in Grand Lake](/resources/grand-lake-elopement).
 
 ## Where to stay
 

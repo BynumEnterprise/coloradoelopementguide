@@ -119,10 +119,11 @@ const others = VENUE_PAGES.filter(p => p.slug !== page.slug && live.includes(p.s
     <p class="eyebrow text-clay-600 mb-4">Keep Planning</p>
     <div class="grid sm:grid-cols-2 gap-px bg-hairline border border-hairline rounded-2xl overflow-hidden text-sm">
       {page.guide && <a href={`/guides/${page.guide}`} class="bg-ivory hover:bg-parchment p-5"><p class="display text-lg">Planning guide</p><p class="text-ink/55 mt-1">Ceremony spots, permits and timing in {REGIONS[page.guide]?.name}</p></a>}
-      {!page.groups && <a href={`/region/${page.region}`} class="bg-ivory hover:bg-parchment p-5"><p class="display text-lg">Every vendor in {regionName}</p><p class="text-ink/55 mt-1">Photographers, florists, officiants and planners based here</p></a>}
+      {!page.groups && !page.hideRegionLink && <a href={`/region/${page.region}`} class="bg-ivory hover:bg-parchment p-5"><p class="display text-lg">Every vendor in {regionName}</p><p class="text-ink/55 mt-1">Photographers, florists, officiants and planners based here</p></a>}
       {page.groups && <a href="/regions" class="bg-ivory hover:bg-parchment p-5"><p class="display text-lg">Browse every region</p><p class="text-ink/55 mt-1">Vendors in each corner of Colorado</p></a>}
       <a href="/category/photographers" class="bg-ivory hover:bg-parchment p-5"><p class="display text-lg">Elopement photographers</p><p class="text-ink/55 mt-1">Photographers who shoot small weddings, grouped by region</p></a>
       {page.permit && <a href={page.permit.href} class="bg-ivory hover:bg-parchment p-5"><p class="display text-lg">Permits</p><p class="text-ink/55 mt-1">{page.permit.label}</p></a>}
+      {page.links?.map(l => <a href={l.href} class="bg-ivory hover:bg-parchment p-5"><p class="display text-lg">{l.h}</p><p class="text-ink/55 mt-1">{l.p}</p></a>)}
     </div>
   </section>
 

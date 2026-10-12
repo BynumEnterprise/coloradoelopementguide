@@ -73,6 +73,8 @@ A September Friday:
 5. 6:45 p.m. Portraits at the overlook, then back to the cars by dark.
 6. 8:00 p.m. Dinner in Morrison or downtown Denver.
 
+For a dinner of 10 to 50 people after the ceremony, our hand picked list of [Denver micro wedding venues](/venues/denver-micro-wedding-venues) covers a historic mansion, an arts district loft, gardens and foothills ranches.
+
 ## Where to stay
 
 Golden puts you at the mouth of the canyons with a walkable main street and the county clerk two miles away. Morrison is tiny, right at Red Rocks' gate. Evergreen is the forest option, 30 minutes up Bear Creek, with the lake and a small downtown. Georgetown and Idaho Springs are the bases for Guanella Pass. In Denver, LoHi, RiNo and Capitol Hill have the hotels and the restaurants.

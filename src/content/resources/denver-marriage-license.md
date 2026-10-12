@@ -93,4 +93,4 @@ The Denver clerk does not perform ceremonies; if you want a judge, our [courthou
 
 ## Planning a Denver elopement
 
-Denver works well as a base: the [Denver and foothills guide](/guides/denver-foothills) covers Red Rocks, Mount Falcon and the state parks within an hour, and our page on [Red Rocks and the foothills ceremony sites](/resources/red-rocks-and-denver-foothills-ceremony-sites) explains which permit applies where. When you are ready to book people, browse [officiants](/category/officiants) and [photographers](/category/photographers).
+Denver works well as a base: the [Denver and foothills guide](/guides/denver-foothills) covers Red Rocks, Mount Falcon and the state parks within an hour, and our page on [Red Rocks and the foothills ceremony sites](/resources/red-rocks-and-denver-foothills-ceremony-sites) explains which permit applies where. For a small dinner afterward, see our list of [Denver micro wedding venues](/venues/denver-micro-wedding-venues). When you are ready to book people, browse [officiants](/category/officiants) and [photographers](/category/photographers).

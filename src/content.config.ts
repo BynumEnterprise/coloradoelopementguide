@@ -59,7 +59,9 @@ const resources = defineCollection({
     regions: z.array(z.string()).default([]),
     categories: z.array(z.string()).default([]),
     facts: z.array(z.object({ label: z.string(), value: z.string() })).length(4),
-    sources: z.array(z.object({ label: z.string(), url: z.string().url() })).min(1)
+    sources: z.array(z.object({ label: z.string(), url: z.string().url() })).min(1),
+    // Optional local vendor grid: live vendors within km of a point (e.g. Crested Butte and Gunnison).
+    nearby: z.object({ title: z.string(), italic: z.string().optional(), lat: z.number(), lng: z.number(), km: z.number(), note: z.string().optional() }).optional()
   })
 });
 export const collections = { vendors, guides, resources };

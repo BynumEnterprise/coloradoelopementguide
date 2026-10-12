@@ -96,4 +96,4 @@ For a fuller version with clock times for the day itself, see our [Colorado elop
 - **The day:** marry, sign, photograph the certificate.
 - **The week after:** mail it back.
 
-The [planning checklist](/checklist) turns this into a list you can tick off, and our [Colorado marriage laws page](/resources/colorado-marriage-laws) covers age, proxy, common law and same sex marriage in more detail.
+Traveling in from another state? Our guide to [eloping in Colorado from out of state](/resources/elope-in-colorado-from-out-of-state) covers flights, altitude and how to time the license around your trip. The [planning checklist](/checklist) turns this into a list you can tick off, and our [Colorado marriage laws page](/resources/colorado-marriage-laws) covers age, proxy, common law and same sex marriage in more detail.

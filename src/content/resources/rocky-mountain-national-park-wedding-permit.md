@@ -62,15 +62,15 @@ Our [Colorado elopement timeline](/resources/colorado-elopement-timeline) shows 
 
 Group size counts everyone: the couple, every guest including infants, the officiant, and the photographer and videographer. Summer limits run from the Friday of Memorial Day weekend through the second Monday in October; winter is the rest of the year.
 
-- **3M Curve**: 15 people, 3 vehicles. On Trail Ridge Road, open year round, the park's signature winter site.
+- **3M Curve**: 15 people, 3 vehicles. A pullout on US 36 between Upper Beaver Meadows and Deer Ridge Junction, open year round, the park's signature winter site.
 - **Alluvial Fan**: 20 people, 5 vehicles.
 - **Bear Lake**: 20 people, 5 vehicles, winter only and no weekends.
 - **Copeland Lake**: 30 people, 10 vehicles, in the Wild Basin area.
 - **Harbison Meadows**: 30 people, 10 vehicles, on the Grand Lake side.
 - **Hidden Valley**: 30 people, 10 vehicles.
-- **Lily Lake Dock**: 10 people, 3 vehicles.
+- **Lily Lake Dock**: 10 people, 3 vehicles. Wheelchair accessible.
 - **Lily Lake Trail**: 20 people, 5 vehicles.
-- **Lily Lake Southside Picnic Area**: 30 people, 10 vehicles. The easiest site for guests with limited mobility.
+- **Lily Lake Southside Picnic Area**: 30 people, 10 vehicles. Reached by a rocky dirt path, so the park rates it not accessible.
 - **Moraine Park Discovery Center Amphitheater**: 30 people, 10 vehicles.
 - **Sprague Lake**: 15 people and 3 vehicles in summer, 30 people and 10 vehicles in winter.
 - **Timber Creek Campground Amphitheater**: 20 people, 5 vehicles, closed in winter.
@@ -87,6 +87,8 @@ Construction can affect a site at any time, and the park does not refund for it,
 ## Two hours, start to finish
 
 The two hour window includes setup, the ceremony, photos at the site and departure. Most couples use the structure to their advantage: arrive at first light, hold a short ceremony, shoot portraits at the site, then spend the rest of the morning elsewhere in the park with no clock running. Photographers listed in our [Estes Park and RMNP region](/region/estes-park) know the sites and the light, and an experienced [officiant](/category/officiants) will keep the ceremony inside the window without rushing it.
+
+To compare the sites side by side, with parking, accessibility and timed entry notes for each, see [Rocky Mountain National Park wedding sites compared](/resources/rocky-mountain-national-park-wedding-sites). If you want the quieter west side of the park, read our [Grand Lake elopement guide](/resources/grand-lake-elopement).
 
 ## Your marriage license
 

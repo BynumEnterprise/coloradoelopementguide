@@ -5,6 +5,7 @@ headline: "The Flatirons, *forty minutes from the airport*"
 dek: "Boulder has a reservable stone amphitheater on a mountaintop, a lawn under the Flatirons that needs no permit for small groups, and a sunset overlook everyone fights over. Here is how to choose."
 description: "How to elope in Boulder: Chautauqua lawn rules, Sunrise Amphitheater fees and reservations, Lost Gulch, Eldorado Canyon, license office, timing and a sample day."
 datePublished: "2026-10-09"
+dateModified: "2026-10-12"
 facts:
   license: "Boulder County Clerk and Recorder, by remote video appointment; $30, use within 35 days"
   permit: "Chautauqua lawn: no permit under 50; Sunrise Amphitheater reserved through the city, May to October"
@@ -24,13 +25,13 @@ Boulder manages its land carefully, which is good news for planning: the city pu
 
 **Sunrise Amphitheater, Flagstaff Mountain.** A circular stone amphitheater built by the Civilian Conservation Corps in 1933, at the east end of the summit beneath the flagpole, with Boulder and the plains below. Reservation only, through the city's Open Space and Mountain Parks, from May 1 through October 30. Dogs on leash are welcome; there is no electricity or water.
 
-**Lost Gulch Overlook.** A pullout on Flagstaff Road above the amphitheater with a westward view over the foothills to the Indian Peaks and the Continental Divide. The classic Boulder sunset, with no reservation system and a small lot, which means a crowd at golden hour. Keep it to a few people and go on a weekday.
+**Lost Gulch Overlook.** A pullout on Flagstaff Road above the amphitheater with a westward view over the foothills to the Indian Peaks and the Continental Divide. The classic Boulder sunset portrait stop. It is OSMP land, and OSMP allows weddings and elopements only at its designated shelters and facilities, so hold the vows at Sunrise Amphitheater or another reservable site and come here for photos afterward. The lot is small and crowded at golden hour, so go on a weekday.
 
 **Eldorado Canyon State Park.** Ten miles south, a narrow canyon of golden sandstone walls with South Boulder Creek running through it and climbers overhead. A state park, so ceremonies run through a special activity agreement and every car needs a pass; summer weekends require a timed vehicle reservation.
 
 **Brainard Lake Recreation Area.** An hour up the Peak to Peak Highway near Ward, a lake at 10,300 feet with the Indian Peaks reflected in it. National forest, with timed-entry reservations required in summer and fall. A small ceremony with no props needs no permit; the wilderness boundary beyond Long Lake limits group size.
 
-**Flatirons Vista.** South of town off Highway 93, a short loop trail through grassland with the Flatirons and Eldorado's walls in profile. Quiet, open, and a good choice for a sunrise ceremony with a stroller or a grandparent.
+**Flatirons Vista.** South of town off Highway 93, a short loop trail through grassland with the Flatirons and Eldorado's walls in profile. Quiet, open and easy walking, which makes it a good sunrise portrait spot with a stroller or a grandparent. It is OSMP land too, so the ceremony itself belongs at a reserved facility. Our guide to [Boulder elopement permits](/resources/boulder-elopement-permits) lists every reservable OSMP site.
 
 ## Permits and rules
 

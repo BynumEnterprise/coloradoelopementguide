@@ -71,6 +71,8 @@ A late-September Tuesday at the Bells:
 5. 9:30 a.m. Breakfast in town, or a picnic at East Maroon Portal if reserved.
 6. 5:30 p.m. Independence Pass for sunset, sky permitting.
 
+Over the Elk Mountains from Aspen, Crested Butte has its own [elopement guide](/resources/crested-butte-elopement) with local vendors and a list of [Crested Butte wedding venues](/venues/crested-butte-wedding-venues).
+
 ## Where to stay
 
 Aspen puts you fifteen minutes from the Bells and walking distance to dinner, at the highest prices in Colorado. Snowmass Village is slightly cheaper with the same access, and Basalt and Carbondale, 25 to 40 minutes down valley, are the local choice for value. On the Vail side, Vail Village and Lionshead are the walkable core, Avon and Edwards are more affordable, Minturn has small-town character, and Eagle is the budget base near the airport.

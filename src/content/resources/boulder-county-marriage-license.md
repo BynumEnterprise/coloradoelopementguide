@@ -100,4 +100,6 @@ Boulder is very convenient for Colorado residents and awkward for visitors who a
 
 ## Plan the rest
 
+Before you pick a ceremony spot, read [where to elope in Boulder](/resources/boulder-elopement-permits): the city allows ceremonies on its open space only at reservable facilities such as Sunrise Amphitheater.
+
 The [Boulder guide](/guides/boulder) covers Chautauqua, Sunrise Amphitheater, Lost Gulch and Eldorado Canyon, with timing and a sample day. For a reception or an indoor backup, see [Boulder wedding venues](/venues/boulder-wedding-venues). When you are ready to book, browse [Boulder vendors](/region/boulder) and [officiants](/category/officiants), and keep your deadlines in the [free planner](/account).

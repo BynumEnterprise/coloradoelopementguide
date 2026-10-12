@@ -18,6 +18,8 @@ export type VenuePage = {
   description: string;        // under 160 characters
   guide?: string;             // /guides/{guide}
   permit?: { href: string; label: string };
+  hideRegionLink?: boolean;   // hide the "Every vendor in {region}" card (region used only for the hero image)
+  links?: { href: string; h: string; p: string }[]; // extra Keep Planning cards
   intro: string[];            // paragraphs, may contain anchors
   choose: { h: string; p: string }[];
   faqs: { q: string; a: string }[]; // {n} replaced with venue count; plain text
@@ -397,7 +399,7 @@ export const VENUE_PAGES: VenuePage[] = [
       'A micro wedding sits between an elopement and a traditional wedding: usually somewhere between ten and fifty people, one long table, and a day that feels like a gathering rather than a production. The hard part in Colorado is not finding a venue. It is finding one that does not swallow your group. Many of the best known venues in the state are built for 150 guests, and twenty people in a ballroom feels like a rehearsal.',
       'This page is a curated short list, not everything we have. We picked live venues from our directory whose format suits a small group: inns and lodges with a private room, chapels, guest ranches, gardens, historic houses and a few restaurants that seat a long table. We left out convention spaces, stadiums, theaters and big resort ballrooms, even when they host weddings. We do not publish capacities or prices for these venues, because they change by season and by room, so treat every card as a place to ask, not a promise.',
       'The list is grouped by region because the region decides more than the venue does. Estes Park and Rocky Mountain National Park pair a strict park permit with cozy valley inns. Boulder and the Denver foothills keep guests close to the airport. Colorado Springs adds red rock and mild winters. Northern Colorado is farmhouses and breweries. Summit County, Vail and Aspen, and Telluride bring the high peaks and the longer drives.',
-      'If you are still deciding between a venue and public land, read our guide to the <a href="/resources/best-places-to-elope-in-colorado">best places to elope in Colorado</a>, which notes the permit status of each spot. Many couples hold a short ceremony at an overlook and then bring everyone to one of the venues below for dinner. If you would rather have someone else handle the whole day, our page on <a href="/resources/elopement-packages-colorado">Colorado elopement packages</a> explains what venue and all inclusive packages usually cover. Watching the budget? See our list of <a href="/venues/affordable-wedding-venues-colorado">affordable wedding venues in Colorado</a>.'
+      'If you are still deciding between a venue and public land, read our guide to the <a href="/resources/best-places-to-elope-in-colorado">best places to elope in Colorado</a>, which notes the permit status of each spot. Many couples hold a short ceremony at an overlook and then bring everyone to one of the venues below for dinner. If you would rather have someone else handle the whole day, our page on <a href="/resources/elopement-packages-colorado">Colorado elopement packages</a> explains what venue and all inclusive packages usually cover. Watching the budget? See our list of <a href="/venues/affordable-wedding-venues-colorado">affordable wedding venues in Colorado</a>. Planning in the city? See <a href="/venues/denver-micro-wedding-venues">Denver micro wedding venues</a>.'
     ],
     choose: [
       { h: 'Ask for the smallest room first', p: 'Tell the venue your real number and ask which space they would put you in. A room that seats your group snugly will feel warmer than a big one with empty tables. Check with the venue on minimums for that room.' },
@@ -412,6 +414,79 @@ export const VENUE_PAGES: VenuePage[] = [
       { q: 'Can we hold the ceremony on public land and the dinner at a venue?', a: 'Yes, and many couples do. National park, national forest, state park and city park sites each have their own permit rules, so confirm the ceremony site first and then book a venue within a short drive.' },
       { q: 'Do small wedding venues in Colorado have lower prices?', a: 'Sometimes. Many venues offer weekday, off season or small wedding packages, but pricing depends on the room, the date and food and drink minimums. We do not publish prices; ask each venue for its current small wedding rates.' }
     ]
+  },
+  {
+    slug: 'crested-butte-wedding-venues',
+    town: 'Crested Butte',
+    term: 'crested butte wedding venues',
+    volume: 480,
+    region: 'vail-aspen',
+    towns: ['Crested Butte'],
+    hideRegionLink: true,
+    pick: ['mountain-wedding-garden', 'center-for-the-arts-crested-butte', 'crested-butte-land-trust', 'harmels-on-the-taylor', 'i-bar-ranch', 'waunita-hot-springs-ranch'],
+    h1: ['Crested Butte Wedding Venues', 'and the Gunnison Valley'],
+    title: 'Crested Butte Wedding Venues: {n} Venues in Crested Butte, Almont and Gunnison | Colorado Elopement Guide',
+    description: 'Crested Butte wedding venues for elopements and small weddings: wildflower gardens, Land Trust ceremony sites, river ranches and hot springs near Gunnison.',
+    permit: { href: '/resources/crested-butte-elopement', label: 'Crested Butte elopement guide: license, forest rules and Land Trust sites' },
+    links: [
+      { href: '/resources/crested-butte-elopement#local-vendors', h: 'Crested Butte and Gunnison vendors', p: 'Local photographers, planners, florists and hair and makeup artists' },
+      { href: '/resources/colorado-fall-elopement', h: 'Fall color', p: 'Kebler Pass aspens and the best weeks for gold' }
+    ],
+    intro: [
+      'Crested Butte is a small town at the end of the road in the Elk Mountains, and the wedding venues here reflect that. There are no hotel ballrooms on this list. You choose between a wildflower garden above town, an arts center on Sixth Street, conserved land in the aspens, or a ranch down valley along the Taylor River or near Gunnison, where guests can sleep on the property and the party can run all weekend.',
+      'Most couples split the day the way locals do. The ceremony happens outdoors, often at a reserved site like the <a href="/vendor/crested-butte-land-trust">Crested Butte Land Trust</a> spots at Woods Walk and Peanut Lake, or on national forest land on Kebler Pass or toward Gothic, and dinner happens somewhere with a roof. Our <a href="/resources/crested-butte-elopement">Crested Butte elopement guide</a> explains the forest rules, the Land Trust booking terms and which roads are open in which months.',
+      'Distance matters more here than in a Front Range town. Gunnison is roughly 30 miles south on Highway 135, Almont sits between the two where the Taylor and East rivers meet, and Waunita Hot Springs Ranch is east of Gunnison toward Tomichi Dome. The regional airport is in Gunnison, so out of town guests often land there and drive north. Build the timeline around those drives and around the afternoon storms that roll over the Elk Mountains most summer days.',
+      'The season is short and specific. Wildflowers generally peak from mid July through early August, the aspens on Kebler Pass are usually best in late September, and winter closes Kebler Pass and Gothic Road beyond the pavement to cars. Plan on booking a year or more ahead for July and September Saturdays. One note for planners: the Mountain Wedding Garden has announced it is closed for the 2027 season and will take 2028 bookings from June 2027. Your marriage license comes from the Gunnison County Clerk in Gunnison by appointment, or from any other Colorado county.'
+    ],
+    choose: [
+      { h: 'Decide where everyone sleeps', p: 'Town has limited lodging in peak weeks. A ranch or resort with cabins on site, such as those near Almont and Gunnison, can house most of a small guest list and removes the late drive.' },
+      { h: 'Pair the ceremony and the dinner', p: 'Land Trust and forest sites do not allow food, alcohol or amplified sound. Choose a reception venue within a short drive of the ceremony site and plan a shuttle, because trailhead parking is limited.' },
+      { h: 'Ask about the storm plan', p: 'Summer storms build most afternoons. A morning ceremony, a pavilion or an indoor room you actually like keeps the day intact.' },
+      { h: 'Check road status for your month', p: 'Kebler Pass and Gothic Road beyond the pavement close to cars in winter. Confirm that every site on your timeline is reachable on your date.' },
+      { h: 'Ask what you may bring in', p: 'Some venues require a wedding coordinator or use in house catering. Ask about required vendors and outside alcohol before you sign.' }
+    ],
+    faqs: [
+      { q: 'How many wedding venues are listed for Crested Butte?', a: 'We list {n} live venues in Crested Butte, Mt. Crested Butte, Almont and the Gunnison area, ranked by Google rating and review count. Featured venues are shown first and labeled.' },
+      { q: 'Can we get married on public land near Crested Butte?', a: 'Yes. Most of the land around town is Gunnison National Forest, where small noncommercial gatherings usually need no permit. The Crested Butte Land Trust also rents two reservable ceremony sites. Our Crested Butte elopement guide covers both sets of rules.' },
+      { q: 'When is the best time for a Crested Butte wedding?', a: 'Mid July to early August for wildflowers and late September for aspen color are the most popular. June can still have snow on higher dirt roads, and winter weddings work best at venues you can reach on plowed roads.' },
+      { q: 'Where do we get a marriage license for Crested Butte?', a: 'From the Gunnison County Clerk and Recorder in Gunnison, by appointment, or from any Colorado county clerk. A Colorado license is valid anywhere in the state for 35 days.' }
+    ]
+  },
+  {
+    slug: 'denver-micro-wedding-venues',
+    town: 'Denver',
+    term: 'micro wedding denver',
+    volume: 50,
+    region: 'denver-foothills',
+    pick: ['grant-humphreys-mansion', 'skylight', 'mountain-crust-event-venue-denver', 'the-hudson-gardens-event-center', 'boettcher-mansion-lookout-mt', 'evergreen-lake-house', 'the-barn-at-evergreen-memorial-park', 'christies-of-genesee-wedding-and-event-venue', 'blackstone-rivers-ranch', 'woodlands', 'willow-ridge-manor', 'table-mountain-inn'],
+    h1: ['Denver Micro Wedding Venues', 'for 10 to 50 Guests'],
+    title: 'Denver Micro Wedding Venues: {n} Small Venues in the City and Foothills | Colorado Elopement Guide',
+    description: 'Denver micro wedding venues hand picked for 10 to 50 guests: a historic mansion, an arts district loft, gardens, a lake house and foothills ranches.',
+    guide: 'denver-foothills',
+    permit: { href: '/resources/denver-marriage-license', label: 'Denver marriage license: the Clerk and Recorder downtown' },
+    links: [
+      { href: '/venues/denver-wedding-venues', h: 'Every Denver area venue', p: 'The full list of live venues in Denver and the foothills' },
+      { href: '/resources/red-rocks-and-denver-foothills-ceremony-sites', h: 'Foothills ceremony sites', p: 'Red Rocks, Lookout Mountain and park permits' }
+    ],
+    intro: [
+      'A micro wedding in Denver usually means a guest list somewhere between ten and fifty, a ceremony that runs fifteen minutes, and a long dinner afterward. The city makes that easy. You can pick up your license from the Denver Clerk and Recorder downtown, marry the same afternoon, and have guests back at a hotel near Union Station or the airport by midnight. The challenge is that many of the best known venues around Denver are built for 200 people, and a small group can feel lost in them.',
+      'This page is a hand picked short list from our <a href="/venues/denver-wedding-venues">Denver wedding venues</a> directory. We kept places whose format suits a small group: a governor\'s mansion run by History Colorado on Capitol Hill, an arts district event space, a catering kitchen with its own venue, public gardens in Littleton, and a few foothills spots within about 45 minutes where you get the mountains without a mountain pass. We left out large event centers and resort ballrooms, even good ones. We do not publish prices or capacities here, because both change by room and season, so treat each card as a place to ask.',
+      'In the city, the question is mostly style: a historic house with a staircase for photos, or an open loft you can dress any way you like. In the foothills, it is weather and drive time. Lookout Mountain, Genesee and Evergreen sit 20 to 45 minutes from downtown on I-70 or Highway 74, and summer afternoons bring storms, so ask every venue to show you its indoor or covered fallback.',
+      'Many Denver couples hold the ceremony somewhere public and then bring everyone to a venue for dinner. City parks and Denver Mountain Parks such as Red Rocks need a special occasion permit, and our <a href="/resources/red-rocks-and-denver-foothills-ceremony-sites">Red Rocks and foothills permit guide</a> explains which office handles which park. If you want to skip the ceremony logistics altogether, Colorado lets you <a href="/resources/self-solemnization-colorado">marry yourselves</a> with no officiant and no witnesses, which suits a dinner party style wedding at any of the venues below.'
+    ],
+    choose: [
+      { h: 'Ask for the smallest room', p: 'Tell each venue your real number and ask which space they would put you in. A room your group fills will feel warmer than a ballroom with empty tables.' },
+      { h: 'Try a weekday or winter date', p: 'Small weddings have leverage outside Saturdays from May to October. Ask whether the venue has an elopement, weekday or off season option.' },
+      { h: 'Check catering and alcohol rules', p: 'Some venues use in house catering only, others let you bring your own. That one policy decides most of the budget for a small group.' },
+      { h: 'Plan the license around the date', p: 'The Denver Clerk and Recorder issues licenses downtown, and a Colorado license is valid for 35 days. Book the appointment before you finalize travel.' },
+      { h: 'Map the photo drive', p: 'If you want mountain portraits, a foothills venue on Lookout Mountain or in Evergreen keeps your photographer within minutes of the views.' }
+    ],
+    faqs: [
+      { q: 'What is a micro wedding?', a: 'There is no legal definition. Most people use it for a wedding of roughly 10 to 50 guests, larger than an elopement and smaller than a traditional wedding, usually with a short ceremony and a sit down dinner.' },
+      { q: 'How many venues are on this list?', a: 'This curated list has {n} live venues in Denver and the nearby foothills. It is a hand picked selection; the full Denver wedding venues page lists every live venue in the region.' },
+      { q: 'Can we get married at a Denver courthouse instead?', a: 'Denver offers civil ceremonies through the county court rather than the clerk, and Colorado also allows self solemnization, so many couples marry themselves and celebrate at a small venue. Our Colorado courthouse wedding guide covers the options.' },
+      { q: 'Where do we get a marriage license in Denver?', a: 'From the Denver Clerk and Recorder downtown. A license from any Colorado county is valid statewide for 35 days, so you can also use Jefferson County in Golden if your venue is in the foothills.' }
+    ]
   }
 ];
 
@@ -420,9 +495,9 @@ export const REGION_VENUE_LINKS: Record<string, string[]> = {
   'estes-park': ['estes-park-wedding-venues'],
   'colorado-springs': ['colorado-springs-wedding-venues'],
   'boulder': ['boulder-wedding-venues'],
-  'denver-foothills': ['denver-wedding-venues'],
+  'denver-foothills': ['denver-wedding-venues', 'denver-micro-wedding-venues'],
   'northern-colorado': ['fort-collins-wedding-venues'],
-  'vail-aspen': ['vail-wedding-venues', 'aspen-wedding-venues'],
+  'vail-aspen': ['vail-wedding-venues', 'aspen-wedding-venues', 'crested-butte-wedding-venues'],
   'telluride-san-juans': ['telluride-wedding-venues'],
   'summit-county': ['colorado-mountain-wedding-venues']
 };

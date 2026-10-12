@@ -88,4 +88,4 @@ Colorado does not change your name through the marriage license. The license rec
 
 ## Where to go next
 
-For the practical steps, read [how to get married in Colorado](/resources/how-to-get-married-in-colorado). For the offices, see the [Denver](/resources/denver-marriage-license), [Jefferson County](/resources/jefferson-county-marriage-license) and [Summit County](/resources/summit-county-marriage-license) pages and the [statewide license guide](/resources/colorado-marriage-license).
+For the practical steps, read [how to get married in Colorado](/resources/how-to-get-married-in-colorado). Bringing children or a dog? Our page on [eloping with kids and dogs](/resources/eloping-with-kids-and-dogs) covers group caps and pet rules by land type. Flying in? See [eloping in Colorado from out of state](/resources/elope-in-colorado-from-out-of-state). For the offices, see the [Denver](/resources/denver-marriage-license), [Jefferson County](/resources/jefferson-county-marriage-license) and [Summit County](/resources/summit-county-marriage-license) pages and the [statewide license guide](/resources/colorado-marriage-license).
