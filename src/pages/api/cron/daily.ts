@@ -3,14 +3,16 @@ import type { APIRoute } from 'astro';
 import { json, rpc, sleep, authSecret, cronAuthorized, fetchWithTimeout, mapLimit } from '../../../lib/cron';
 import { sendMailResult } from '../../../lib/mail';
 import { renderV4, renderDrip, renderFollowup, renderActivation, type OutreachVendor, type DripUser, type FollowupVendor, type ActivationUser } from '../../../lib/outreach';
+import { renderNurture, sendCoupleMail, type NurtureRecipient } from '../../../lib/couple-mail';
 
 // Daily P2 automation (Vercel cron, 15:00 UTC):
 //   1. contact discovery for up to 12 seeded vendors with a website and no email
 //   2. up to 25 Template v4 claim invites via Resend, marked sent_v1
 //   3. onboarding drips for vendor accounts (one email per user per run)
+//   4. couple nurture emails (kit, region, permits, vendors, planner nudge), 50 per Denver day
 //   2c. one time activation note (drip step 10) to accounts that existed on 2026-10-12, sent once each
 //       vendor is clear of any email from us for 3 days; it runs before the drips so it takes the slot
-// Query flags for manual runs: ?dry=1 renders and checks but sends nothing; ?only=discovery|outreach|drips.
+// Query flags for manual runs: ?dry=1 renders and checks but sends nothing; ?only=discovery|outreach|followups|activation|drips|nurture.
 // Function duration is raised to 300s in astro.config.mjs (adapter maxDuration).
 
 const DISCOVERY_LIMIT = 12;
@@ -239,6 +241,38 @@ export const GET: APIRoute = async ({ request }) => {
       }
     } catch (e) { dr.fatal = String(e).slice(0, 300); summary.ok = false; }
     summary.drips = dr;
+  }
+
+  // 4. Couple nurture (planning kit for new planner accounts, day 3 region, day 7 permits, day 12 vendors,
+  //    one planner nudge). Selection, spacing (3 days) and the 50 per Denver day cap live in ceg_cron_nurture_due.
+  //    The send row is written first so a crash can never double send; a failed send is unmarked for tomorrow.
+  if (run('nurture')) {
+    const nu: Record<string, unknown> = { due: 0, sent: [] as unknown[], failed: [] as unknown[], blocked: [] as unknown[] };
+    try {
+      const due = await rpc<NurtureRecipient[]>('ceg_cron_nurture_due', { p_secret: secret, p_limit: 50 });
+      nu.due = due.length;
+      for (const r of due) {
+        if (Date.now() - started > 280_000) { nu.stopped_early = 'time budget'; break; }
+        let mail;
+        try { mail = renderNurture(r); }
+        catch (e) { (nu.blocked as unknown[]).push({ id: r.id, step: r.step, reason: String((e as Error).message || e).slice(0, 200) }); continue; }
+        if (dry) { (nu.sent as unknown[]).push({ id: r.id, to: r.email, step: r.step, subject: mail.subject }); continue; }
+        let marked = false;
+        try { marked = Boolean(await rpc<boolean>('ceg_nurture_mark', { p_secret: secret, p_id: r.id, p_step: r.step, p_via: 'cron', p_resend_id: null })); }
+        catch (e) { (nu.failed as unknown[]).push({ id: r.id, step: r.step, error: 'mark failed, not sent: ' + String(e).slice(0, 200) }); continue; }
+        if (!marked) continue;
+        const res = await sendCoupleMail(r.email, mail);
+        if (res.ok) {
+          (nu.sent as unknown[]).push({ id: r.id, step: r.step, resend: res.id });
+          if (res.id) { try { await rpc('ceg_nurture_set_resend', { p_secret: secret, p_id: r.id, p_step: r.step, p_resend_id: res.id }); } catch { /* noop */ } }
+        } else {
+          (nu.failed as unknown[]).push({ id: r.id, step: r.step, status: res.status, error: res.error });
+          try { await rpc('ceg_nurture_unmark', { p_secret: secret, p_id: r.id, p_step: r.step }); } catch { /* noop */ }
+        }
+        await sleep(300);
+      }
+    } catch (e) { nu.fatal = String(e).slice(0, 300); summary.ok = false; }
+    summary.nurture = nu;
   }
 
   summary.ms = Date.now() - started;

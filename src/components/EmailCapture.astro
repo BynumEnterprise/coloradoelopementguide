@@ -1,19 +1,64 @@
 ---
+// Planning kit signup. variant "panel" is the large block near the foot of a page; variant "inline" is the
+// compact card placed after a page's second section. For guides and resources (markdown bodies) pass
+// moveIntoArticle: the card renders right after the article and a tiny inline script moves it in front of
+// the article's third h2 before first paint; without JS it simply stays after the article in the same column.
 import { IMG } from '../lib/assets';
+interface Props { variant?: 'panel' | 'inline'; source?: string; moveIntoArticle?: boolean }
+const { variant = 'panel', source = '', moveIntoArticle = false } = Astro.props;
+const src = (source || Astro.url.pathname || 'site').slice(0, 40);
+const KIT = '/kit/colorado-elopement-planning-kit.pdf';
+const uid = 'kitcap-' + Math.random().toString(36).slice(2, 8);
 ---
-<div class="rounded-3xl overflow-hidden md:grid md:grid-cols-2 bg-spruce-900 text-ivory">
-  <div class="hidden md:block relative min-h-[280px]">
-    <img src={`${IMG}/checklist.jpg`} alt="Wedding planning flat lay with rings and vows" class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
-  </div>
-  <div class="p-8 md:p-12">
-    <p class="eyebrow text-gold mb-3">Free planning resource</p>
-    <h3 class="display text-2xl md:text-[1.7rem] leading-tight mb-2">The Colorado Elopement <span class="serif-i">Checklist</span></h3>
-    <p class="text-sm text-ivory/75 mb-6 leading-relaxed">Licenses, self-solemnization, permits for RMNP and beyond, and what to book first. <a href="/checklist" class="underline hover:text-ivory">Read it now</a> — or get it in your inbox.</p>
-    <form method="post" action="/api/subscribe" class="flex flex-wrap gap-2.5" data-subscribe>
-      <input type="email" name="email" required placeholder="you@example.com"
-        class="flex-1 min-w-[210px] rounded-full px-5 py-3 text-ink text-sm bg-ivory placeholder-ink/40 outline-none focus:ring-2 focus:ring-gold" />
-      <button class="rounded-full bg-clay-500 hover:bg-clay-600 px-6 py-3 text-sm font-medium transition-colors">Send It To Me</button>
+{variant === 'inline' ? (
+  <div class={moveIntoArticle ? 'max-w-3xl mx-auto px-5 md:px-8' : undefined}>
+  <aside id={uid} class="kit-inline not-prose my-10 rounded-2xl border border-hairline bg-parchment/70 p-6 md:p-7" aria-label="Get the planning kit">
+    <div class="eyebrow text-clay-600 mb-2">Free Printable PDF</div>
+    <div class="display text-xl md:text-2xl leading-snug">Get the Colorado elopement <span class="serif-i">planning kit</span></div>
+    <div class="text-sm text-ink/65 mt-2 leading-relaxed">A five page checklist: the twelve month timeline, marriage license steps, a permits by place table and the questions to ask every vendor. We email it to you, plus three short planning notes over two weeks. Unsubscribe in one click.</div>
+    <form method="post" action="/api/subscribe" class="mt-4 flex flex-wrap gap-2.5" data-subscribe>
+      <input type="email" name="email" required autocomplete="email" placeholder="you@example.com" aria-label="Email address"
+        class="flex-1 min-w-[200px] rounded-full border border-hairline px-5 py-3 text-ink text-sm bg-white placeholder-ink/40 outline-none focus:ring-2 focus:ring-gold" />
+      <input type="hidden" name="source" value={src} />
+      <div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
+        <label>Company website <input type="text" name="company_site" tabindex="-1" autocomplete="off" /></label>
+      </div>
+      <button class="rounded-full bg-ink text-ivory hover:bg-spruce-800 px-6 py-3 text-sm font-semibold transition-colors">Get The Planning Kit</button>
     </form>
-    <p class="text-[11px] text-ivory/45 mt-3">One email with the checklist, then occasional planning notes. Unsubscribe anytime.</p>
+    <div class="text-[11px] text-ink/45 mt-3">Or <a href={KIT} class="underline underline-offset-2" target="_blank" rel="noopener">open the PDF now</a>. We never sell your email.</div>
+  </aside>
   </div>
-</div>
+) : (
+  <div class="rounded-3xl overflow-hidden md:grid md:grid-cols-2 bg-spruce-900 text-ivory">
+    <div class="hidden md:block relative min-h-[280px]">
+      <img src={`${IMG}/checklist.jpg`} alt="Wedding planning flat lay with rings and vows" class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+    </div>
+    <div class="p-8 md:p-12">
+      <p class="eyebrow text-gold mb-3">Free planning kit</p>
+      <h3 class="display text-2xl md:text-[1.7rem] leading-tight mb-2">The Colorado Elopement <span class="serif-i">Planning Kit</span></h3>
+      <p class="text-sm text-ivory/75 mb-6 leading-relaxed">A printable checklist with the timeline, license steps, permits by place and vendor questions. <a href="/checklist" class="underline hover:text-ivory">Read the checklist</a> on screen, or get the PDF in your inbox.</p>
+      <form method="post" action="/api/subscribe" class="flex flex-wrap gap-2.5" data-subscribe>
+        <input type="email" name="email" required autocomplete="email" placeholder="you@example.com" aria-label="Email address"
+          class="flex-1 min-w-[210px] rounded-full px-5 py-3 text-ink text-sm bg-ivory placeholder-ink/40 outline-none focus:ring-2 focus:ring-gold" />
+        <input type="hidden" name="source" value={src} />
+        <div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
+          <label>Company website <input type="text" name="company_site" tabindex="-1" autocomplete="off" /></label>
+        </div>
+        <button class="rounded-full bg-clay-500 hover:bg-clay-600 px-6 py-3 text-sm font-medium transition-colors">Get The Planning Kit</button>
+      </form>
+      <p class="text-[11px] text-ivory/45 mt-3">The kit by email, then three short planning notes over two weeks. Unsubscribe in one click.</p>
+    </div>
+  </div>
+)}
+{variant === 'inline' && moveIntoArticle && (
+  <script is:inline define:vars={{ uid }}>
+    (function () {
+      var el = document.getElementById(uid); if (!el) return;
+      var wrap = el.parentElement; var art = wrap && wrap.previousElementSibling;
+      if (!art || art.tagName !== 'ARTICLE') return;
+      var hs = art.querySelectorAll(':scope > h2');
+      if (hs.length >= 3) art.insertBefore(el, hs[2]); else art.appendChild(el);
+      wrap.remove();
+    })();
+  </script>
+)}

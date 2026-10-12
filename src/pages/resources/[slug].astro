@@ -101,6 +101,7 @@ const published = new Date(data.datePublished + 'T12:00:00Z').toLocaleDateString
   <article class="guide-body max-w-3xl mx-auto px-5 md:px-8 pt-10">
     <Content />
   </article>
+  <EmailCapture variant="inline" moveIntoArticle={true} />
 
   {nearbyVendors.length > 0 && (
     <section id="local-vendors" class="max-w-7xl mx-auto px-5 md:px-8 pt-16">

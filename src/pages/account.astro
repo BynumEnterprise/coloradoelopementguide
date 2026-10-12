@@ -125,6 +125,10 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
         history.replaceState({}, '', '/account');
       }
       if (!tok()) { showRoot('signin'); const el=document.getElementById('si-slugs'); const local=(window.CEG?CEG.get():[]); el.value=local.join(','); if(local.length) document.getElementById('si-note').classList.remove('hidden'); return; }
+      // Hearts tapped anywhere on the site live in localStorage; fold them into the signed in planner on every visit
+      // (ceg_merge_vendors ignores ones already saved). The local list stays so the hearts keep showing as saved.
+      const hearted = (window.CEG ? CEG.get() : []);
+      if (hearted.length) await rpc('ceg_merge_vendors', { p_token: tok(), p_slugs: hearted.slice(0, 200) });
       D = await rpc('ceg_get_account', { p_token: tok() });
       if (!D) { localStorage.removeItem('ceg_token'); showRoot('signin'); return; }
       paintHeader(); paintAll(); showRoot('app'); setTab(activeTab);
@@ -249,7 +253,7 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
               <input type="checkbox" data-task="${k}" ${D.tasks && D.tasks[k]?'checked':''} class="w-4.5 h-4.5 accent-[#2C3A2E]" />
               <span class="text-sm ${D.tasks && D.tasks[k]?'line-through text-ink/40':'text-ink/80'}">${esc(label)}</span>
             </label>`).join('')}</div>
-          <p class="text-xs text-ink/45 mt-5">The full guide with permits and license details lives at <a href="/checklist" class="underline underline-offset-4">Planning Checklist</a>.</p>
+          <p class="text-xs text-ink/45 mt-5">The full guide with permits and license details lives at <a href="/checklist" class="underline underline-offset-4">Planning Checklist</a>. Want it on paper? <a href="/kit/colorado-elopement-planning-kit.pdf" class="underline underline-offset-4" target="_blank" rel="noopener">Download The Planning Kit (PDF)</a>.</p>
         </div>`;
     }
     function paintDetails(){
@@ -294,7 +298,7 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
       const rm = t.closest('[data-remove]');
       if (rm) { const slug = rm.getAttribute('data-remove');
         D.vendors = (D.vendors||[]).filter(x=>x.slug!==slug); paintAll();
-        await rpc('ceg_remove_vendor',{p_token:tok(),p_slug:slug}); return; }
+        await rpc('ceg_remove_vendor',{p_token:tok(),p_slug:slug}); if (window.CEG && CEG.has(slug)) CEG.toggle(slug); return; }
       if (t.closest('#pf-save')) {
         const ok = await rpc('ceg_update_profile',{p_token:tok(),
           p_names:document.getElementById('pf-names').value,
