@@ -2,12 +2,14 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { json, rpc, sleep, authSecret, cronAuthorized, fetchWithTimeout, mapLimit } from '../../../lib/cron';
 import { sendMailResult } from '../../../lib/mail';
-import { renderV4, renderDrip, renderFollowup, type OutreachVendor, type DripUser, type FollowupVendor } from '../../../lib/outreach';
+import { renderV4, renderDrip, renderFollowup, renderActivation, type OutreachVendor, type DripUser, type FollowupVendor, type ActivationUser } from '../../../lib/outreach';
 
 // Daily P2 automation (Vercel cron, 15:00 UTC):
 //   1. contact discovery for up to 12 seeded vendors with a website and no email
 //   2. up to 25 Template v4 claim invites via Resend, marked sent_v1
 //   3. onboarding drips for vendor accounts (one email per user per run)
+//   2c. one time activation note (drip step 10) to accounts that existed on 2026-10-12, sent once each
+//       vendor is clear of any email from us for 3 days; it runs before the drips so it takes the slot
 // Query flags for manual runs: ?dry=1 renders and checks but sends nothing; ?only=discovery|outreach|drips.
 // Function duration is raised to 300s in astro.config.mjs (adapter maxDuration).
 
@@ -187,6 +189,32 @@ export const GET: APIRoute = async ({ request }) => {
       }
     }
     summary.followups = f;
+  }
+
+  // 2c. Activation note (drip step 10). The row is written before the send so drips stay spaced.
+  if (run('activation')) {
+    const ac: Record<string, unknown> = { due: 0, sent: [] as unknown[], failed: [] as unknown[], blocked: [] as unknown[] };
+    try {
+      const due = await rpc<ActivationUser[]>('ceg_cron_activation_due', { p_secret: secret });
+      ac.due = due.length;
+      let left = 10;
+      try { const st = await rpc<{ founding_left: number }>('ceg_public_stats', {}); if (st && typeof st.founding_left === 'number') left = st.founding_left; } catch { /* keep default */ }
+      ac.founding_left = left;
+      for (const u of due) {
+        if (Date.now() - started > 240_000) { ac.stopped_early = 'time budget'; break; }
+        let mail;
+        try { mail = renderActivation(u, left); }
+        catch (e) { (ac.blocked as unknown[]).push({ user: u.user_id, reason: String((e as Error).message || e).slice(0, 200) }); continue; }
+        if (dry) { (ac.sent as unknown[]).push({ to: u.email, vendor: u.slug, subject: mail.subject, text: mail.text }); continue; }
+        try { await rpc('ceg_cron_drip_mark', { p_secret: secret, p_user_id: u.user_id, p_step: 10 }); }
+        catch (e) { (ac.failed as unknown[]).push({ user: u.user_id, error: 'mark failed, not sent: ' + String(e).slice(0, 200) }); continue; }
+        const res = await sendMailResult(u.email, mail.subject, mail.text, mail.html);
+        if (res.ok) (ac.sent as unknown[]).push({ user: u.user_id, vendor: u.slug, id: res.id });
+        else (ac.failed as unknown[]).push({ user: u.user_id, vendor: u.slug, status: res.status, error: res.error });
+        await sleep(300);
+      }
+    } catch (e) { ac.fatal = String(e).slice(0, 300); summary.ok = false; }
+    summary.activation = ac;
   }
 
   // 3. Onboarding drips

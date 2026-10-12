@@ -100,6 +100,10 @@ const slotTemplates = Object.fromEntries(Object.keys(CATEGORIES).flatMap(c => Ob
               <li>✓ Homepage rotation</li>
               <li>✓ Cancel anytime, no contract</li>
             </ul>
+            <div id="vd-founding" class="hidden mt-4 rounded-2xl bg-parchment/70 border border-hairline px-4 py-3">
+              <p class="eyebrow text-clay-600">Founding Featured</p>
+              <p class="text-sm text-ink/80 mt-1 leading-relaxed">The first 10 Featured vendors keep $40 a month for as long as they stay subscribed. <span id="vd-founding-line" class="font-semibold text-ink"></span>.</p>
+            </div>
             <p id="vd-slot" class="hidden mt-4 text-sm font-medium text-spruce-800"></p>
             <button id="vd-wait" type="button" class="hidden mt-5 rounded-full border border-ink/60 px-6 py-3 text-sm font-semibold hover:bg-parchment">Join the Waitlist</button>
             <p id="vd-wait-msg" class="mt-2 text-xs text-ink/55"></p>
@@ -184,6 +188,11 @@ const slotTemplates = Object.fromEntries(Object.keys(CATEGORIES).flatMap(c => Ob
       }
       const slot = document.getElementById('vd-slot');
       if (v.status === 'featured') { slot.textContent = 'You are Featured' + (v.featured_until ? ' through ' + fmtWhen(v.featured_until) : '') + '.'; slot.classList.remove('hidden'); document.getElementById('vd-buy').classList.add('hidden'); return; }
+      rpc('ceg_public_stats', {}).then(st => {
+        if (!st || typeof st.founding_left !== 'number' || st.founding_left <= 0) return;
+        document.getElementById('vd-founding-line').textContent = st.founding_left + ' of 10 founding spots left';
+        document.getElementById('vd-founding').classList.remove('hidden');
+      });
       const s = await rpc('ceg_featured_slots', { p_category: v.category, p_sub_region: v.sub_region });
       if (!s) return;
       const tpl = slotTemplates[v.category + '|' + v.sub_region];

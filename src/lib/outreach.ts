@@ -346,3 +346,55 @@ Reply unsubscribe and we will not email you again.
   naturalCheck(text, `inquiry notice body (${q.slug})`, allow);
   return { subject, text, html: textToHtml(text) };
 }
+
+// ---------- Founding Featured offer and the one time activation note to claimed vendors ----------
+
+// The first 10 Featured vendors keep $40 a month for as long as they stay subscribed.
+// Spots left are computed from the live featured count (ceg_public_stats), never hard coded.
+export const FOUNDING_CAP = 10;
+export function foundingLine(left: number): string {
+  const n = Math.max(0, Math.min(FOUNDING_CAP, Math.floor(Number(left) || 0)));
+  return `${n} of ${FOUNDING_CAP} founding spots left`;
+}
+
+export type ActivationUser = {
+  user_id: string; email: string; token: string; vendor_name: string; slug: string;
+  category: string; sub_region: string | null; vendor_status: string; views_30d: number;
+};
+
+// Drip step 10. Short, plain, signed Ryan, with the mailbox address and a one line opt out.
+export function renderActivation(u: ActivationUser, foundingLeft: number): RenderedMail {
+  const business = displayName(u.vendor_name);
+  const greeting = greetingFor(u.email, business);
+  const n = Number(u.views_30d) || 0;
+  const views = n === 0
+    ? 'Your page had no views in the last 30 days, so the chart has room to grow.'
+    : `Your page had ${n} ${n === 1 ? 'view' : 'views'} in the last 30 days.`;
+  const left = Math.max(0, Math.min(FOUNDING_CAP, Math.floor(Number(foundingLeft) || 0)));
+  const featuredLine = u.vendor_status === 'featured'
+    ? 'You are already Featured, and your 40 dollar price stays the same for as long as you stay subscribed.'
+    : `Featured is 40 dollars a month, and the first ${FOUNDING_CAP} Featured vendors keep that price for as long as they stay subscribed. ${left} of those ${FOUNDING_CAP} spots are open. The first month is 1 dollar with the code FIRSTMONTH1.`;
+  const subject = `What is new on your ${business} listing`;
+  const text = `${greeting}
+
+A few things changed since ${business} joined Colorado Elopement Guide.
+
+Couples can now send you an inquiry from your page, and it comes to your email so you can reply to them directly.
+Your dashboard has a 30 day traffic chart and shows where you rank among ${categoryPlural(u.category)} on the site.
+There is a small badge for your website that links to your listing.
+${featuredLine}
+
+${views}
+
+${SITE_URL}/vendor-dashboard
+
+Ryan
+Colorado Elopement Guide
+${POSTAL_ADDRESS}
+
+Prefer no more updates? ${SITE_URL}/api/unsub?t=${u.token}
+`;
+  naturalCheck(subject, `activation subject (${u.slug})`, [u.vendor_name]);
+  naturalCheck(text, `activation body (${u.slug})`, [u.vendor_name]);
+  return { subject, text, html: textToHtml(text) };
+}

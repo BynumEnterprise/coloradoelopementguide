@@ -4,8 +4,29 @@ import VendorCard from '../components/VendorCard.astro';
 import EmailCapture from '../components/EmailCapture.astro';
 import { allVendors } from '../lib/vendors';
 import { CATEGORIES, REGIONS } from '../lib/taxonomy';
-import { IMG, regionImg } from '../lib/assets';
+import { IMG, regionImg, gimg } from '../lib/assets';
+import { getCollection } from 'astro:content';
 const vendors = await allVendors();
+// Recently added: the six newest live listings with a photo (released_at is stamped when a listing goes live).
+const relTime = (v: any) => Date.parse(v.released_at || v.created_at || '') || 0;
+const recent = vendors.filter(v => v.image_url).map((v, i) => ({ v, i })).sort((a, b) => (relTime(b.v) - relTime(a.v)) || (a.i - b.i)).slice(0, 6).map(x => x.v);
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const addedOn = (v: any) => { const t = relTime(v); if (!t) return ''; const d = new Date(t); return `Added ${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`; };
+// Plan by permit: the permit pages couples need first, each with the one fact that decides the plan.
+const PERMIT_PICKS: { slug: string; name: string; fact: string }[] = [
+  { slug: 'rocky-mountain-national-park-wedding-permit', name: 'Rocky Mountain National Park', fact: 'Fee' },
+  { slug: 'maroon-bells-elopement-permit', name: 'Maroon Bells', fact: 'Reservation' },
+  { slug: 'sapphire-point-overlook-elopement', name: 'Sapphire Point Overlook', fact: 'Reservation' },
+  { slug: 'garden-of-the-gods-elopement', name: 'Garden of the Gods', fact: 'Fee' },
+  { slug: 'national-forest-and-blm-elopements', name: 'National Forest and BLM Land', fact: 'Group Use' },
+  { slug: 'colorado-state-parks-elopements', name: 'Colorado State Parks', fact: 'Agreement' }
+];
+const resources = await getCollection('resources');
+const permitCards = PERMIT_PICKS.map(p => {
+  const r = resources.find(x => x.id === p.slug); if (!r) return null;
+  const f = r.data.facts.find((x: any) => x.label === p.fact) || r.data.facts[0];
+  return { href: `/resources/${p.slug}`, name: p.name, label: f.label, value: f.value, hero: r.data.hero };
+}).filter(Boolean) as { href: string; name: string; label: string; value: string; hero: string }[];
 const top = vendors.filter(v => v.image_url).slice(0, 6);
 const counts = Object.fromEntries(Object.keys(CATEGORIES).map(c => [c, vendors.filter(v => v.category===c).length]));
 const heroRegions = ['estes-park','summit-county','vail-aspen','telluride-san-juans','colorado-springs','boulder','denver-foothills','northern-colorado','other-colorado'];
@@ -96,6 +117,27 @@ const heroRegions = ['estes-park','summit-county','vail-aspen','telluride-san-ju
     </div>
   </section>
 
+  <!-- PLAN BY PERMIT -->
+  {permitCards.length > 0 && <section class="max-w-7xl mx-auto px-5 md:px-8 pt-16 md:pt-24">
+    <p class="eyebrow text-clay-600 mb-3">Plan By Permit</p>
+    <div class="md:flex items-end justify-between gap-8 mb-8">
+      <h2 class="display text-3xl md:text-4xl leading-tight">Know the rule <span class="serif-i">before you pick the spot</span></h2>
+      <a href="/resources" class="hidden md:inline-block text-sm font-medium underline underline-offset-4 hover:text-clay-700 shrink-0">All Permits And Licenses →</a>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {permitCards.map(c => (
+        <a href={c.href} class="img-tile group flex rounded-2xl overflow-hidden border border-hairline bg-white hover:shadow-md transition-shadow">
+          <div class="relative w-28 shrink-0 overflow-hidden bg-parchment"><img src={regionImg(c.hero)} alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover" /></div>
+          <div class="p-5">
+            <p class="display text-lg leading-snug group-hover:text-clay-700 transition-colors">{c.name}</p>
+            <p class="text-xs text-ink/60 mt-1.5 leading-relaxed"><span class="font-medium text-ink/75">{c.label}:</span> {c.value}</p>
+          </div>
+        </a>
+      ))}
+    </div>
+    <a href="/resources" class="md:hidden inline-block mt-5 text-sm font-medium underline underline-offset-4">All Permits And Licenses →</a>
+  </section>}
+
   <!-- PLANNER PROMO -->
   <section class="max-w-7xl mx-auto px-5 md:px-8 pt-16 md:pt-24">
     <div class="rounded-3xl bg-spruce-900 text-ivory overflow-hidden md:grid md:grid-cols-2">
@@ -149,6 +191,31 @@ const heroRegions = ['estes-park','summit-county','vail-aspen','telluride-san-ju
     </div>
     <div class="grid gap-5 md:grid-cols-3">{top.map(v => <VendorCard v={v} />)}</div>
   </section>
+
+  <!-- RECENTLY ADDED -->
+  {recent.length > 0 && <section class="max-w-7xl mx-auto px-5 md:px-8 pt-16 md:pt-24">
+    <div class="md:flex items-end justify-between gap-8 mb-8">
+      <div>
+        <p class="eyebrow text-clay-600 mb-3">Recently Added Vendors</p>
+        <h2 class="display text-3xl md:text-4xl leading-tight">New to the guide <span class="serif-i">this season</span></h2>
+      </div>
+      <a href="/vendors" class="hidden md:inline-block text-sm font-medium underline underline-offset-4 hover:text-clay-700 shrink-0">Browse All {vendors.length} →</a>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      {recent.map(v => (
+        <a href={`/vendor/${v.slug}`} class="img-tile group block rounded-2xl overflow-hidden bg-white border border-hairline hover:shadow-[0_18px_40px_-18px_rgba(35,40,31,0.35)] transition-shadow">
+          <div class="relative h-32 overflow-hidden bg-parchment">
+            <img src={gimg(v.image_url, 600, 400) || regionImg(v.sub_region)} alt={`${v.name}, ${CATEGORIES[v.category]?.singular} in Colorado`} loading="lazy" class="w-full h-full object-cover" onerror={`this.onerror=null;this.src='${regionImg(v.sub_region)}'`} />
+          </div>
+          <div class="p-4">
+            <p class="eyebrow text-clay-600 mb-1 text-[10px]">{CATEGORIES[v.category]?.singular}</p>
+            <h3 class="display text-[0.98rem] leading-snug text-ink group-hover:text-clay-700 transition-colors">{v.name}</h3>
+            <p class="text-[11px] text-ink/50 mt-1">{REGIONS[v.sub_region]?.name} · {addedOn(v)}</p>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>}
 
   <!-- EMAIL / CHECKLIST -->
   <section class="max-w-7xl mx-auto px-5 md:px-8 pt-16 md:pt-24"><EmailCapture /></section>

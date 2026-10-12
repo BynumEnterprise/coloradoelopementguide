@@ -1,6 +1,25 @@
 ---
 import Base from '../layouts/Base.astro';
 import { IMG } from '../lib/assets';
+import { getCollection } from 'astro:content';
+import { allVendors } from '../lib/vendors';
+import { SB_URL, SB_KEY } from '../lib/supabase';
+import { FOUNDING_CAP, foundingLine, FEATURED_CAP } from '../lib/outreach';
+// Live proof, computed at build time from the database and the content collections.
+const vendors = await allVendors();
+const regionCount = new Set(vendors.map(v => v.sub_region).filter(r => r !== 'other-colorado')).size;
+const guideCount = (await getCollection('guides')).length;
+const resourceCount = (await getCollection('resources')).length;
+let stats: { featured?: number; founding_left?: number; views_30d?: number | null } = {};
+try {
+  const r = await fetch(`${SB_URL}/rest/v1/rpc/ceg_public_stats`, { method: 'POST', headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' }, body: '{}' });
+  if (r.ok) stats = await r.json();
+} catch { /* proof falls back to the build time vendor list */ }
+const featuredNow = typeof stats.featured === 'number' ? stats.featured : vendors.filter(v => v.status === 'featured').length;
+const foundingLeft = typeof stats.founding_left === 'number' ? stats.founding_left : Math.max(0, FOUNDING_CAP - featuredNow);
+// Site wide views are shown only once they pass 500 in the trailing 30 days (bot filtered epoch applied in the RPC).
+const views30 = typeof stats.views_30d === 'number' && stats.views_30d > 500 ? stats.views_30d : null;
+const fmt = (n: number) => n.toLocaleString('en-US');
 ---
 <Base title="For Vendors | Colorado Elopement Guide" description="Colorado wedding vendors: your listing is free forever. Claim it, add photos and packages, and reach couples planning elopements. Featured placement $40/month, first month $1.">
   <section class="relative min-h-[38vh] flex items-end">
@@ -14,6 +33,13 @@ import { IMG } from '../lib/assets';
   <div class="max-w-4xl mx-auto px-5 md:px-8">
     <section class="pt-12">
       <p class="text-ink/70 leading-relaxed max-w-2xl">Colorado Elopement Guide is where couples planning elopements and micro weddings browse vendors by region, save favorites to a planner, and reach out directly. If you work small weddings in Colorado, you're likely already listed.</p>
+      <div class={`mt-8 grid grid-cols-2 ${views30 ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-px bg-hairline border border-hairline rounded-2xl overflow-hidden text-center`}>
+        <div class="bg-ivory p-5"><p class="display text-3xl">{fmt(vendors.length)}</p><p class="text-xs text-ink/55 mt-1">live listings</p></div>
+        <div class="bg-ivory p-5"><p class="display text-3xl">{regionCount}</p><p class="text-xs text-ink/55 mt-1">Colorado regions, each with its own page</p></div>
+        <div class="bg-ivory p-5 col-span-2 md:col-span-1"><p class="display text-3xl">{guideCount + resourceCount}</p><p class="text-xs text-ink/55 mt-1">{guideCount} region guides and {resourceCount} permit and planning pages that link to vendors</p></div>
+        {views30 && <div class="bg-ivory p-5 col-span-2 md:col-span-1"><p class="display text-3xl">{fmt(views30)}</p><p class="text-xs text-ink/55 mt-1">vendor profile views in the last 30 days, bots filtered out</p></div>}
+      </div>
+      <p class="text-[11px] text-ink/40 mt-2">Counted from our database when this page was built.</p>
       <div class="mt-8 rounded-3xl border border-hairline bg-parchment/60 p-7 md:p-9 grid md:grid-cols-3 gap-7">
         <div>
           <p class="display text-xl mb-2">1 · <span class="serif-i">Sourced</span></p>
@@ -29,6 +55,33 @@ import { IMG } from '../lib/assets';
         </div>
       </div>
     </section>
+    <section class="pt-12 grid md:grid-cols-2 gap-5">
+      <div class="rounded-3xl border border-hairline bg-white p-7">
+        <p class="eyebrow text-clay-600 mb-2">Inquiries Come To You</p>
+        <p class="display text-xl leading-snug">Couples write to you <span class="serif-i">from your page</span></p>
+        <p class="text-sm text-ink/70 leading-relaxed mt-3">Every listing has a Check Availability form. When your listing is claimed, the couple's note goes straight to your email with their address as the reply to, and it is saved in your dashboard. We never take a cut, and no inquiry is shared with other vendors.</p>
+      </div>
+      <div class="rounded-3xl border border-hairline bg-white p-7">
+        <p class="eyebrow text-clay-600 mb-2">Only {FEATURED_CAP} Per Category Per Region</p>
+        <p class="display text-xl leading-snug">Featured stays <span class="serif-i">rare on purpose</span></p>
+        <p class="text-sm text-ink/70 leading-relaxed mt-3">Each region has at most {FEATURED_CAP} Featured photographers, {FEATURED_CAP} Featured venues, and so on for every category. Spots go in order of signup, and when a group is full new requests join a waitlist. Couples see a short list, so a Featured listing is actually seen.</p>
+      </div>
+    </section>
+    <section class="pt-12">
+      <div class="rounded-3xl bg-spruce-900 text-ivory p-7 md:p-9 md:flex items-center justify-between gap-8">
+        <div>
+          <p class="eyebrow text-gold mb-2">Founding Featured</p>
+          <p class="display text-2xl leading-snug">The first {FOUNDING_CAP} Featured vendors keep <span class="serif-i">$40 a month</span> for as long as they stay subscribed.</p>
+          <p class="text-sm text-ivory/75 mt-3 leading-relaxed max-w-xl">That is a price lock, not a promo: if Featured costs more later, founding vendors still pay $40. The first month is $1 with code FIRSTMONTH1. Cancel anytime.</p>
+        </div>
+        <div class="mt-6 md:mt-0 shrink-0 text-center">
+          <p class="display text-4xl" id="fv-founding-n">{foundingLeft}</p>
+          <p class="text-xs text-ivory/70 mt-1" id="fv-founding-line">{foundingLine(foundingLeft)}</p>
+          <a href="https://buy.stripe.com/7sYaEZffj1AaaWr93A9oc02" rel="noopener" class="inline-block mt-4 rounded-full bg-ivory text-ink px-6 py-3 text-sm font-semibold hover:bg-white transition-colors">Claim A Founding Spot →</a>
+        </div>
+      </div>
+      <p class="text-[11px] text-ink/40 mt-2">The count is live: it is {FOUNDING_CAP} minus the vendors who are Featured right now.</p>
+    </section>
     <section class="pt-12">
       <h2 class="display text-3xl leading-tight">Simple, honest <span class="serif-i">pricing</span></h2>
       <div class="grid md:grid-cols-2 gap-5 mt-8">
@@ -38,10 +91,11 @@ import { IMG } from '../lib/assets';
           <ul class="mt-6 space-y-3 text-sm text-ink/75">
             <li>✓ Full listing with your details, ratings and links</li>
             <li>✓ Claim it to edit anytime</li>
-            <li>✓ Monthly click &amp; inquiry counts</li>
+            <li>✓ Couple inquiries delivered to your email</li>
+            <li>✓ 30 day chart of real, bot filtered views and clicks</li>
           </ul>
           <div class="mt-8 flex flex-wrap gap-3">
-            <a href="/vendor-dashboard" class="inline-block rounded-full border border-ink px-6 py-3 text-sm font-medium hover:bg-ink hover:text-ivory transition-colors">Create Vendor Account</a>
+            <a href="/vendor-dashboard" class="inline-block rounded-full bg-ink text-ivory px-6 py-3 text-sm font-semibold hover:bg-spruce-800 transition-colors">Create Your Free Account</a>
             <a href="/vendor-dashboard" class="inline-block rounded-full px-6 py-3 text-sm font-medium text-ink/60 underline underline-offset-4">Vendor Sign In</a>
           </div>
         </div>
@@ -55,6 +109,7 @@ import { IMG } from '../lib/assets';
             <li>✓ Photo gallery + packages on your listing</li>
             <li>✓ Annual option: 12 months for the price of 10</li>
             <li>✓ Cancel anytime, no contract</li>
+            <li>✓ Founding price lock for the first {FOUNDING_CAP}: $40 for as long as you stay subscribed</li>
           </ul>
           <p class="mt-5 text-xs text-ink/45">For comparison: premium placement on the big national wedding platforms reportedly runs $200 to $1,200 per month.</p>
           <div class="mt-6 flex flex-wrap gap-3">
@@ -64,7 +119,19 @@ import { IMG } from '../lib/assets';
           <p class="mt-3 text-xs text-ink/50">Use code <strong>FIRSTMONTH1</strong> at checkout for the $1 first month.</p>
         </div>
       </div>
+      <div class="mt-10 rounded-3xl border border-hairline bg-parchment/50 p-7 md:flex items-center justify-between gap-6">
+        <p class="text-sm text-ink/75 leading-relaxed"><span class="display text-xl text-ink block mb-1">Start with the free account.</span>Pick your listing, use an email at your business domain, and you are verified on the spot.</p>
+        <a href="/vendor-dashboard" class="mt-4 md:mt-0 inline-block shrink-0 rounded-full bg-ink text-ivory px-7 py-3.5 text-sm font-semibold hover:bg-spruce-800 transition-colors">Create Your Free Account</a>
+      </div>
       <p class="text-xs text-ink/40 mt-8 pb-4">Featured placement is always labeled. Placement never changes the Google ratings shown, and we never write or alter reviews.</p>
     </section>
   </div>
+  <script is:inline define:vars={{ cap: FOUNDING_CAP }}>
+    fetch('https://yucgsuzveabsgntlmste.supabase.co/rest/v1/rpc/ceg_public_stats', { method: 'POST', headers: { apikey: 'sb_publishable_acsHsb9mrZ756aT12EgAPQ_GugWXmjM', Authorization: 'Bearer sb_publishable_acsHsb9mrZ756aT12EgAPQ_GugWXmjM', 'Content-Type': 'application/json' }, body: '{}' })
+      .then(function(r){ return r.ok ? r.json() : null; }).then(function(s){
+        if (!s || typeof s.founding_left !== 'number') return;
+        document.getElementById('fv-founding-n').textContent = String(s.founding_left);
+        document.getElementById('fv-founding-line').textContent = s.founding_left + ' of ' + cap + ' founding spots left';
+      }).catch(function(){});
+  </script>
 </Base>
