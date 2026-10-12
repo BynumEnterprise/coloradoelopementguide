@@ -21,7 +21,7 @@ const foundingLeft = typeof stats.founding_left === 'number' ? stats.founding_le
 const views30 = typeof stats.views_30d === 'number' && stats.views_30d > 500 ? stats.views_30d : null;
 const fmt = (n: number) => n.toLocaleString('en-US');
 ---
-<Base title="For Vendors | Colorado Elopement Guide" description="Colorado wedding vendors: your listing is free forever. Claim it, add photos and packages, and reach couples planning elopements. Featured placement $40/month, first month $1.">
+<Base title="For Vendors | Colorado Elopement Guide" description="Colorado wedding vendors: your listing is free forever. Claim it, keep your details current, and reach couples planning elopements. Featured placement $40/month, first month $1.">
   <section class="relative min-h-[38vh] flex items-end">
     <img src={`${IMG}/vendors-cta.jpg`} alt="Florist arranging a bridal bouquet" class="absolute inset-0 w-full h-full object-cover" fetchpriority="high" />
     <div class="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/25 to-black/25"></div>
@@ -47,7 +47,7 @@ const fmt = (n: number) => n.toLocaleString('en-US');
         </div>
         <div>
           <p class="display text-xl mb-2">2 · <span class="serif-i">Claimed</span></p>
-          <p class="text-sm text-ink/70 leading-relaxed">Claim free to correct details, add photos and packages, and get monthly reports of real, bot filtered clicks and inquiries.</p>
+          <p class="text-sm text-ink/70 leading-relaxed">Claim free to correct your description, phone and website, receive couple inquiries, and see a 30 day chart of real, bot filtered views and clicks.</p>
         </div>
         <div>
           <p class="display text-xl mb-2">3 · <span class="serif-i">Labeled</span></p>
@@ -106,8 +106,8 @@ const fmt = (n: number) => n.toLocaleString('en-US');
           <ul class="mt-6 space-y-3 text-sm text-ink/75">
             <li>✓ Top of your category and region pages, labeled "Featured"</li>
             <li>✓ Homepage rotation</li>
-            <li>✓ Photo gallery + packages on your listing</li>
-            <li>✓ Annual option: 12 months for the price of 10</li>
+            <li>✓ Couple inquiries delivered to your email, with Reply To the couple</li>
+            <li>✓ Dashboard stats so you can see what the placement brings in</li>
             <li>✓ Cancel anytime, no contract</li>
             <li>✓ Founding price lock for the first {FOUNDING_CAP}: $40 for as long as you stay subscribed</li>
           </ul>
