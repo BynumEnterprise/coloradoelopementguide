@@ -373,13 +373,13 @@ export function renderActivation(u: ActivationUser, foundingLeft: number): Rende
   const left = Math.max(0, Math.min(FOUNDING_CAP, Math.floor(Number(foundingLeft) || 0)));
   const featuredLine = u.vendor_status === 'featured'
     ? 'You are already Featured, and your 40 dollar price stays the same for as long as you stay subscribed.'
-    : `Featured is 40 dollars a month, and the first ${FOUNDING_CAP} Featured vendors keep that price for as long as they stay subscribed. ${left} of those ${FOUNDING_CAP} spots are open. The first month is 1 dollar with the code FIRSTMONTH1.`;
+    : `Featured is 40 dollars a month, and the first ${FOUNDING_CAP} Featured vendors keep that price for as long as they stay subscribed. ${left === FOUNDING_CAP ? `All ${FOUNDING_CAP} spots are open` : `${left} of those ${FOUNDING_CAP} spots are open`}. The first month is 1 dollar with the code FIRSTMONTH1.`;
   const subject = `What is new on your ${business} listing`;
   const text = `${greeting}
 
 A few things changed since ${business} joined Colorado Elopement Guide.
 
-Couples can now send you an inquiry from your page, and it comes to your email so you can reply to them directly.
+Couples can now send you an inquiry from your page, and it comes to your email so you can reply directly.
 Your dashboard has a 30 day traffic chart and shows where you rank among ${categoryPlural(u.category)} on the site.
 There is a small badge for your website that links to your listing.
 ${featuredLine}
