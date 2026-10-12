@@ -6,7 +6,7 @@ dek: "Garden of the Gods lets you marry for free at six named spots, first come,
 description: "How to elope in Colorado Springs: Garden of the Gods wedding areas and rules, city park thresholds, state parks, Pikes Peak, license offices, timing and a sample day."
 datePublished: "2026-10-09"
 facts:
-  license: "El Paso County Clerk, downtown Colorado Springs and branch offices; $30, use within 35 days"
+  license: "El Paso County Clerk, 1675 W. Garden of the Gods Rd. (Saturdays at the North office); $30"
   permit: "Garden of the Gods: free, first come, six areas, no decor; city parks under 50 people need no permit"
   season: "September through October and April through early June; sunrise year round"
   airport: "Colorado Springs (COS) 20 minutes; Denver International 1.5 hours"
@@ -44,7 +44,7 @@ Pikes Peak itself is run by the city as Pikes Peak America's Mountain, with time
 
 Any Colorado county clerk can issue a license that works statewide. You both appear with photo ID (a notarized absentee affidavit covers a partner who cannot), the fee is $30, there is no waiting period, blood test or witness requirement, and under C.R.S. 14-2-109 you may solemnize your own marriage. Use the license within 35 days and return the signed certificate to the issuing clerk within 63 days of the ceremony.
 
-The El Paso County Clerk and Recorder issues licenses downtown in Colorado Springs and at its branch offices around the city. If you are marrying at Mueller or anywhere near Woodland Park, the Teller County Clerk is in Cripple Creek with a Woodland Park branch. The statewide rules are spelled out on any clerk's page, such as [Larimer County's](https://www.larimer.gov/clerk/recording/marriage).
+The El Paso County Clerk and Recorder issues marriage licenses only at its main office, 1675 W. Garden of the Gods Rd., on weekdays and at the North office on Union Blvd. on Saturday mornings; the other branches do not. Our [Colorado Springs marriage license guide](/resources/el-paso-county-marriage-license) has the hours, ID list and return rules. If you are marrying at Mueller or anywhere near Woodland Park, the Teller County Clerk is in Cripple Creek with a Woodland Park branch. The statewide rules are spelled out on any clerk's page, such as [Larimer County's](https://www.larimer.gov/clerk/recording/marriage).
 
 ## When to go
 

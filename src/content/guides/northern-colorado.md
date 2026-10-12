@@ -42,7 +42,7 @@ Lory State Park requires a special activity agreement and a vehicle pass; see [C
 
 Any Colorado county clerk can issue a license that works statewide. You both appear with photo ID (a notarized absentee affidavit covers a partner who cannot), the fee is $30, there is no waiting period, blood test or witness requirement, and under C.R.S. 14-2-109 you may solemnize your own marriage. Use the license within 35 days and return the signed certificate to the issuing clerk within 63 days of the ceremony.
 
-The Larimer County Clerk and Recorder's main recording office is in Fort Collins on West Oak Street, where walk-ins are welcome and appointments are encouraged; the Loveland and Estes Park offices issue licenses by appointment. You can start the application online and finish it in person. If you are coming from Greeley, the Weld County Clerk is there. Everything is on [larimer.gov/clerk/recording/marriage](https://www.larimer.gov/clerk/recording/marriage).
+The Larimer County Clerk and Recorder's main recording office is in Fort Collins on West Oak Street, where walk-ins are welcome and appointments are encouraged; the Loveland and Estes Park offices issue licenses by appointment. You can start the application online and finish it in person. If you are coming from Greeley, the Weld County Clerk is there. Our [Larimer County marriage license guide](/resources/larimer-county-marriage-license) walks through each office. Everything is on [larimer.gov/clerk/recording/marriage](https://www.larimer.gov/clerk/recording/marriage).
 
 ## When to go
 

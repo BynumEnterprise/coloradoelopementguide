@@ -66,7 +66,7 @@ An elopement planner handles the permit, the timeline, the vendor bookings and t
 
 ## Venue or ceremony site: $0 to $8,000 (estimate)
 
-Public land is free or close to it, as the fixed fees above show. Private venues that cater to micro weddings, such as a lodge lawn, a ranch or a chapel, typically charge $1,500 to $4,000 for a ceremony only rental and $4,000 to $8,000 for a ceremony and small dinner space in peak season. Some restaurants will host a dinner for twenty with a minimum spend rather than a rental fee. See [venues](/category/venues).
+Public land is free or close to it, as the fixed fees above show. Private venues that cater to micro weddings, such as a lodge lawn, a ranch or a chapel, typically charge $1,500 to $4,000 for a ceremony only rental and $4,000 to $8,000 for a ceremony and small dinner space in peak season. Some restaurants will host a dinner for twenty with a minimum spend rather than a rental fee. Our list of [affordable wedding venues in Colorado](/venues/affordable-wedding-venues-colorado) gathers parks, community spaces, inns and ranches that suit a smaller budget. See [venues](/category/venues).
 
 ## Lodging: $150 to $700 per night (estimate)
 
@@ -86,4 +86,4 @@ Attire and rings are personal and we will not pretend to range them. Travel is e
 
 ## Keep the numbers in one place
 
-Your free [planner](/account) tracks every vendor you shortlist along with quotes, notes and bookings, so the estimates above turn into real numbers as you hear back from vendors. Start by hearting vendors as you browse, then open the planner to see your budget take shape. For the order to book things in, the [planning checklist](/checklist) is the companion to this page.
+Your free [planner](/account) tracks every vendor you shortlist along with quotes, notes and bookings, so the estimates above turn into real numbers as you hear back from vendors. Start by hearting vendors as you browse, then open the planner to see your budget take shape. For the order to book things in, the [planning checklist](/checklist) is the companion to this page, and our [elopement timeline](/resources/colorado-elopement-timeline) shows how the day itself runs hour by hour.

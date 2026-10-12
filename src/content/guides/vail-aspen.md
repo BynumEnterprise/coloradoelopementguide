@@ -30,6 +30,8 @@ You come to Aspen for the most recognizable backdrop in the state, the Maroon Be
 
 **Vail Mountain and Beaver Creek decks.** The resorts operate ceremony sites reached by gondola, with catering and a weather plan, booked through the resort's wedding office. The price reflects it. For something quieter, Sylvan Lake State Park south of Eagle has a lake, cabins and yurts, with ceremonies arranged through the park.
 
+If you are weighing the valley over the pass, our [Crested Butte elopement guide](/resources/crested-butte-elopement) covers Kebler Pass, the wildflowers and the Gunnison County license, and the [fall elopement guide](/resources/colorado-fall-elopement) explains when the aspens turn.
+
 ## Permits and rules
 
 The Maroon Bells Amphitheater is booked on [Recreation.gov](https://www.recreation.gov/camping/campgrounds/233123), where reservations open one year ahead at 8 a.m. Mountain time on a rolling basis. The Aspen Chamber lists the rate at $200 per day before taxes and fees; the Forest Service sets it. The amphitheater is not reservable on Fridays and Saturdays in June, July and August, or Fridays through Sundays in September, which is the single fact that reshapes most couples' plans. Arches, thrown petals, released animals, PA systems and hanging lights are prohibited, and everything you bring must leave with you. Receptions cannot happen at the amphitheater; the East Maroon Portal picnic site down the road reserves for up to 70 people. The Chamber's [Maroon Bells wedding page](https://aspenchamber.org/groups/weddings/maroon-bells/) collects the rules, shuttle fares and contacts in one place. Pitkin County is slated to take over operations of the scenic area in 2027 with higher day-use fees, so re-check the listing when you book.
@@ -44,7 +46,7 @@ The Pitkin County Clerk and Recorder is on Main Street in Aspen. The Eagle Count
 
 ## When to go
 
-**December through April** is ski season. Maroon Creek Road is closed beyond the T-Lazy-7 Ranch, so the Bells are a six-mile ski or snowshoe, Independence Pass is closed, and holiday lodging peaks. Resort decks shine in this season.
+**December through April** is ski season. Maroon Creek Road is closed beyond the T-Lazy-7 Ranch, so the Bells are a six-mile ski or snowshoe, Independence Pass is closed, and holiday lodging peaks. Resort decks shine in this season; our [winter elopement guide](/resources/winter-elopement-colorado) covers closures and driving rules.
 
 **May** is mud and melt: the Bells road usually reopens in mid May, the pass around Memorial Day, and the lake is often still iced in.
 

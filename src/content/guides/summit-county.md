@@ -42,7 +42,7 @@ The Summit County Clerk and Recorder is in Breckenridge, a few blocks off Main S
 
 ## When to go
 
-**December through March** is deep winter at 9,000 feet. Sapphire Point is reachable and snow-draped, the reservoir is frozen white, and Loveland Pass is open except during storms and avalanche control. Highs in the 20s, and the highest lodging prices of the year.
+**December through March** is deep winter at 9,000 feet. Sapphire Point is reachable and snow-draped, the reservoir is frozen white, and Loveland Pass is open except during storms and avalanche control. Highs in the 20s, and the highest lodging prices of the year. Our [winter elopement guide](/resources/winter-elopement-colorado) covers the traction law and which sites stay open.
 
 **April and May** are the shoulder. Resorts close in mid to late April, trails turn to mud and the towns go quiet. Lodging is cheap and dates are easy.
 

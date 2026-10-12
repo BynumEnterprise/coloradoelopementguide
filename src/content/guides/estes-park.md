@@ -46,7 +46,7 @@ Outside the park, Larimer County's Hermit Park Open Space reserves its pavilion 
 
 Colorado makes this part easy. Any county clerk and recorder in the state can issue a license that works anywhere in Colorado. You both appear with photo ID (one partner can sign a notarized absentee affidavit if needed), the fee is $30, there is no waiting period or blood test, and witnesses are not required. Under C.R.S. 14-2-109 you may solemnize your own marriage, so the two of you can sign as your own officiants. The license must be used within 35 days of issue, and the signed certificate goes back to the issuing clerk within 63 days of the ceremony.
 
-The closest office is the Larimer County Clerk and Recorder in Estes Park, by appointment only, so book ahead; Fort Collins and Loveland also issue licenses. On the Grand Lake side, the Grand County Clerk is in Hot Sulphur Springs. Hours and the online pre-application are at [larimer.gov/clerk/recording/marriage](https://www.larimer.gov/clerk/recording/marriage).
+The closest office is the Larimer County Clerk and Recorder in Estes Park, by appointment only, so book ahead; Fort Collins and Loveland also issue licenses. On the Grand Lake side, the Grand County Clerk is in Hot Sulphur Springs. Our [Larimer County marriage license guide](/resources/larimer-county-marriage-license) has each office's hours and the ID list. Hours and the online pre-application are at [larimer.gov/clerk/recording/marriage](https://www.larimer.gov/clerk/recording/marriage).
 
 ## When to go
 

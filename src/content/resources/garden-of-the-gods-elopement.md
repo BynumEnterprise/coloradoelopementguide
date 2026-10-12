@@ -91,7 +91,7 @@ If you want fifty guests seated, a dinner and a dance floor, the Garden becomes 
 
 ## Your marriage license
 
-El Paso County issues marriage licenses in Colorado Springs with no appointment needed; complete the online application first, bring photo identification, and pay $30 by cash or card. Colorado requires no witnesses and no officiant, so the two of you can sign the certificate yourselves at the plaza. Everything else is on our [Colorado marriage license page](/resources/colorado-marriage-license) and the [self solemnization page](/resources/self-solemnization-colorado).
+El Paso County issues marriage licenses at its main office on Garden of the Gods Road with no appointment needed (our [Colorado Springs marriage license guide](/resources/el-paso-county-marriage-license) has the hours); complete the online application first, bring photo identification, and pay $30 by cash or card. Colorado requires no witnesses and no officiant, so the two of you can sign the certificate yourselves at the plaza. Everything else is on our [Colorado marriage license page](/resources/colorado-marriage-license) and the [self solemnization page](/resources/self-solemnization-colorado).
 
 ## Who to call
 

@@ -89,7 +89,7 @@ Denver offers a marriage license absentee affidavit for a partner who cannot app
 
 ## If Denver has no appointments
 
-Any Colorado county clerk can issue your license. The closest walk in option is the [Jefferson County clerk in Golden](/resources/jefferson-county-marriage-license), which takes drop ins Monday through Thursday and sits on the way to the mountains. If you are heading to Breckenridge, read the [Summit County page](/resources/summit-county-marriage-license) first, because non residents need one of a handful of daily appointment slots. The [statewide license guide](/resources/colorado-marriage-license) compares nine county offices, and [how to get married in Colorado](/resources/how-to-get-married-in-colorado) puts the license in order with everything else.
+The Denver clerk does not perform ceremonies; if you want a judge, our [courthouse wedding guide](/resources/colorado-courthouse-wedding) lists the courts that do. Any Colorado county clerk can issue your license. The closest walk in option is the [Jefferson County clerk in Golden](/resources/jefferson-county-marriage-license), which takes drop ins Monday through Thursday and sits on the way to the mountains. If you are heading to Breckenridge, read the [Summit County page](/resources/summit-county-marriage-license) first, because non residents need one of a handful of daily appointment slots. The [statewide license guide](/resources/colorado-marriage-license) compares nine county offices, and [how to get married in Colorado](/resources/how-to-get-married-in-colorado) puts the license in order with everything else.
 
 ## Planning a Denver elopement
 

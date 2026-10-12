@@ -91,6 +91,8 @@ Independence Pass on Highway 82 reaches 12,095 feet between Aspen and Twin Lakes
 
 The Bureau of Land Management manages much of western Colorado's lower country, from the desert near Grand Junction to the sage hills around Ridgway. BLM field offices issue special recreation permits for commercial, competitive and organized group use; a small private ceremony generally falls outside those categories. Rules vary by field office and designated area, so ask the office that manages your spot through [blm.gov/colorado](https://www.blm.gov/colorado).
 
+Two regional guides apply these rules in practice: [Crested Butte](/resources/crested-butte-elopement) on the Gunnison National Forest and [Ouray](/resources/ouray-elopement) on the Uncompahgre.
+
 ## Before you go
 
 Confirm the ranger district, check fire restrictions the week of, and read the [marriage license page](/resources/colorado-marriage-license) so the legal side is done before you drive up. For someone who already knows the lot, the light and the ranger, start with the [photographers](/category/photographers) and [officiants](/category/officiants) in your region.

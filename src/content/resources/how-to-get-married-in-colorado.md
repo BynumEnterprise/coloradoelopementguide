@@ -87,6 +87,8 @@ Jefferson County's advice is the order most people follow: wait until the licens
 
 ## A sample timeline
 
+For a fuller version with clock times for the day itself, see our [Colorado elopement timeline](/resources/colorado-elopement-timeline).
+
 - **Twelve months out:** RMNP permit applications open a year ahead of your month; Maroon Bells reservations open on a rolling year.
 - **Six months out:** Sapphire Point reservations open; book the photographer and any planner.
 - **One month out:** confirm the clerk's hours and appointment rules.

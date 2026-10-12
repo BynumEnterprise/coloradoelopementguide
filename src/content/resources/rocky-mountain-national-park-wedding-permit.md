@@ -56,6 +56,8 @@ The park caps itself at 60 ceremonies a month from May through October and 40 a 
 
 Your application must name a specific date, a specific site, and a specific two hour window. It also needs your best estimate of people and vehicles, a description of what you plan to bring, and a signature. Incomplete applications are not processed, so download the current form from the park page and fill in every section.
 
+Our [Colorado elopement timeline](/resources/colorado-elopement-timeline) shows where the permit falls in the full twelve month plan and how to build the two hour window into the day.
+
 ## Designated ceremony sites and group limits
 
 Group size counts everyone: the couple, every guest including infants, the officiant, and the photographer and videographer. Summer limits run from the Friday of Memorial Day weekend through the second Monday in October; winter is the rest of the year.
@@ -88,7 +90,7 @@ The two hour window includes setup, the ceremony, photos at the site and departu
 
 ## Your marriage license
 
-The permit has nothing to do with your license. Colorado issues marriage licenses through any county clerk for $30, with no waiting period and no witnesses required, and you may solemnize your own marriage under C.R.S. 14-2-109. The nearest clerk is the Larimer County office in Estes Park at 1601 Brodie Avenue, by appointment only; Fort Collins takes walk ins. Details are on our [Colorado marriage license page](/resources/colorado-marriage-license) and the [self solemnization page](/resources/self-solemnization-colorado).
+The permit has nothing to do with your license. Colorado issues marriage licenses through any county clerk for $30, with no waiting period and no witnesses required, and you may solemnize your own marriage under C.R.S. 14-2-109. The nearest clerk is the Larimer County office in Estes Park at 1601 Brodie Avenue, by appointment only; Fort Collins takes walk ins; our [Larimer County license guide](/resources/larimer-county-marriage-license) has the hours and ID list. In winter, read our [winter elopement guide](/resources/winter-elopement-colorado) for the sites and roads that stay open. Details are on our [Colorado marriage license page](/resources/colorado-marriage-license) and the [self solemnization page](/resources/self-solemnization-colorado).
 
 ## Contact
 

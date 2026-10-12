@@ -73,7 +73,7 @@ Your photographer has seen dozens of these and can pace the morning so the cerem
 
 ## When you still want an officiant
 
-Self solemnization fits a couple who want privacy and a ceremony in their own words. A professional officiant earns their fee in a few situations:
+Self solemnization fits a couple who want privacy and a ceremony in their own words. If you would rather have a judge, our [Colorado courthouse wedding guide](/resources/colorado-courthouse-wedding) covers the courts that marry couples. A professional officiant earns their fee in a few situations:
 
 - **Guests.** With twenty people watching, someone who is not getting married should be managing the flow.
 - **Religious or cultural requirements.** If your tradition requires clergy, hire clergy, and ask whether they are comfortable at altitude and outdoors.

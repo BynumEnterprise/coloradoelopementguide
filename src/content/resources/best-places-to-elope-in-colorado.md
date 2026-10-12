@@ -142,6 +142,6 @@ Small lakes in the pines at 8,300 feet, an hour northwest of Fort Collins and fa
 
 Start with your guest count. Two to ten people can go almost anywhere on this list. Fifteen to thirty narrows you to the RMNP sites that allow it, Sapphire Point, Maroon Bells, the larger Garden of the Gods areas and state parks. Beyond thirty, you are choosing among state parks, the Chautauqua lawn and private venues; our [micro wedding venues list](/venues/micro-wedding-venues-colorado) covers the venues.
 
-Then check the season. The high passes and Alta Lakes are summer and early fall only. Garden of the Gods, Red Rocks, Chautauqua and the Front Range sites work most of the year.
+Then check the season. The high passes and Alta Lakes are summer and early fall only; our [fall](/resources/colorado-fall-elopement) and [winter](/resources/winter-elopement-colorado) guides cover the shoulder months, and [Crested Butte](/resources/crested-butte-elopement) and [Ouray](/resources/ouray-elopement) have their own pages. Garden of the Gods, Red Rocks, Chautauqua and the Front Range sites work most of the year.
 
 Finally, line up the paperwork. The license comes from any county clerk; see [how to get married in Colorado](/resources/how-to-get-married-in-colorado) for the order of steps, and [what a Colorado elopement costs](/resources/colorado-elopement-cost) for the budget. When you know the spot, find a [photographer who knows it](/category/photographers).

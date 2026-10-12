@@ -6,7 +6,7 @@ dek: "Boulder has a reservable stone amphitheater on a mountaintop, a lawn under
 description: "How to elope in Boulder: Chautauqua lawn rules, Sunrise Amphitheater fees and reservations, Lost Gulch, Eldorado Canyon, license office, timing and a sample day."
 datePublished: "2026-10-09"
 facts:
-  license: "Boulder County Clerk and Recorder in Boulder, Longmont or Lafayette; $30, use within 35 days"
+  license: "Boulder County Clerk and Recorder, by remote video appointment; $30, use within 35 days"
   permit: "Chautauqua lawn: no permit under 50; Sunrise Amphitheater reserved through the city, May to October"
   season: "May through October for Flagstaff; September for color; winter at Chautauqua"
   airport: "Denver International, about 45 minutes"
@@ -44,7 +44,7 @@ Eldorado Canyon requires a special activity agreement through [Colorado Parks an
 
 Any Colorado county clerk can issue a license that works statewide. You both appear with photo ID (a notarized absentee affidavit covers a partner who cannot), the fee is $30, there is no waiting period, blood test or witness requirement, and under C.R.S. 14-2-109 you may solemnize your own marriage. Use the license within 35 days and return the signed certificate to the issuing clerk within 63 days of the ceremony.
 
-The Boulder County Clerk and Recorder issues licenses in Boulder, Longmont and Lafayette. The statewide rules are spelled out on any clerk's page, such as [Larimer County's](https://www.larimer.gov/clerk/recording/marriage).
+The Boulder County Clerk and Recorder issues licenses remotely, through an online application and a video appointment, with drop boxes in Boulder, Longmont and Lafayette for returning the signed certificate. Licenses are mailed only within Colorado, so out of state couples need to plan a pickup; our [Boulder County marriage license guide](/resources/boulder-county-marriage-license) walks through it.
 
 ## When to go
 

@@ -32,6 +32,8 @@ The San Juans are the most dramatic range in Colorado, and the aspen groves belo
 
 **Ridgway State Park.** The overlook at the visitor center holds up to 100 guests with the San Juans across the reservoir, reserved through the park with a special activity agreement. The most practical option for a group that includes grandparents.
 
+Over the Dallas Divide, Ouray has its own ceremony sites, park rentals and a weekday only clerk; our [Ouray elopement guide](/resources/ouray-elopement) covers them.
+
 ## Permits and rules
 
 The Town of Telluride does not allow private functions such as weddings at the Town Park stage, the pocket parks or on town streets. Short events in the Town Park core area or pavilion may be approved administratively, with a facility application filed at least 45 days ahead; details are on the [town's Town Park facilities page](https://telluride-co.gov/Facilities/Facility/Details/-20) and applications run through [permits.telluride.gov](https://permits.telluride.gov/). For most couples the answer is simpler: hold the ceremony outside town limits and come back for dinner.

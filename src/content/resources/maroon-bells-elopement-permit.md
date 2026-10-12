@@ -79,7 +79,7 @@ A couple with no guests can skip the amphitheater and marry on the lakeshore or 
 
 **Late June through mid July** gives you snow on the Bells, wildflowers in the meadow and long light. Mosquitoes too.
 
-**Late September** is the reason most couples come: the aspens along Maroon Creek Road turn gold in the last two weeks of the month, and the lake is often glass at dawn. It is also the most competitive booking of the year and the Sunday blackout applies.
+**Late September** is the reason most couples come: the aspens along Maroon Creek Road turn gold in the last two weeks of the month, and the lake is often glass at dawn. It is also the most competitive booking of the year and the Sunday blackout applies. Our [Colorado fall elopement guide](/resources/colorado-fall-elopement) covers aspen timing and other September sites.
 
 **Sunrise** is the ceremony time of choice in any month. The Bells face east, the light hits the peaks first, and the shuttle crowds have not arrived. With vehicle passes you can be at the lake before 7 a.m.
 
