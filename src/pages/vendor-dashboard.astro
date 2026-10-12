@@ -130,6 +130,31 @@ const slotTemplates = Object.fromEntries(Object.keys(CATEGORIES).flatMap(c => Ob
           </div>
         </div>
       </div>
+
+      <!-- PHOTOS -->
+      <p class="eyebrow text-clay-600 mt-10 mb-4">Photos</p>
+      <div id="vd-photos" class="rounded-3xl border border-hairline bg-white p-6 md:p-7">
+        <div id="ph-locked" class="hidden text-sm text-ink/60">Photo uploads unlock once your account is verified. You will then be able to add a cover photo and up to six gallery photos.</div>
+        <div id="ph-open" class="hidden">
+          <div class="md:flex items-start justify-between gap-6">
+            <div>
+              <p class="display text-2xl">Your <span class="serif-i">photos</span></p>
+              <p class="text-sm text-ink/60 mt-1 leading-relaxed max-w-xl">Add a cover photo and up to six gallery photos. Couples see them on your listing. Large photos are resized in your browser before they upload.</p>
+            </div>
+            <p id="ph-count" class="text-xs text-ink/50 mt-2 md:mt-1 shrink-0"></p>
+          </div>
+          <label id="ph-drop" for="ph-file" class="mt-5 flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-hairline bg-ivory px-6 py-8 text-center cursor-pointer hover:bg-parchment/60 transition-colors">
+            <span class="text-sm font-medium">Drag Photos Here</span>
+            <span class="text-xs text-ink/50">or</span>
+            <span class="rounded-full bg-ink text-ivory px-6 py-2.5 text-sm font-semibold">Choose Photos</span>
+            <span class="text-xs text-ink/45 mt-1">JPEG, PNG or WebP</span>
+            <input id="ph-file" type="file" accept="image/jpeg,image/png,image/webp" multiple class="sr-only" />
+          </label>
+          <p class="text-xs text-ink/50 mt-3">Only upload photos you own or have permission to use.</p>
+          <p id="ph-msg" class="text-sm text-ink/60 mt-3 min-h-[1.25rem]" aria-live="polite"></p>
+          <div id="ph-grid" class="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -162,7 +187,7 @@ const slotTemplates = Object.fromEntries(Object.keys(CATEGORIES).flatMap(c => Ob
       if (!vtok()) { show('auth'); paintMode(); return; }
       VD = await rpc('ceg_vendor_get', { p_token: vtok() });
       if (!VD) { localStorage.removeItem('ceg_vtoken'); show('auth'); paintMode(); return; }
-      paint(); show('app'); drawChart(); loadExtras();
+      paint(); show('app'); drawChart(); loadExtras(); loadPhotos();
     }
 
     // ---------- inquiries and Featured slots ----------
@@ -199,6 +224,115 @@ const slotTemplates = Object.fromEntries(Object.keys(CATEGORIES).flatMap(c => Ob
       if (tpl) { slot.textContent = tpl.replace('999', String(s.open)); slot.classList.remove('hidden'); }
       if (s.open <= 0) { document.getElementById('vd-buy').classList.add('hidden'); document.getElementById('vd-wait').classList.remove('hidden'); }
     }
+
+    // ---------- photos: upload, cover, order, delete ----------
+    let PHOTOS = [], PH_MAX = 6, phBusy = false;
+    const phMsg = t => { const el = document.getElementById('ph-msg'); if (el) el.textContent = t || ''; };
+    async function phApi(body){
+      try {
+        const isForm = body instanceof FormData;
+        const r = await fetch('/api/vendor-photo', { method:'POST', headers: isForm ? {} : { 'Content-Type':'application/json' }, body: isForm ? body : JSON.stringify(body) });
+        const j = await r.json().catch(() => null);
+        return j || { ok:false, error: r.status === 413 ? 'That photo is too large.' : 'Something went wrong. Please try again.' };
+      } catch(_) { return { ok:false, error:'Could not reach the server. Check your connection and try again.' }; }
+    }
+    // Rebuild the static site at most once every 2 minutes; later changes ride on a timer.
+    let rebuildTimer = null;
+    function scheduleRebuild(){
+      const KEY = 'ceg_vphoto_rebuild', GAP = 120000;
+      const fire = () => { rebuildTimer = null; localStorage.setItem(KEY, String(Date.now())); try{ fetch('/api/refresh-site',{method:'POST'}); }catch(_){} };
+      if (rebuildTimer) return;
+      const wait = GAP - (Date.now() - Number(localStorage.getItem(KEY) || 0));
+      if (wait <= 0) fire(); else rebuildTimer = setTimeout(fire, wait);
+    }
+    async function loadPhotos(){
+      const verified = !!(VD && VD.verified);
+      document.getElementById('ph-locked').classList.toggle('hidden', verified);
+      document.getElementById('ph-open').classList.toggle('hidden', !verified);
+      if (!verified) return;
+      const r = await phApi({ p_token: vtok(), action: 'list' });
+      if (!r.ok) { phMsg(r.error); return; }
+      PHOTOS = r.photos || []; PH_MAX = r.max_gallery || 6; paintPhotos();
+    }
+    function paintPhotos(){
+      const gallery = PHOTOS.filter(p => !p.is_cover).length, hasCover = PHOTOS.some(p => p.is_cover);
+      document.getElementById('ph-count').textContent = `${gallery} of ${PH_MAX} gallery photos${hasCover ? ', plus your cover' : ', no cover chosen yet'}`;
+      const full = gallery >= PH_MAX;
+      document.getElementById('ph-drop').classList.toggle('opacity-50', full);
+      document.getElementById('ph-file').disabled = full;
+      const grid = document.getElementById('ph-grid');
+      if (!PHOTOS.length) { grid.innerHTML = '<p class="col-span-full text-sm text-ink/50">No photos yet. Your listing shows its current photo until you choose a cover here.</p>'; return; }
+      const btn = 'rounded-full border border-hairline px-3 py-1.5 text-xs font-medium hover:bg-parchment disabled:opacity-40 disabled:cursor-not-allowed';
+      grid.innerHTML = PHOTOS.map((p, i) => `
+        <figure class="rounded-2xl border ${p.is_cover ? 'border-clay-500' : 'border-hairline'} overflow-hidden bg-ivory">
+          <div class="relative aspect-[4/3] bg-parchment"><img src="${esc(p.url)}" alt="Photo ${i + 1}" loading="lazy" class="absolute inset-0 w-full h-full object-cover" />
+            ${p.is_cover ? '<span class="absolute top-2 left-2 eyebrow bg-clay-500 text-ivory rounded-full px-2.5 py-1">Cover</span>' : ''}</div>
+          <figcaption class="p-3 flex flex-wrap gap-1.5">
+            ${p.is_cover ? '' : `<button type="button" data-ph="set_cover" data-id="${p.id}" class="${btn}">Set As Cover</button>`}
+            <button type="button" data-ph="up" data-id="${p.id}" class="${btn}" ${i === 0 ? 'disabled' : ''} aria-label="Move photo ${i + 1} up">Move Up</button>
+            <button type="button" data-ph="down" data-id="${p.id}" class="${btn}" ${i === PHOTOS.length - 1 ? 'disabled' : ''} aria-label="Move photo ${i + 1} down">Move Down</button>
+            <button type="button" data-ph="delete" data-id="${p.id}" class="${btn} text-clay-700">Delete</button>
+          </figcaption>
+        </figure>`).join('');
+    }
+    function phDone(r, okText){
+      if (!r.ok) { phMsg(r.error || 'Something went wrong. Please try again.'); return false; }
+      PHOTOS = r.photos || []; paintPhotos(); scheduleRebuild();
+      phMsg(okText + ' Live on your page in a few minutes.');
+      return true;
+    }
+    // Downscale to 2000px on the longest edge and re-encode as JPEG 0.85 before upload.
+    async function shrink(file){
+      let src;
+      try { src = await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+      catch(_) { src = await new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = URL.createObjectURL(file); }); }
+      const w0 = src.width || src.naturalWidth, h0 = src.height || src.naturalHeight;
+      const k = Math.min(1, 2000 / Math.max(w0, h0));
+      const c = document.createElement('canvas'); c.width = Math.round(w0 * k); c.height = Math.round(h0 * k);
+      const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(src, 0, 0, c.width, c.height);
+      return await new Promise(res => c.toBlob(res, 'image/jpeg', 0.85));
+    }
+    async function uploadFiles(files){
+      if (phBusy) return;
+      const list = Array.from(files || []).filter(Boolean);
+      if (!list.length) return;
+      phBusy = true; let ok = 0;
+      try {
+        for (let i = 0; i < list.length; i++) {
+          const f = list[i];
+          if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { phMsg(`${f.name} is not a JPEG, PNG or WebP photo.`); continue; }
+          if (PHOTOS.filter(p => !p.is_cover).length >= PH_MAX) { phMsg(`Your gallery is full (${PH_MAX} photos plus a cover). Delete one to add another.`); break; }
+          phMsg(`Uploading ${i + 1} of ${list.length}…`);
+          let blob;
+          try { blob = await shrink(f); } catch(_) { blob = null; }
+          if (!blob) { if (f.size > 4 * 1024 * 1024) { phMsg(`Could not resize ${f.name}. Try a smaller photo.`); continue; } blob = f; }
+          const fd = new FormData(); fd.append('p_token', vtok()); fd.append('action', 'upload'); fd.append('file', blob, 'photo.jpg');
+          const r = await phApi(fd);
+          if (!r.ok) { phMsg(r.error); break; }
+          PHOTOS = r.photos || []; paintPhotos(); ok++;
+        }
+        if (ok) { scheduleRebuild(); phMsg(`${ok} ${ok === 1 ? 'photo' : 'photos'} added. Live on your page in a few minutes.`); }
+      } finally { phBusy = false; document.getElementById('ph-file').value = ''; }
+    }
+    document.addEventListener('change', e => { if (e.target.id === 'ph-file') uploadFiles(e.target.files); });
+    ['dragenter','dragover'].forEach(t => document.addEventListener(t, e => { const d = e.target.closest && e.target.closest('#ph-drop'); if (d) { e.preventDefault(); d.classList.add('bg-parchment'); } }));
+    ['dragleave','drop'].forEach(t => document.addEventListener(t, e => { const d = e.target.closest && e.target.closest('#ph-drop'); if (d) { e.preventDefault(); d.classList.remove('bg-parchment'); if (t === 'drop' && !document.getElementById('ph-file').disabled) uploadFiles(e.dataTransfer.files); } }));
+    document.addEventListener('click', async e => {
+      const b = e.target.closest('[data-ph]'); if (!b || phBusy) return;
+      const id = Number(b.dataset.id), act = b.dataset.ph;
+      if (act === 'delete' && !b.dataset.armed) { b.dataset.armed = '1'; b.textContent = 'Confirm Delete'; setTimeout(() => { if (b.isConnected) { delete b.dataset.armed; b.textContent = 'Delete'; } }, 4000); return; }
+      phBusy = true;
+      try {
+        if (act === 'set_cover') { phMsg('Saving…'); phDone(await phApi({ p_token: vtok(), action: 'set_cover', photo_id: id }), 'Cover updated.'); }
+        else if (act === 'delete') { phMsg('Deleting…'); phDone(await phApi({ p_token: vtok(), action: 'delete', photo_id: id }), 'Photo deleted.'); }
+        else {
+          const ids = PHOTOS.map(p => p.id), i = ids.indexOf(id), j = act === 'up' ? i - 1 : i + 1;
+          if (i < 0 || j < 0 || j >= ids.length) return;
+          [ids[i], ids[j]] = [ids[j], ids[i]];
+          phMsg('Saving order…'); phDone(await phApi({ p_token: vtok(), action: 'reorder', ids }), 'Order saved.');
+        }
+      } finally { phBusy = false; }
+    });
 
     // ---------- inline SVG chart: bars for views, thin lines for site clicks and phone taps ----------
     function niceStep(max){ const raw = max / 4; const p = Math.pow(10, Math.floor(Math.log10(raw))); const m = raw / p; const f = m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10; return Math.max(1, f * p); }
@@ -262,7 +396,7 @@ const slotTemplates = Object.fromEntries(Object.keys(CATEGORIES).flatMap(c => Ob
         : '<li class="py-3 text-sm text-ink/55">No visits in the last 30 days yet. As couples find your page, where they came from shows up here.</li>';
       const descChars = c.description_chars != null ? c.description_chars : (v.description || '').length;
       const items = [
-        { ok: !!c.has_photo, label: 'A photo', done: 'Your listing shows a photo.', todo: 'No photo yet. Send us one through the contact page and we will add it.', href: '/contact', cta: 'Contact Us' },
+        { ok: !!c.has_photo, label: 'A photo', done: 'Your listing shows a photo.', todo: 'No photo yet. Add your own in the Photos section below.', field: 'vd-photos', cta: 'Add Photos' },
         { ok: !!c.has_phone, label: 'A phone number', done: 'Couples can tap to call you.', todo: 'Add a phone number so couples can tap to call you.', field: 've-phone', cta: 'Add Phone' },
         { ok: !!c.has_website, label: 'A website link', done: 'Couples can click through to your site.', todo: 'Add your website so couples can click through.', field: 've-web', cta: 'Add Website' },
         { ok: !!c.description_ok, label: 'A description of 220 or more characters', done: `${num(descChars)} characters. Good.`, todo: `${num(descChars)} characters so far. A fuller description gives couples more to go on and helps your page show up in search.`, field: 've-desc', cta: 'Edit Description' }

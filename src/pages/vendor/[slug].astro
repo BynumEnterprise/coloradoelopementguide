@@ -6,6 +6,7 @@ import { allVendors } from '../../lib/vendors';
 import { CATEGORIES, REGIONS } from '../../lib/taxonomy';
 import { regionImg, gimg } from '../../lib/assets';
 import { slotLine, FEATURED_CAP } from '../../lib/outreach';
+import { vendorPhotos } from '../../lib/photos';
 export async function getStaticPaths() {
   const vendors = await allVendors();
   return vendors.map(v => ({ params: { slug: v.slug }, props: { v, all: vendors } }));
@@ -20,6 +21,9 @@ const sameRegion = peers.filter(x => x.sub_region === v.sub_region).sort((a, b) 
 const elsewhere = peers.filter(x => x.sub_region !== v.sub_region && x.sub_region !== 'other-colorado').sort((a, b) => dist(v, a) - dist(v, b));
 const related = [...sameRegion, ...elsewhere].slice(0, 4);
 const fallback = regionImg(v.sub_region);
+// Vendor uploaded photos: the cover (if chosen) is already p2_vendors.image_url, so the hero shows it; the rest form the gallery.
+const photos = v.db_id ? ((await vendorPhotos()).get(Number(v.db_id)) || []) : [];
+const gallery = photos.filter(p => !p.is_cover);
 const SITE = 'https://coloradoelopementguide.com';
 const pageUrl = `${SITE}/vendor/${v.slug}`;
 const isFeatured = v.status === 'featured';
@@ -45,7 +49,7 @@ const jsonld: Record<string, unknown> = {
   telephone: digits.length === 10 ? `+1-${digits.slice(0,3)}-${digits.slice(3,6)}-${digits.slice(6)}` : (v.phone || undefined),
   address: postal(v.address),
   geo: (v.lat && v.lng) ? { "@type": "GeoCoordinates", latitude: Number(v.lat), longitude: Number(v.lng) } : undefined,
-  image: v.image_url ? gimg(v.image_url, 1600, 900) : undefined,
+  image: gallery.length ? [gimg(v.image_url, 1600, 900), ...gallery.map(p => p.url)].filter(Boolean) : (v.image_url ? gimg(v.image_url, 1600, 900) : undefined),
   areaServed,
   sameAs: v.website ? [v.website] : undefined
 };
@@ -108,6 +112,36 @@ const metaDesc = v.description.length > 155 ? v.description.slice(0, 152).replac
         </div>
       </div>
     </div>
+    {gallery.length > 0 && <section id="photos" class="mt-10" aria-label={`Photos of ${v.name}`}>
+      <p class="eyebrow text-clay-600 mb-4">Photos</p>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+        {gallery.map((p, i) => <button type="button" data-lb={i} class="group relative block aspect-[4/3] overflow-hidden rounded-2xl border border-hairline bg-parchment focus:outline-none focus-visible:ring-2 focus-visible:ring-clay-500">
+          <img src={p.url} alt={`${v.name} photo ${i + 1}`} loading="lazy" decoding="async" class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+        </button>)}
+      </div>
+      <div id="lb" class="hidden fixed inset-0 z-50 bg-ink/90 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={`Photos of ${v.name}`}>
+        <img id="lb-img" src="" alt="" class="max-h-[85vh] max-w-full rounded-xl object-contain shadow-2xl" />
+        <button type="button" id="lb-close" class="absolute top-4 right-4 rounded-full bg-ivory/95 text-ink px-4 py-2 text-sm font-medium">Close</button>
+        <button type="button" id="lb-prev" class="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 rounded-full bg-ivory/95 text-ink px-4 py-2 text-sm font-medium">Previous</button>
+        <button type="button" id="lb-next" class="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 rounded-full bg-ivory/95 text-ink px-4 py-2 text-sm font-medium">Next</button>
+        <p id="lb-cap" class="absolute bottom-4 left-0 right-0 text-center text-xs text-ivory/80"></p>
+      </div>
+      <script is:inline define:vars={{ lbUrls: gallery.map(p => p.url), lbName: v.name }}>
+      (function(){
+        var lb = document.getElementById('lb'), img = document.getElementById('lb-img'), cap = document.getElementById('lb-cap'), cur = 0, last = null;
+        function show(i){ cur = (i + lbUrls.length) % lbUrls.length; img.src = lbUrls[cur]; img.alt = lbName + ' photo ' + (cur + 1); cap.textContent = (cur + 1) + ' of ' + lbUrls.length; }
+        function open(i){ last = document.activeElement; show(i); lb.classList.remove('hidden'); document.body.style.overflow = 'hidden'; document.getElementById('lb-close').focus(); }
+        function close(){ lb.classList.add('hidden'); document.body.style.overflow = ''; if (last) last.focus(); }
+        document.querySelectorAll('[data-lb]').forEach(function(b){ b.addEventListener('click', function(){ open(Number(b.getAttribute('data-lb'))); }); });
+        document.getElementById('lb-close').addEventListener('click', close);
+        document.getElementById('lb-prev').addEventListener('click', function(){ show(cur - 1); });
+        document.getElementById('lb-next').addEventListener('click', function(){ show(cur + 1); });
+        lb.addEventListener('click', function(e){ if (e.target === lb) close(); });
+        document.addEventListener('keydown', function(e){ if (lb.classList.contains('hidden')) return; if (e.key === 'Escape') close(); else if (e.key === 'ArrowLeft') show(cur - 1); else if (e.key === 'ArrowRight') show(cur + 1); });
+        if (lbUrls.length < 2) { document.getElementById('lb-prev').classList.add('hidden'); document.getElementById('lb-next').classList.add('hidden'); }
+      })();
+      </script>
+    </section>}
     <section id="inquiry" class="mt-10 rounded-3xl border border-hairline bg-white p-6 md:p-9">
       <div class="md:grid md:grid-cols-3 md:gap-10">
         <div>
