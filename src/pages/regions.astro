@@ -2,7 +2,7 @@
 import Base from '../layouts/Base.astro';
 import { allVendors } from '../lib/vendors';
 import { REGIONS } from '../lib/taxonomy';
-import { regionImg } from '../lib/assets';
+import { regionImg, opt, optSet } from '../lib/assets';
 const vendors = await allVendors();
 ---
 <Base title="Colorado elopement regions — where to elope | Colorado Elopement Guide"
@@ -13,7 +13,7 @@ const vendors = await allVendors();
     <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mt-10">
       {Object.entries(REGIONS).map(([slug, r]) => (
         <a href={`/region/${slug}`} class="img-tile group relative rounded-2xl overflow-hidden h-60">
-          <img src={regionImg(slug)} alt={r.name} loading="lazy" class="absolute inset-0 w-full h-full object-cover" />
+          <img src={opt(regionImg(slug), 640)} srcset={optSet(regionImg(slug), [480, 640, 960])} sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw" width="640" height="400" decoding="async" alt={r.name} loading="lazy" class="absolute inset-0 w-full h-full object-cover" />
           <div class="absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent"></div>
           <div class="absolute bottom-0 p-5">
             <p class="display text-ivory text-xl leading-tight">{r.name}</p>

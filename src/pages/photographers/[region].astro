@@ -4,7 +4,7 @@ import VendorCard from '../../components/VendorCard.astro';
 import EmailCapture from '../../components/EmailCapture.astro';
 import { allVendors } from '../../lib/vendors';
 import { REGIONS } from '../../lib/taxonomy';
-import { regionImg } from '../../lib/assets';
+import { regionImg, opt, optSet } from '../../lib/assets';
 import { livePhotographerPages, photographersIn, LIVE_STATUSES } from '../../data/category-copy';
 
 export async function getStaticPaths() {
@@ -43,13 +43,13 @@ const ldCrumbs = {
   ]
 };
 ---
-<Base dark={true} title={fill(page.title)} description={page.description}>
+<Base hero={regionImg(page.region)} dark={true} title={fill(page.title)} description={page.description}>
   <script is:inline type="application/ld+json" slot="head" set:html={JSON.stringify(ldFaq)} />
   <script is:inline type="application/ld+json" slot="head" set:html={JSON.stringify(ldList)} />
   <script is:inline type="application/ld+json" slot="head" set:html={JSON.stringify(ldCrumbs)} />
 
   <section class="relative min-h-[50vh] flex items-end">
-    <img src={regionImg(page.region)} alt={`${page.place} elopement photography setting`} class="absolute inset-0 w-full h-full object-cover" fetchpriority="high" />
+    <img src={opt(regionImg(page.region), 1600)} srcset={optSet(regionImg(page.region), [960, 1280, 1600, 2048])} sizes="100vw" width="1600" height="900" decoding="async" alt={`${page.place} elopement photography setting`} class="absolute inset-0 w-full h-full object-cover" fetchpriority="high" />
     <div class="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/25 to-black/30"></div>
     <div class="relative z-10 max-w-7xl mx-auto px-5 md:px-8 pb-12 md:pb-16 w-full">
       <nav aria-label="Breadcrumb" class="eyebrow text-gold mb-3"><a href="/" class="hover:text-ivory">Home</a> · <a href="/category/photographers" class="hover:text-ivory">Elopement Photographers</a> · {page.place}</nav>

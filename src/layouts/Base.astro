@@ -1,15 +1,41 @@
 ---
 import '../styles/global.css';
 import Disclosure from '../components/Disclosure.astro';
-const { title, description, noindex = false, dark = false } = Astro.props;
+import { IMG, opt, optSet } from '../lib/assets';
+const { title, description, noindex = false, dark = false, image, imageAlt, hero } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+// Search results cut titles near 60 to 65 characters. Pages pass their full editorial title; this keeps
+// the brand when it fits, then falls back to the part before a colon or dash, then a word boundary cut.
+const SUFFIX = ' | Colorado Elopement Guide';
+function seoTitle(t: string) {
+  if (!t || t.length <= 65) return t;
+  const base = t.endsWith(SUFFIX) ? t.slice(0, -SUFFIX.length) : t;
+  if ((base + SUFFIX).length <= 65) return base + SUFFIX;
+  if (base.length <= 65) return base;
+  let cut = base.split(/:\s|(?<=\?)\s| — | – | \| /)[0].trim();
+  if (cut === SUFFIX.slice(3) || cut.length < 12) cut = base; // never "Brand | Brand", never a stub
+  if ((cut + SUFFIX).length <= 65) return cut + SUFFIX;
+  if (cut.length <= 65) return cut;
+  return cut.slice(0, 63).replace(/[\s,;:]+\S*$/, '');
+}
+const pageTitle = seoTitle(title);
+const isHome = Astro.url.pathname === '/';
+const siteLd = isHome ? [
+  { '@context': 'https://schema.org', '@type': 'Organization', '@id': 'https://coloradoelopementguide.com/#org', name: 'Colorado Elopement Guide', url: 'https://coloradoelopementguide.com/', logo: 'https://coloradoelopementguide.com/icon-512.png', email: 'hello@coloradoelopementguide.com', address: { '@type': 'PostalAddress', streetAddress: '1905 Sherman Street, Ste 200 1074', addressLocality: 'Denver', addressRegion: 'CO', postalCode: '80203', addressCountry: 'US' }, areaServed: { '@type': 'State', name: 'Colorado' } },
+  { '@context': 'https://schema.org', '@type': 'WebSite', '@id': 'https://coloradoelopementguide.com/#website', name: 'Colorado Elopement Guide', url: 'https://coloradoelopementguide.com/', description: 'Directory and planner for couples eloping or having a micro wedding in Colorado.', publisher: { '@id': 'https://coloradoelopementguide.com/#org' }, inLanguage: 'en-US' }
+] : [];
+const ogSrc = image || hero;
+const ogImage = ogSrc ? (ogSrc.startsWith('http') ? ogSrc : new URL(ogSrc, Astro.site).href) : `${IMG}/hero.jpg`;
+const ogAlt = imageAlt || 'Couple eloping on a Colorado mountain ridge at golden hour';
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const on = (p: string) => path === p || path.startsWith(p + '/');
 ---
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{title}</title>
+  <title>{pageTitle}</title>
   <meta name="description" content={description} />
   {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
   <meta property="og:title" content={title} />
@@ -17,12 +43,24 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
   <meta property="og:type" content="website" />
   <meta property="og:url" content={canonical} />
   <meta property="og:site_name" content="Colorado Elopement Guide" />
-  <meta property="og:image" content="https://yucgsuzveabsgntlmste.supabase.co/storage/v1/object/public/p2-assets/hero.jpg" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:image" content={ogImage} />
+  <meta property="og:image:alt" content={ogAlt} />
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={pageTitle} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={ogImage} />
+  <meta name="twitter:image:alt" content={ogAlt} />
+  <meta name="theme-color" content="#202B22" />
+  <link rel="icon" href="/favicon.ico" sizes="48x48" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  {hero && <link rel="preload" as="image" href={opt(hero, 1600)} imagesrcset={optSet(hero, [960, 1280, 1600, 2048])} imagesizes="100vw" fetchpriority="high" />}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Inter:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Inter:wght@400;500;600&display=swap" /></noscript>
   <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-2R7TQZE64W"></script>
   <script is:inline>
     window.dataLayer = window.dataLayer || [];
@@ -76,16 +114,23 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
       if (W.fetch) { var of = W.fetch; W.fetch = function(u){ try { var s = typeof u === 'string' ? u : (u && u.url) || ''; if (s.indexOf('/api/vendor-signup-notify') > -1) cegTrack('vendor_signup', L.pathname, 'sign_up', { method: 'vendor_account' }); } catch(e){} return of.apply(this, arguments); }; }
     })();
   </script>
+  {siteLd.map(o => <script is:inline type="application/ld+json" set:html={JSON.stringify(o)} />)}
+  <script is:inline>
+    // Image fallback chain: data-fb="url1|url2". Tries the next source when the current one fails
+    // (optimizer hiccup, expired Google photo), so a broken image never shows an empty box.
+    window.cegImgErr = function(el){ var fb = (el.getAttribute('data-fb') || '').split('|').filter(Boolean); el.removeAttribute('srcset'); if (!fb.length) { el.onerror = null; return; } el.setAttribute('data-fb', fb.slice(1).join('|')); el.src = fb[0]; };
+  </script>
   <slot name="head" />
 </head>
 <body class="min-h-screen flex flex-col">
+  <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-full focus:bg-ink focus:text-ivory focus:px-5 focus:py-3 focus:text-sm">Skip To Content</a>
   <header class={`${dark ? 'absolute top-0 left-0 right-0 z-30 bg-gradient-to-b from-black/45 to-transparent' : 'bg-ivory border-b border-hairline'}`}>
     <div class="max-w-7xl mx-auto px-5 md:px-8 py-5 flex items-center justify-between gap-4">
-      <a href="/" class={`display text-[1.35rem] leading-none tracking-tight ${dark ? 'text-white' : 'text-ink'}`}>Colorado <span class="serif-i">Elopement</span> Guide</a>
-      <nav class={`hidden md:flex items-center gap-7 text-[0.83rem] font-medium ${dark ? 'text-white/90' : 'text-ink/80'}`}>
+      <a href="/" class={`display text-[1.35rem] leading-none tracking-tight shrink-0 ${dark ? 'text-white' : 'text-ink'}`}>Colorado <span class="serif-i">Elopement</span> Guide</a>
+      <nav aria-label="Main" class={`hidden xl:flex items-center gap-5 text-[0.8rem] font-medium whitespace-nowrap ${dark ? 'text-white/90' : 'text-ink/80'}`}>
         <div class="relative group">
-          <a href="/vendors" class="hover:opacity-70">Find Vendors ▾</a>
-          <div class="absolute left-0 top-full pt-3 hidden group-hover:block z-50">
+          <a href="/vendors" aria-haspopup="true" class="hover:opacity-70" aria-current={on('/vendors') || on('/category') || on('/photographers') ? 'page' : undefined}>Find Vendors ▾</a>
+          <div class="absolute left-0 top-full pt-3 hidden group-hover:block group-focus-within:block z-50">
             <div class="w-56 rounded-2xl border border-hairline bg-ivory shadow-xl p-3 flex flex-col gap-1 text-sm text-ink">
               <a href="/category/photographers" class="px-3 py-2 rounded-lg hover:bg-parchment">Photographers</a>
               <a href="/category/venues" class="px-3 py-2 rounded-lg hover:bg-parchment">Venues</a>
@@ -98,29 +143,31 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
             </div>
           </div>
         </div>
-        <a href="/regions" class="hover:opacity-70">Regions</a>
-        <a href="/checklist" class="hover:opacity-70">Planning Checklist</a>
-        <a href="/guides" class="hover:opacity-70">Planning Guides</a>
-        <a href="/my-vendors" data-planner-link class="hover:opacity-70">My Planner<span id="ceg-count" class="ml-1 hidden text-[10px] align-top bg-clay-500 text-white rounded-full px-1.5 py-0.5"></span></a>
-        <a href="/for-vendors" class={`${dark ? 'text-white/60' : 'text-ink/50'} hover:opacity-70`}>For Vendors</a>
-        <a href="/account" class={`${dark ? 'border border-white/70 text-white hover:bg-white hover:text-ink' : 'border border-ink/70 hover:bg-ink hover:text-ivory'} rounded-full px-4 py-2 transition-colors`}>Start My Planner</a>
+        <a href="/venues" class="hover:opacity-70" aria-current={on('/venues') ? 'page' : undefined}>Wedding Venues</a>
+        <a href="/regions" class="hover:opacity-70" aria-current={on('/regions') || on('/region') ? 'page' : undefined}>Regions</a>
+        <a href="/guides" class="hover:opacity-70" aria-current={on('/guides') ? 'page' : undefined}>Planning Guides</a>
+        <a href="/resources" class="hover:opacity-70" aria-current={on('/resources') ? 'page' : undefined}>Permits And Licenses</a>
+        <a href="/checklist" class="hover:opacity-70" aria-current={on('/checklist') ? 'page' : undefined}>Planning Checklist</a>
+        <a href="/my-vendors" data-planner-link class={`${dark ? 'border border-white/70 text-white hover:bg-white hover:text-ink' : 'border border-ink/70 hover:bg-ink hover:text-ivory'} rounded-full px-4 py-2 transition-colors`}>My Planner<span id="ceg-count" class="ml-1 hidden text-[10px] align-top bg-clay-500 text-white rounded-full px-1.5 py-0.5"></span></a>
+        <a href="/for-vendors" class={`${dark ? 'text-white/75' : 'text-ink/70'} hover:opacity-70`} aria-current={on('/for-vendors') ? 'page' : undefined}>For Vendors</a>
       </nav>
-      <details class="md:hidden relative">
-        <summary class={`list-none cursor-pointer text-[0.83rem] font-medium px-3 py-2 rounded-full border ${dark ? 'text-white border-white/70' : 'text-ink border-ink/40'}`}>Menu</summary>
-        <nav class="absolute right-0 mt-2 w-56 rounded-2xl border border-hairline bg-ivory shadow-lg p-3 flex flex-col gap-1 text-sm text-ink z-50">
+      <details class="xl:hidden relative">
+        <summary aria-label="Open menu" class={`list-none cursor-pointer text-[0.83rem] font-medium px-3 py-2 rounded-full border ${dark ? 'text-white border-white/70' : 'text-ink border-ink/40'}`}>Menu</summary>
+        <nav aria-label="Main" class="absolute right-0 mt-2 w-60 rounded-2xl border border-hairline bg-ivory shadow-lg p-3 flex flex-col gap-1 text-sm text-ink z-50">
           <a href="/vendors" class="px-3 py-2 rounded-lg hover:bg-parchment">Find Vendors</a>
+          <a href="/venues" class="px-3 py-2 rounded-lg hover:bg-parchment">Wedding Venues</a>
           <a href="/regions" class="px-3 py-2 rounded-lg hover:bg-parchment">Regions</a>
-          <a href="/checklist" class="px-3 py-2 rounded-lg hover:bg-parchment">Planning Checklist</a>
           <a href="/guides" class="px-3 py-2 rounded-lg hover:bg-parchment">Planning Guides</a>
           <a href="/resources" class="px-3 py-2 rounded-lg hover:bg-parchment">Permits And Licenses</a>
+          <a href="/checklist" class="px-3 py-2 rounded-lg hover:bg-parchment">Planning Checklist</a>
           <a href="/my-vendors" data-planner-link class="px-3 py-2 rounded-lg hover:bg-parchment font-medium">My Planner</a>
           <div class="border-t border-hairline my-1"></div>
-          <a href="/for-vendors" class="px-3 py-2 rounded-lg hover:bg-parchment text-ink/60">For Vendors</a>
+          <a href="/for-vendors" class="px-3 py-2 rounded-lg hover:bg-parchment text-ink/70">For Vendors</a>
         </nav>
       </details>
     </div>
   </header>
-  <main class="flex-1"><slot /></main>
+  <main id="main" tabindex="-1" class="flex-1 focus:outline-none"><slot /></main>
   <footer class="bg-spruce-900 text-ivory/80 mt-24">
     <div class="max-w-7xl mx-auto px-5 md:px-8 py-14 grid gap-10 md:grid-cols-12 text-sm">
       <div class="md:col-span-5">
@@ -132,17 +179,17 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
         <ul class="space-y-2.5">
           <li><a href="/vendors" class="hover:text-ivory">Find Vendors</a></li>
           <li><a href="/venues" class="hover:text-ivory">Wedding Venues</a></li>
-          <li><a href="/regions" class="hover:text-ivory">Browse Regions</a></li>
-          <li><a href="/checklist" class="hover:text-ivory">Planning Checklist</a></li>
+          <li><a href="/regions" class="hover:text-ivory">Regions</a></li>
           <li><a href="/guides" class="hover:text-ivory">Planning Guides</a></li>
           <li><a href="/resources" class="hover:text-ivory">Permits And Licenses</a></li>
-          <li><a href="/account" class="hover:text-ivory">My Planner</a></li>
+          <li><a href="/checklist" class="hover:text-ivory">Planning Checklist</a></li>
+          <li><a href="/my-vendors" data-planner-link class="hover:text-ivory">My Planner</a></li>
           <li><a href="/for-vendors" class="hover:text-ivory">For Vendors</a></li>
         </ul>
       </div>
       <div class="md:col-span-4 space-y-4">
         <Disclosure />
-        <p class="text-xs text-ivory/50">© 2026 Colorado Elopement Guide · <a href="/about" class="underline hover:text-ivory">About</a> · <a href="/contact" class="underline hover:text-ivory">Contact</a> · <a href="/privacy" class="underline hover:text-ivory">Privacy</a> · <a href="/terms" class="underline hover:text-ivory">Terms</a></p>
+        <p class="text-xs text-ivory/70">© 2026 Colorado Elopement Guide · <a href="/about" class="underline hover:text-ivory">About</a> · <a href="/contact" class="underline hover:text-ivory">Contact</a> · <a href="/privacy" class="underline hover:text-ivory">Privacy</a> · <a href="/terms" class="underline hover:text-ivory">Terms</a></p>
       </div>
     </div>
   </footer>
@@ -161,6 +208,7 @@ window.CEG = {
       el.textContent = on ? '♥' : '♡';
       el.setAttribute('aria-pressed', on);
       el.title = on ? 'Remove from my vendors' : 'Save to my vendors';
+      el.setAttribute('aria-label', el.title);
     });
   }
 };

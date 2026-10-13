@@ -4,7 +4,7 @@ import VendorCard from '../components/VendorCard.astro';
 import EmailCapture from '../components/EmailCapture.astro';
 import { allVendors } from '../lib/vendors';
 import { CATEGORIES, REGIONS } from '../lib/taxonomy';
-import { IMG, regionImg, gimg } from '../lib/assets';
+import { IMG, regionImg, gimg, opt, optSet } from '../lib/assets';
 import { getCollection } from 'astro:content';
 const vendors = await allVendors();
 // Recently added: the six newest live listings with a photo (released_at is stamped when a listing goes live).
@@ -31,12 +31,12 @@ const top = vendors.filter(v => v.image_url).slice(0, 6);
 const counts = Object.fromEntries(Object.keys(CATEGORIES).map(c => [c, vendors.filter(v => v.category===c).length]));
 const heroRegions = ['estes-park','summit-county','vail-aspen','telluride-san-juans','colorado-springs','boulder','denver-foothills','northern-colorado','other-colorado'];
 ---
-<Base dark={true} title="Colorado Elopement Guide — plan your Colorado elopement, find every vendor"
+<Base hero={`${IMG}/hero.jpg`} dark={true} title="Colorado Elopement Guide — plan your Colorado elopement, find every vendor"
   description="Plan your Colorado elopement: browse photographers, venues, officiants, florists and more by region, save favorites to your free planner, and book direct.">
 
   <!-- HERO — couple first -->
   <section class="relative min-h-[88vh] flex items-end">
-    <img src={`${IMG}/hero.jpg`} alt="Couple eloping on a Colorado mountain ridge at golden hour" class="absolute inset-0 w-full h-full object-cover" fetchpriority="high" />
+    <img src={opt(`${IMG}/hero.jpg`, 1600)} srcset={optSet(`${IMG}/hero.jpg`, [960, 1280, 1600, 2048])} sizes="100vw" width="1600" height="900" decoding="async" alt="Couple eloping on a Colorado mountain ridge at golden hour" class="absolute inset-0 w-full h-full object-cover" fetchpriority="high" />
     <div class="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/25 to-black/30"></div>
     <div class="relative z-10 max-w-7xl mx-auto px-5 md:px-8 pb-16 md:pb-24 w-full">
       <p class="eyebrow text-gold mb-4">Plan Your Colorado Elopement</p>
@@ -106,7 +106,7 @@ const heroRegions = ['estes-park','summit-county','vail-aspen','telluride-san-ju
     <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
       {heroRegions.map((slug) => (
         <a href={`/region/${slug}`} class="img-tile group relative rounded-2xl overflow-hidden h-56">
-          <img src={regionImg(slug)} alt={REGIONS[slug].name} loading="lazy" class="absolute inset-0 w-full h-full object-cover" />
+          <img src={opt(regionImg(slug), 640)} srcset={optSet(regionImg(slug), [480, 640, 960])} sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw" width="640" height="400" decoding="async" alt={REGIONS[slug].name} loading="lazy" class="absolute inset-0 w-full h-full object-cover" />
           <div class="absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent"></div>
           <div class="absolute bottom-0 p-4 md:p-5">
             <p class="display text-ivory text-lg leading-tight">{REGIONS[slug].name}</p>
@@ -127,7 +127,7 @@ const heroRegions = ['estes-park','summit-county','vail-aspen','telluride-san-ju
     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {permitCards.map(c => (
         <a href={c.href} class="img-tile group flex rounded-2xl overflow-hidden border border-hairline bg-white hover:shadow-md transition-shadow">
-          <div class="relative w-28 shrink-0 overflow-hidden bg-parchment"><img src={regionImg(c.hero)} alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover" /></div>
+          <div class="relative w-28 shrink-0 overflow-hidden bg-parchment"><img src={opt(regionImg(c.hero), 320)} width="320" height="320" decoding="async" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover" /></div>
           <div class="p-5">
             <p class="display text-lg leading-snug group-hover:text-clay-700 transition-colors">{c.name}</p>
             <p class="text-xs text-ink/60 mt-1.5 leading-relaxed"><span class="font-medium text-ink/75">{c.label}:</span> {c.value}</p>
@@ -205,7 +205,7 @@ const heroRegions = ['estes-park','summit-county','vail-aspen','telluride-san-ju
       {recent.map(v => (
         <a href={`/vendor/${v.slug}`} class="img-tile group block rounded-2xl overflow-hidden bg-white border border-hairline hover:shadow-[0_18px_40px_-18px_rgba(35,40,31,0.35)] transition-shadow">
           <div class="relative h-32 overflow-hidden bg-parchment">
-            <img src={gimg(v.image_url, 600, 400) || regionImg(v.sub_region)} alt={`${v.name}, ${CATEGORIES[v.category]?.singular} in Colorado`} loading="lazy" class="w-full h-full object-cover" onerror={`this.onerror=null;this.src='${regionImg(v.sub_region)}'`} />
+            <img src={opt(gimg(v.image_url, 600, 400) || regionImg(v.sub_region), 640)} srcset={optSet(gimg(v.image_url, 600, 400) || regionImg(v.sub_region), [480, 640, 960])} sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw" width="640" height="400" decoding="async" alt={`${v.name}, ${CATEGORIES[v.category]?.singular} in Colorado`} loading="lazy" class="w-full h-full object-cover" onerror={`this.onerror=null;this.removeAttribute('srcset');this.src='${opt(regionImg(v.sub_region), 640)}'`} />
           </div>
           <div class="p-4">
             <p class="eyebrow text-clay-600 mb-1 text-[10px]">{CATEGORIES[v.category]?.singular}</p>

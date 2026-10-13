@@ -3,7 +3,7 @@ region: summit-county
 title: "Eloping in Summit County: Sapphire Point, Loveland Pass, Breckenridge and Frisco | Colorado Elopement Guide"
 headline: "Vows above *Dillon Reservoir*"
 dek: "Summit County packs four ski towns, a reservable overlook and a 12,000-foot pass into a ninety-minute drive from Denver. Here is how to use it well."
-description: "How to elope in Summit County: Sapphire Point reservations, Loveland Pass realities, resort ceremony decks, the marriage license, month-by-month timing and a sample day."
+description: "How to elope in Summit County: Sapphire Point reservations, Loveland Pass, resort ceremony decks, the marriage license, timing by month and a sample day."
 datePublished: "2026-10-09"
 facts:
   license: "Summit County Clerk and Recorder in Breckenridge, $30, use within 35 days"

@@ -3,7 +3,7 @@ region: northern-colorado
 title: "Eloping in Northern Colorado: Horsetooth, Lory State Park, the Poudre Canyon and Red Feather | Colorado Elopement Guide"
 headline: "Foothills, a reservoir and *a wild river*"
 dek: "Fort Collins and Loveland sit under a hogback of red rock with a reservoir behind it and a Wild and Scenic river running out of the mountains. Here is how to marry there without a crowd."
-description: "How to elope in Northern Colorado: Horsetooth Reservoir, Lory State Park, the Poudre Canyon, Red Feather Lakes, license offices, timing by month and a sample day."
+description: "How to elope in Northern Colorado: Horsetooth Reservoir, Lory State Park, the Poudre Canyon, Red Feather Lakes, license offices, timing and a sample day."
 datePublished: "2026-10-09"
 facts:
   license: "Larimer County Clerk, Fort Collins (walk-ins) and Loveland (appointments); $30, use within 35 days"

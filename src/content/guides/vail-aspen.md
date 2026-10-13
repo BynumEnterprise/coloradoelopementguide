@@ -3,7 +3,7 @@ region: vail-aspen
 title: "Eloping in Vail & Aspen: Maroon Bells Reservations, Independence Pass and the Vail Valley | Colorado Elopement Guide"
 headline: "The Maroon Bells, *done right*"
 dek: "The most photographed peaks in Colorado come with a reservation system, weekend blackouts and a shuttle. Here is how to elope at the Bells, on Independence Pass or in the Vail Valley without a surprise."
-description: "How to elope in Aspen and Vail: Maroon Bells Amphitheater reservations and rules, Independence Pass, Vail Valley options, license offices, timing and a sample day."
+description: "How to elope in Aspen and Vail: Maroon Bells Amphitheater reservations and rules, Independence Pass, Vail Valley options, license offices and timing."
 datePublished: "2026-10-09"
 facts:
   license: "Pitkin County Clerk in Aspen or Eagle County Clerk in Eagle or El Jebel; $30, use within 35 days"

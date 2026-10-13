@@ -3,7 +3,7 @@ region: colorado-springs
 title: "Eloping in Colorado Springs & Pikes Peak: Garden of the Gods Rules, Sites and Timing | Colorado Elopement Guide"
 headline: "Red rock at sunrise, *no permit required*"
 dek: "Garden of the Gods lets you marry for free at six named spots, first come, first served. Here is how that works, what the rest of the Pikes Peak region allows, and when the light is best."
-description: "How to elope in Colorado Springs: Garden of the Gods wedding areas and rules, city park thresholds, state parks, Pikes Peak, license offices, timing and a sample day."
+description: "How to elope in Colorado Springs: Garden of the Gods wedding areas and rules, city parks, state parks, Pikes Peak, license offices and a sample day."
 datePublished: "2026-10-09"
 facts:
   license: "El Paso County Clerk, 1675 W. Garden of the Gods Rd. (Saturdays at the North office); $30"

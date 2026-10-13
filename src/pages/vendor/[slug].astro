@@ -4,7 +4,7 @@ import Tracker from '../../components/Tracker.astro';
 import VendorCard from '../../components/VendorCard.astro';
 import { allVendors } from '../../lib/vendors';
 import { CATEGORIES, REGIONS } from '../../lib/taxonomy';
-import { regionImg, gimg } from '../../lib/assets';
+import { regionImg, gimg, opt, optSet } from '../../lib/assets';
 import { slotLine, FEATURED_CAP } from '../../lib/outreach';
 import { vendorPhotos } from '../../lib/photos';
 export async function getStaticPaths() {
@@ -20,12 +20,13 @@ const peers = all.filter(x => x.category === v.category && x.slug !== v.slug);
 const sameRegion = peers.filter(x => x.sub_region === v.sub_region).sort((a, b) => dist(v, a) - dist(v, b));
 const elsewhere = peers.filter(x => x.sub_region !== v.sub_region && x.sub_region !== 'other-colorado').sort((a, b) => dist(v, a) - dist(v, b));
 const related = [...sameRegion, ...elsewhere].slice(0, 4);
-const fallback = regionImg(v.sub_region);
+const fallback = opt(regionImg(v.sub_region), 1280);
+const heroSrc = gimg(v.image_url, 1600, 900);
 // Vendor uploaded photos: the cover (if chosen) is already p2_vendors.image_url, so the hero shows it; the rest form the gallery.
 const photos = v.db_id ? ((await vendorPhotos()).get(Number(v.db_id)) || []) : [];
 const gallery = photos.filter(p => !p.is_cover);
 const SITE = 'https://coloradoelopementguide.com';
-const pageUrl = `${SITE}/vendor/${v.slug}`;
+const pageUrl = `${SITE}/vendor/${v.slug}/`;
 const isFeatured = v.status === 'featured';
 const isClaimed = v.status === 'claimed' || isFeatured;
 // Address string from Google ("123 Main St, Estes Park, CO 80517, United States") to PostalAddress.
@@ -56,9 +57,19 @@ const jsonld: Record<string, unknown> = {
 const jsonldText = JSON.stringify(jsonld).replace(/</g, '\\u003c');
 const telHref = v.phone ? 'tel:+1' + String(v.phone).replace(/[^0-9]/g,'').replace(/^1/,'') : '';
 const slotTemplate = slotLine(999, v.category, v.sub_region);
+// Title: name plus what and where, shortest form that fits about 65 characters.
+const titleCase = (t: string) => t.replace(/\b([a-z])/g, c => c.toUpperCase());
+const shortName = v.name.length > 42 ? v.name.split(/ \| | — | – | - |, /)[0].trim() : v.name;
+const place = v.sub_region === 'other-colorado' ? 'Colorado' : reg.name;
+const vendorTitle = [
+  `${shortName} | ${titleCase(cat.singular)} in ${place} | Colorado Elopement Guide`,
+  `${shortName} | ${titleCase(cat.singular)} in ${place}`,
+  `${shortName}, Colorado ${titleCase(cat.singular)}`,
+  shortName
+].find(t => t.length <= 65) || shortName;
 const metaDesc = v.description.length > 155 ? v.description.slice(0, 152).replace(/\s+\S*$/, '') + '…' : v.description;
 ---
-<Base title={`${v.name} — ${cat.singular} · ${reg.name} | Colorado Elopement Guide`} description={metaDesc}>
+<Base title={vendorTitle} description={metaDesc} image={v.image_url || undefined} imageAlt={v.name}>
   <script slot="head" type="application/ld+json" set:html={jsonldText} />
   <div class="max-w-5xl mx-auto px-5 md:px-8 pt-10">
     <nav class="text-xs text-ink/45 mb-6">
@@ -66,7 +77,7 @@ const metaDesc = v.description.length > 155 ? v.description.slice(0, 152).replac
     </nav>
     <div class="rounded-3xl overflow-hidden border border-hairline bg-white">
       <div class="relative h-64 md:h-80 bg-parchment">
-        <img src={gimg(v.image_url, 1600, 900) || fallback} alt={v.name} class="absolute inset-0 w-full h-full object-cover" onerror={`this.onerror=null;this.src='${fallback}'`} />
+        <img src={opt(heroSrc, 1280) || fallback} srcset={optSet(heroSrc, [640, 960, 1280, 1600])} sizes="(min-width: 1024px) 1024px, 100vw" width="1280" height="720" fetchpriority="high" decoding="async" alt={v.name} class="absolute inset-0 w-full h-full object-cover" onerror={`this.onerror=null;this.removeAttribute('srcset');this.src='${fallback}'`} />
         <div class="absolute inset-0 bg-gradient-to-t from-ink/55 via-transparent to-transparent"></div>
         <div class="absolute bottom-0 p-6 md:p-9">
           <p class="eyebrow text-gold mb-2">{cat.singular} · {reg.name}</p>
@@ -92,7 +103,7 @@ const metaDesc = v.description.length > 155 ? v.description.slice(0, 152).replac
             {v.phone && <p><a href={telHref} data-track="phone_click" class="underline underline-offset-4 hover:text-clay-700">{v.phone}</a></p>}
             {v.address && <p class="text-ink/60 leading-snug">{v.address}</p>}
           </div>
-          <button data-save={v.slug} class="block w-full mt-4 rounded-2xl border border-clay-500 text-clay-700 p-4 text-sm font-medium hover:bg-clay-50 transition-colors text-center">♡</button>
+          <button data-save={v.slug} aria-label="Save to my vendors" class="block w-full mt-4 rounded-2xl border border-clay-500 text-clay-700 p-4 text-sm font-medium hover:bg-clay-50 transition-colors text-center">♡</button>
           <a href={`/region/${v.sub_region}`} class="block mt-4 rounded-2xl border border-hairline p-5 text-sm hover:bg-parchment/60 transition-colors">
             <p class="eyebrow text-clay-600 mb-1.5">Planning here?</p>
             <p class="font-medium">Every vendor in {reg.name} →</p>
@@ -104,7 +115,7 @@ const metaDesc = v.description.length > 155 ? v.description.slice(0, 152).replac
             <a id="slot-buy" href="https://buy.stripe.com/7sYaEZffj1AaaWr93A9oc02" rel="noopener" class="hidden mt-3 inline-block text-clay-700 underline underline-offset-4">Go Featured, First Month $1 →</a>
             <form id="slot-wait" class="hidden mt-3 space-y-2">
               <input type="text" name="company_site" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
-              <input type="email" name="email" required placeholder="you@yourbusiness.com" class="w-full rounded-xl border border-hairline bg-ivory px-3 py-2 text-sm" />
+              <input type="email" name="email" required aria-label="Your business email" placeholder="you@yourbusiness.com" class="w-full rounded-xl border border-hairline bg-ivory px-3 py-2 text-sm" />
               <button class="w-full rounded-full border border-ink/60 px-4 py-2 text-sm font-medium hover:bg-parchment">Join the Waitlist</button>
               <p id="slot-msg" class="text-xs text-ink/55"></p>
             </form>
@@ -116,7 +127,7 @@ const metaDesc = v.description.length > 155 ? v.description.slice(0, 152).replac
       <p class="eyebrow text-clay-600 mb-4">Photos</p>
       <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
         {gallery.map((p, i) => <button type="button" data-lb={i} class="group relative block aspect-[4/3] overflow-hidden rounded-2xl border border-hairline bg-parchment focus:outline-none focus-visible:ring-2 focus-visible:ring-clay-500">
-          <img src={p.url} alt={`${v.name} photo ${i + 1}`} loading="lazy" decoding="async" class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+          <img src={opt(p.url, 640)} srcset={optSet(p.url, [480, 640, 960])} sizes="(min-width: 768px) 33vw, 50vw" width="640" height="480" alt={`${v.name} photo ${i + 1}`} loading="lazy" decoding="async" class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
         </button>)}
       </div>
       <div id="lb" class="hidden fixed inset-0 z-50 bg-ink/90 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={`Photos of ${v.name}`}>

@@ -1,14 +1,16 @@
 ---
 import { CATEGORIES, REGIONS } from '../lib/taxonomy';
-import { regionImg, gimg } from '../lib/assets';
+import { regionImg, gimg, opt, optSet } from '../lib/assets';
 const { v } = Astro.props;
 const featured = v.status === 'featured';
-const fallback = regionImg(v.sub_region);
+const fallback = opt(regionImg(v.sub_region), 640);
+const src = gimg(v.image_url, 800, 500);
 ---
 <a href={`/vendor/${v.slug}`} class={`img-tile group block rounded-2xl overflow-hidden bg-white border ${featured ? 'border-clay-500' : 'border-hairline'} hover:shadow-[0_18px_40px_-18px_rgba(35,40,31,0.35)] transition-shadow`}>
   <div class="relative h-44 overflow-hidden bg-parchment">
-    <img src={gimg(v.image_url, 800, 500) || fallback} alt={`${v.name} — ${CATEGORIES[v.category]?.singular} in Colorado`} loading="lazy"
-      class="w-full h-full object-cover" onerror={`this.onerror=null;this.src='${fallback}'`} />
+    <img src={opt(src, 640) || fallback} srcset={optSet(src, [480, 640, 960])} sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 100vw"
+      alt={`${v.name}, ${CATEGORIES[v.category]?.singular} in Colorado`} width="640" height="400" loading="lazy" decoding="async"
+      class="w-full h-full object-cover" onerror={`this.onerror=null;this.removeAttribute('srcset');this.src='${fallback}'`} />
     {featured && <span class="absolute top-3 left-3 eyebrow bg-ivory/95 text-clay-700 rounded-full px-3 py-1.5">Featured</span>}
     <button data-save={v.slug} aria-label="Save to my vendors" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-ivory/95 text-clay-600 text-lg leading-none hover:scale-110 transition-transform">♡</button>
     {v.rating && v.reviews ? <span class="absolute bottom-3 right-3 text-xs font-medium bg-ink/70 text-ivory rounded-full px-2.5 py-1">★ {v.rating} · {v.reviews}</span> : null}

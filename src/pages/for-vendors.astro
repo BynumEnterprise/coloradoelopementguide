@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-import { IMG } from '../lib/assets';
+import { IMG, opt, optSet } from '../lib/assets';
 import { getCollection } from 'astro:content';
 import { allVendors } from '../lib/vendors';
 import { SB_URL, SB_KEY } from '../lib/supabase';
@@ -21,9 +21,9 @@ const foundingLeft = typeof stats.founding_left === 'number' ? stats.founding_le
 const views30 = typeof stats.views_30d === 'number' && stats.views_30d > 500 ? stats.views_30d : null;
 const fmt = (n: number) => n.toLocaleString('en-US');
 ---
-<Base title="For Vendors | Colorado Elopement Guide" description="Colorado wedding vendors: your listing is free forever. Claim it, keep your details current, and reach couples planning elopements. Featured placement $40/month, first month $1.">
+<Base hero={`${IMG}/vendors-cta.jpg`} title="For Vendors | Colorado Elopement Guide" description="Colorado wedding vendors: your listing is free forever. Claim it, keep it current and reach couples planning elopements. Featured: $40 a month, first month $1.">
   <section class="relative min-h-[38vh] flex items-end">
-    <img src={`${IMG}/vendors-cta.jpg`} alt="Florist arranging a bridal bouquet" class="absolute inset-0 w-full h-full object-cover" fetchpriority="high" />
+    <img src={opt(`${IMG}/vendors-cta.jpg`, 1600)} srcset={optSet(`${IMG}/vendors-cta.jpg`, [960, 1280, 1600, 2048])} sizes="100vw" width="1600" height="900" decoding="async" alt="Florist arranging a bridal bouquet" class="absolute inset-0 w-full h-full object-cover" fetchpriority="high" />
     <div class="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/25 to-black/25"></div>
     <div class="relative z-10 max-w-7xl mx-auto px-5 md:px-8 pb-12 w-full">
       <p class="eyebrow text-gold mb-3">For Colorado Wedding Vendors</p>

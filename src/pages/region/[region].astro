@@ -4,9 +4,11 @@ import VendorCard from '../../components/VendorCard.astro';
 import EmailCapture from '../../components/EmailCapture.astro';
 import { allVendors } from '../../lib/vendors';
 import { CATEGORIES, REGIONS } from '../../lib/taxonomy';
-import { regionImg } from '../../lib/assets';
+import { regionImg, opt, optSet } from '../../lib/assets';
 import { VENUE_PAGES, REGION_VENUE_LINKS, MIN_VENUES, matchVenues } from '../../data/venue-pages';
 import { livePhotographerPages } from '../../data/category-copy';
+import { REGION_COPY } from '../../data/region-copy';
+import { getCollection } from 'astro:content';
 export async function getStaticPaths() {
   return Object.keys(REGIONS).map(region => ({ params: { region } }));
 }
@@ -21,18 +23,50 @@ const sparse = region === 'other-colorado' ? [] : Object.keys(CATEGORIES)
   .map(c => [c, vendors.filter(v => v.category===c).length, all.filter(v => v.sub_region==='other-colorado' && v.category===c)])
   .filter(([,localCount,statewide]) => localCount < 3 && statewide.length > 0)
   .map(([c,,statewide]) => [c, statewide.slice(0,6)]);
+const copy = REGION_COPY[region];
+const guide = (await getCollection('guides')).find(g => g.data.region === region);
+const statewide = region === 'other-colorado';
+const mix = byCat.map(([c, vs]) => `${vs.length} ${vs.length === 1 ? CATEGORIES[c].singular : CATEGORIES[c].name.toLowerCase()}`);
+const mixLine = mix.length > 1 ? mix.slice(0, -1).join(', ') + ' and ' + mix[mix.length - 1] : mix[0];
+const SITE = 'https://coloradoelopementguide.com';
+const crumbs = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+  { '@type': 'ListItem', position: 1, name: 'Home', item: SITE + '/' },
+  { '@type': 'ListItem', position: 2, name: 'Regions', item: SITE + '/regions/' },
+  { '@type': 'ListItem', position: 3, name: statewide ? 'More vendors around Colorado' : meta.name, item: `${SITE}/region/${region}/` }
+] };
+const title = statewide ? 'More Colorado Elopement Vendors: Statewide and Beyond | Colorado Elopement Guide' : `${meta.name} Elopement and Micro Wedding Vendors | Colorado Elopement Guide`;
 ---
-<Base dark={true} title={`Elopement & micro-wedding vendors — ${meta.name} | Colorado Elopement Guide`} description={`${meta.blurb} ${vendors.length} elopement and micro-wedding vendors listed.`}>
+<Base hero={regionImg(region)} dark={true} title={title} description={statewide ? `${vendors.length} Colorado elopement vendors who travel statewide or work outside our eight regions, from Crested Butte and Gunnison to Salida and Buena Vista.` : `${meta.blurb} ${vendors.length} elopement and micro-wedding vendors listed.`}>
+  <script is:inline type="application/ld+json" slot="head" set:html={JSON.stringify(crumbs)} />
   <section class="relative min-h-[46vh] flex items-end">
-    <img src={regionImg(region)} alt={meta.name} class="absolute inset-0 w-full h-full object-cover" fetchpriority="high" />
+    <img src={opt(regionImg(region), 1600)} srcset={optSet(regionImg(region), [960, 1280, 1600, 2048])} sizes="100vw" width="1600" height="900" decoding="async" alt={meta.name} class="absolute inset-0 w-full h-full object-cover" fetchpriority="high" />
     <div class="absolute inset-0 bg-gradient-to-t from-ink/75 via-ink/20 to-black/25"></div>
     <div class="relative z-10 max-w-7xl mx-auto px-5 md:px-8 pb-12 w-full">
-      <p class="eyebrow text-gold mb-3">{vendors.length} based here{sparse.length > 0 && " · statewide travelers below"}</p>
-      <h1 class="display text-white text-4xl md:text-5xl leading-tight">Eloping in <span class="serif-i">{meta.name}</span></h1>
+      <p class="eyebrow text-gold mb-3">{vendors.length} {statewide ? 'listed' : 'based here'}{sparse.length > 0 && " · statewide travelers below"}</p>
+      <h1 class="display text-white text-4xl md:text-5xl leading-tight">{copy?.h1 ? <>{copy.h1[0]} <span class="serif-i">{copy.h1[1]}</span></> : <>Eloping in <span class="serif-i">{meta.name}</span></>}</h1>
       <p class="mt-3 max-w-xl text-white/85">{meta.blurb}</p>
     </div>
   </section>
   <div class="max-w-7xl mx-auto px-5 md:px-8">
+    {copy && (
+      <section class="pt-12 md:grid md:grid-cols-12 md:gap-10" aria-label={statewide ? 'About these vendors' : `About eloping in ${meta.name}`}>
+        <div class="md:col-span-7 space-y-4 text-ink/80 leading-relaxed">
+          {copy.intro.map(t => <p>{t}</p>)}
+          {mixLine && <p class="text-sm text-ink/70">{statewide ? 'Listed here' : `Based in ${meta.name}`}: {mixLine}. Every listing links to the vendor's own site, and you can save any of them to your free planner to compare quotes.</p>}
+        </div>
+        {guide && (
+          <aside class="md:col-span-5 mt-8 md:mt-0 rounded-2xl border border-hairline bg-white p-6 text-sm">
+            <p class="eyebrow text-clay-600 mb-4">At A Glance</p>
+            <dl class="space-y-3">
+              <div><dt class="font-medium text-ink">Marriage license</dt><dd class="text-ink/70 mt-0.5">{guide.data.facts.license}</dd></div>
+              <div><dt class="font-medium text-ink">Permits</dt><dd class="text-ink/70 mt-0.5">{guide.data.facts.permit}</dd></div>
+              <div><dt class="font-medium text-ink">Best season</dt><dd class="text-ink/70 mt-0.5">{guide.data.facts.season}</dd></div>
+              <div><dt class="font-medium text-ink">Getting there</dt><dd class="text-ink/70 mt-0.5">{guide.data.facts.airport}</dd></div>
+            </dl>
+          </aside>
+        )}
+      </section>
+    )}
     {region !== 'other-colorado' && (
       <a href={`/guides/${region}`} class="mt-10 block rounded-2xl border border-hairline bg-parchment/60 px-6 py-5 md:flex items-center justify-between gap-6 hover:bg-parchment transition-colors">
         <p class="text-sm text-ink/75"><span class="eyebrow text-clay-600 mr-3">Planning Guide</span>Ceremony spots, permits, the marriage license, when to go and how to time the day in {meta.name}.</p>

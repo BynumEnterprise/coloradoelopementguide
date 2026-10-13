@@ -3,7 +3,7 @@ region: denver-foothills
 title: "Eloping in Denver & the Foothills: Red Rocks, Mount Falcon, Guanella Pass and State Parks | Colorado Elopement Guide"
 headline: "City hall at ten, *a mountain by noon*"
 dek: "Denver and its foothills give you a courthouse, a red-rock park, a 12,000-foot pass and three state parks within ninety minutes of each other. Here is how each one handles a small wedding."
-description: "How to elope in Denver and the foothills: Red Rocks and Denver park permits, Mount Falcon, Guanella Pass, state parks, license offices, timing and a sample day."
+description: "How to elope in Denver and the foothills: Red Rocks and Denver park permits, Mount Falcon, Guanella Pass, state parks, license offices and a sample day."
 datePublished: "2026-10-09"
 facts:
   license: "Denver Clerk and Recorder downtown; Jefferson County Clerk in Golden; $30, use within 35 days"

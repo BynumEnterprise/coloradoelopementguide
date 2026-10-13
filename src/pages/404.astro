@@ -1,9 +1,28 @@
 ---
 import Base from '../layouts/Base.astro';
+const links = [
+  ['/vendors', 'Find Vendors', 'Photographers, venues, officiants, florists, planners and hair and makeup, region by region.'],
+  ['/venues', 'Wedding Venues', 'Small venues that welcome elopements, town by town.'],
+  ['/regions', 'Regions', 'Estes Park, Summit County, Vail and Aspen, Telluride, Colorado Springs, Boulder and more.'],
+  ['/guides', 'Planning Guides', 'Ceremony spots, permits, license offices and timing for each region.'],
+  ['/resources', 'Permits And Licenses', 'The marriage license, self solemnization, RMNP and Maroon Bells permits.'],
+  ['/checklist', 'Planning Checklist', 'What to book first and the paperwork in order.'],
+];
 ---
-<Base title="Page not found | Colorado Elopement Guide" description="That page doesn't exist." noindex={true}>
-  <div class="max-w-xl mx-auto px-5 md:px-8 py-24 text-center">
-    <h1 class="display text-4xl leading-tight">That trail <span class="serif-i">doesn't exist</span></h1>
-    <p class="text-ink/65 mt-4"><a href="/vendors" class="underline underline-offset-4">Browse all vendors</a> or head <a href="/" class="underline underline-offset-4">home</a>.</p>
+<Base title="Page Not Found | Colorado Elopement Guide" description="That page does not exist. Find Colorado elopement vendors, venues, planning guides and permit resources instead." noindex={true}>
+  <div class="max-w-3xl mx-auto px-5 md:px-8 py-20">
+    <p class="eyebrow text-clay-600 mb-3">404</p>
+    <h1 class="display text-4xl md:text-5xl leading-tight">That trail <span class="serif-i">doesn't exist</span></h1>
+    <p class="text-ink/70 mt-4 leading-relaxed">The page may have moved, or a vendor may have asked us to take their listing down. Try one of these instead.</p>
+    <h2 class="sr-only">Popular pages</h2>
+    <ul class="mt-10 grid sm:grid-cols-2 gap-4">
+      {links.map(([href, name, blurb]) => (
+        <li><a href={href} class="block h-full rounded-2xl border border-hairline bg-white p-5 hover:bg-parchment/60 transition-colors">
+          <span class="display text-xl">{name} →</span>
+          <span class="block text-sm text-ink/70 mt-1.5 leading-relaxed">{blurb}</span>
+        </a></li>
+      ))}
+    </ul>
+    <p class="text-sm text-ink/70 mt-10">Are you a vendor? <a href="/for-vendors" class="underline underline-offset-4 hover:text-clay-700">Claim or add your free listing</a>. Something broken? <a href="/contact" class="underline underline-offset-4 hover:text-clay-700">Tell us</a>.</p>
   </div>
 </Base>

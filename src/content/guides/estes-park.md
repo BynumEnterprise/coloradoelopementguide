@@ -3,7 +3,7 @@ region: estes-park
 title: "Eloping in Estes Park & Rocky Mountain National Park: Permits, Sites and Timing | Colorado Elopement Guide"
 headline: "Marry beneath *Longs Peak*"
 dek: "Rocky Mountain National Park has thirteen designated ceremony sites, a $300 permit and a calendar that fills a year out. Here is how to plan an Estes Park elopement that actually happens."
-description: "How to elope in Estes Park and Rocky Mountain National Park: the park's wedding permit, every designated ceremony site, license rules, best months and a sample day."
+description: "How to elope in Estes Park and Rocky Mountain National Park: the wedding permit, every designated ceremony site, license rules, best months, a sample day."
 datePublished: "2026-10-09"
 facts:
   license: "Larimer County Clerk, Estes Park office (by appointment), $30, use within 35 days"

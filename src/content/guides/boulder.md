@@ -3,7 +3,7 @@ region: boulder
 title: "Eloping in Boulder: Chautauqua, Sunrise Amphitheater, Lost Gulch and the Flatirons | Colorado Elopement Guide"
 headline: "The Flatirons, *forty minutes from the airport*"
 dek: "Boulder has a reservable stone amphitheater on a mountaintop, a lawn under the Flatirons that needs no permit for small groups, and a sunset overlook everyone fights over. Here is how to choose."
-description: "How to elope in Boulder: Chautauqua lawn rules, Sunrise Amphitheater fees and reservations, Lost Gulch, Eldorado Canyon, license office, timing and a sample day."
+description: "How to elope in Boulder: Chautauqua lawn rules, Sunrise Amphitheater reservations, Eldorado Canyon, the license office, timing by month and a sample day."
 datePublished: "2026-10-09"
 dateModified: "2026-10-12"
 facts:

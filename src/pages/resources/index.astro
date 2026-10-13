@@ -2,7 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import EmailCapture from '../../components/EmailCapture.astro';
 import { getCollection } from 'astro:content';
-import { regionImg } from '../../lib/assets';
+import { regionImg, opt, optSet } from '../../lib/assets';
 import { REGIONS } from '../../lib/taxonomy';
 
 const ORDER = [
@@ -47,7 +47,7 @@ const ld = {
 };
 ---
 <Base title="Colorado Elopement Permits, Marriage License and Legal Resources | Colorado Elopement Guide"
-  description="Verified permit and legal guides for eloping in Colorado: the marriage license, self solemnization, RMNP and Maroon Bells permits, Garden of the Gods, national forests, state parks and costs.">
+  description="Verified Colorado elopement permit and legal guides: the marriage license, self solemnization, RMNP and Maroon Bells permits, national forests and costs.">
   <script is:inline type="application/ld+json" slot="head" set:html={JSON.stringify(ld)} />
 
   <div class="max-w-7xl mx-auto px-5 md:px-8 pt-14">
@@ -68,7 +68,7 @@ const ld = {
             {items.map(r => (
               <a href={`/resources/${r.id}`} class="group rounded-3xl border border-hairline bg-white overflow-hidden hover:shadow-md transition-shadow">
                 <div class="img-tile relative h-44 md:h-52">
-                  <img src={regionImg(r.data.hero in REGIONS ? r.data.hero : 'estes-park')} alt={r.data.headline.replace(/\*/g, '')} loading="lazy" class="absolute inset-0 w-full h-full object-cover" />
+                  <img src={opt(regionImg(r.data.hero in REGIONS ? r.data.hero : 'estes-park'), 640)} srcset={optSet(regionImg(r.data.hero in REGIONS ? r.data.hero : 'estes-park'), [480, 640, 960])} sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw" width="640" height="400" decoding="async" alt={r.data.headline.replace(/\*/g, '')} loading="lazy" class="absolute inset-0 w-full h-full object-cover" />
                   <div class="absolute inset-0 bg-gradient-to-t from-ink/75 via-transparent to-transparent"></div>
                   <div class="absolute bottom-0 p-5">
                     <p class="eyebrow text-gold mb-1.5">{KIND_LABEL[r.data.kind]}</p>

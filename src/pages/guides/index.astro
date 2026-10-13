@@ -4,7 +4,7 @@ import EmailCapture from '../../components/EmailCapture.astro';
 import { getCollection } from 'astro:content';
 import { allVendors } from '../../lib/vendors';
 import { REGIONS } from '../../lib/taxonomy';
-import { regionImg } from '../../lib/assets';
+import { regionImg, opt, optSet } from '../../lib/assets';
 
 const order = Object.keys(REGIONS);
 const guides = (await getCollection('guides'))
@@ -35,7 +35,7 @@ const ld = {
       {guides.map(g => (
         <a href={`/guides/${g.data.region}`} class="group rounded-3xl border border-hairline bg-white overflow-hidden hover:shadow-md transition-shadow">
           <div class="img-tile relative h-56 md:h-64">
-            <img src={regionImg(g.data.region)} alt={REGIONS[g.data.region].name} loading="lazy" class="absolute inset-0 w-full h-full object-cover" />
+            <img src={opt(regionImg(g.data.region), 640)} srcset={optSet(regionImg(g.data.region), [480, 640, 960])} sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw" width="640" height="400" decoding="async" alt={REGIONS[g.data.region].name} loading="lazy" class="absolute inset-0 w-full h-full object-cover" />
             <div class="absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent"></div>
             <div class="absolute bottom-0 p-5">
               <p class="eyebrow text-gold mb-1.5">{REGIONS[g.data.region].name}</p>

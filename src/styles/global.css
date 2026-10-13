@@ -17,3 +17,13 @@ h1,h2,h3,.display { font-family: var(--font-display); font-weight: 400; letter-s
 .img-tile { position: relative; overflow: hidden; }
 .img-tile img { transition: transform .6s ease; }
 .img-tile:hover img { transform: scale(1.045); }
+/* Accessibility: small gray text on ivory, parchment and white must reach WCAG AA (4.5:1).
+   Muted ink below 68% fails on these backgrounds, so lift every muted ink shade to 68%.
+   Kept in the utilities layer so hover: and focus: variants still win. */
+@layer utilities {
+  .text-ink\/35, .text-ink\/40, .text-ink\/45, .text-ink\/50, .text-ink\/55, .text-ink\/60, .text-ink\/65 { color: rgb(35 40 31 / 0.68); }
+  .text-ivory\/40, .text-ivory\/45, .text-ivory\/50 { color: rgb(250 247 241 / 0.68); }
+  .placeholder-ink\/40::placeholder { color: rgb(35 40 31 / 0.6); }
+}
+/* Visible keyboard focus everywhere (mouse clicks stay clean). */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible { outline: 2px solid var(--color-clay-500); outline-offset: 2px; border-radius: 4px; }

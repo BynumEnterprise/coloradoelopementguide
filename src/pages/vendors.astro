@@ -9,6 +9,7 @@ const vendors = await allVendors();
   <div class="max-w-7xl mx-auto px-5 md:px-8 pt-14">
     <p class="eyebrow text-clay-600 mb-3">The whole guide</p>
     <h1 class="display text-4xl md:text-5xl leading-tight">All vendors <span class="serif-i">({vendors.length})</span></h1>
+    <h2 class="sr-only">Every listed vendor</h2>
     <div class="grid gap-5 md:grid-cols-3 lg:grid-cols-4 mt-10">{vendors.map(v => <VendorCard v={v} />)}</div>
   </div>
 </Base>
