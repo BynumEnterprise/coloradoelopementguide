@@ -3,7 +3,7 @@ import Base from '../../layouts/Base.astro';
 import Tracker from '../../components/Tracker.astro';
 import VendorCard from '../../components/VendorCard.astro';
 import AlsoAsk from '../../components/AlsoAsk.astro';
-import { allVendors } from '../../lib/vendors';
+import { allVendors, money, servedRegions } from '../../lib/vendors';
 import { CATEGORIES, REGIONS } from '../../lib/taxonomy';
 import { regionImg, gimg, opt, optSet } from '../../lib/assets';
 import { slotLine, FEATURED_CAP } from '../../lib/outreach';
@@ -41,6 +41,18 @@ const digits = v.phone ? String(v.phone).replace(/[^0-9]/g, '').replace(/^1(?=\d
 const areaServed = v.sub_region === 'other-colorado'
   ? { "@type": "State", name: "Colorado" }
   : { "@type": "Place", name: `${reg.name.replace(/&/g, 'and')}, Colorado` };
+// Profile fields edited by verified vendors in the dashboard, or a researched public starting price.
+const price = Number.isFinite(v.starting_price) ? Number(v.starting_price) : null;
+const priceNote = (v.price_note || '').trim();
+const packages = Array.isArray(v.packages) ? v.packages.filter((p: any) => p && p.name).slice(0, 4) : [];
+const styles: string[] = Array.isArray(v.styles) ? v.styles : [];
+const languages: string[] = Array.isArray(v.languages) ? v.languages : [];
+const served = servedRegions(v).filter(r => REGIONS[r]);
+const igUrl = typeof v.instagram === 'string' && /^https:\/\/(www\.)?instagram\.com\/[A-Za-z0-9_.]+\/?$/i.test(v.instagram) ? v.instagram : '';
+const igHandle = igUrl ? '@' + igUrl.replace(/\/$/, '').split('/').pop() : '';
+const years = Number.isFinite(v.years_in_business) && v.years_in_business > 0 ? Number(v.years_in_business) : null;
+const hasDetails = price !== null || packages.length || styles.length || served.length || languages.length || years;
+const areaList = [areaServed, ...served.map(r => ({ "@type": "Place", name: `${REGIONS[r].name.replace(/&/g, 'and')}, Colorado` }))];
 const jsonld: Record<string, unknown> = {
   "@context": "https://schema.org",
   "@type": v.category === 'venues' ? "EventVenue" : "ProfessionalService",
@@ -52,8 +64,9 @@ const jsonld: Record<string, unknown> = {
   address: postal(v.address),
   geo: (v.lat && v.lng) ? { "@type": "GeoCoordinates", latitude: Number(v.lat), longitude: Number(v.lng) } : undefined,
   image: gallery.length ? [gimg(v.image_url, 1600, 900), ...gallery.map(p => p.url)].filter(Boolean) : (v.image_url ? gimg(v.image_url, 1600, 900) : undefined),
-  areaServed,
-  sameAs: v.website ? [v.website] : undefined
+  areaServed: areaList.length > 1 ? areaList : areaServed,
+  priceRange: price !== null ? `From ${money(price)}` : undefined,
+  sameAs: (v.website || igUrl) ? [v.website, igUrl].filter(Boolean) : undefined
 };
 const jsonldText = JSON.stringify(jsonld).replace(/</g, '\\u003c');
 const telHref = v.phone ? 'tel:+1' + String(v.phone).replace(/[^0-9]/g,'').replace(/^1/,'') : '';
@@ -92,7 +105,25 @@ const metaDesc = v.description.length > 155 ? v.description.slice(0, 152).replac
       <div class="p-6 md:p-9 md:grid md:grid-cols-3 md:gap-10">
         <div class="md:col-span-2">
           {v.rating && v.reviews ? <p class="text-sm font-medium text-ink mb-4">★ {v.rating}<span class="text-ink/45"> · {v.reviews} Google reviews</span></p> : null}
+          {price !== null && <p class="mb-4 text-ink"><span class="eyebrow text-clay-600 mr-2">Starting At</span><span class="display text-2xl">{money(price)}</span>{priceNote && <span class="text-sm text-ink/55 ml-2">{priceNote}</span>}</p>}
           <p class="text-ink/80 leading-relaxed">{v.description}</p>
+          {hasDetails && <div class="mt-8 space-y-6" id="details">
+            {packages.length > 0 && <section aria-label="Packages">
+              <p class="eyebrow text-clay-600 mb-3">Packages</p>
+              <div class="grid sm:grid-cols-2 gap-3">
+                {packages.map((p: any) => <div class="rounded-2xl border border-hairline bg-ivory p-4">
+                  <p class="flex items-baseline justify-between gap-3"><span class="font-medium text-ink">{p.name}</span>{Number.isFinite(p.price) && <span class="display text-lg text-ink shrink-0">{money(p.price)}</span>}</p>
+                  {p.includes && <p class="text-sm text-ink/65 mt-1.5 leading-relaxed">{p.includes}</p>}
+                </div>)}
+              </div>
+            </section>}
+            {styles.length > 0 && <div><p class="eyebrow text-clay-600 mb-2">Style</p><ul class="flex flex-wrap gap-2">{styles.map(t => <li class="rounded-full border border-hairline bg-white px-3 py-1 text-sm capitalize">{t}</li>)}</ul></div>}
+            <dl class="grid sm:grid-cols-2 gap-4 text-sm">
+              {served.length > 0 && <div><dt class="eyebrow text-clay-600 mb-1">Service Area</dt><dd class="text-ink/75">{[reg.name, ...served.map(r => REGIONS[r].name)].filter((x, i, a) => a.indexOf(x) === i).map((n, i, a) => <>{i > 0 && ', '}{n}</>)}</dd></div>}
+              {languages.length > 0 && <div><dt class="eyebrow text-clay-600 mb-1">Languages</dt><dd class="text-ink/75">{languages.join(', ')}</dd></div>}
+              {years && <div><dt class="eyebrow text-clay-600 mb-1">In Business</dt><dd class="text-ink/75">{years} {years === 1 ? 'year' : 'years'}</dd></div>}
+            </dl>
+          </div>}
           {isClaimed
             ? <p class="mt-8 text-xs text-ink/40">This listing is claimed and kept up to date by {v.name}.{isFeatured && ' Featured placement is paid and always labeled.'}</p>
             : <p class="mt-8 text-xs text-ink/40">Listing compiled from public listings and Google Business Profile data. Details may have changed since. <a href={`/claim/${v.slug}`} data-track="claim_click" class="underline underline-offset-2 hover:text-clay-700">Is this your business? Claim it free</a></p>}
@@ -101,6 +132,7 @@ const metaDesc = v.description.length > 155 ? v.description.slice(0, 152).replac
           <div class="rounded-2xl bg-parchment/70 border border-hairline p-5 space-y-3 text-sm">
             <p class="eyebrow text-clay-600">Contact</p>
             {v.website && <p><a href={v.website} rel="nofollow noopener" target="_blank" data-track="website_click" class="font-medium underline underline-offset-4 hover:text-clay-700 break-all">Visit website →</a></p>}
+            {igUrl && <p><a href={igUrl} rel="nofollow ugc noopener" target="_blank" data-track="instagram_click" class="underline underline-offset-4 hover:text-clay-700">Instagram {igHandle}</a></p>}
             {v.phone && <p><a href={telHref} data-track="phone_click" class="underline underline-offset-4 hover:text-clay-700">{v.phone}</a></p>}
             {v.address && <p class="text-ink/60 leading-snug">{v.address}</p>}
           </div>

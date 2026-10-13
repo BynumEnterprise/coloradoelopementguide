@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import VendorCard from '../../components/VendorCard.astro';
 import EmailCapture from '../../components/EmailCapture.astro';
+import VendorFilter from '../../components/VendorFilter.astro';
 import { allVendors } from '../../lib/vendors';
 import { CATEGORIES, REGIONS } from '../../lib/taxonomy';
 import { CATEGORY_COPY, livePhotographerPages, photographersIn } from '../../data/category-copy';
@@ -106,13 +107,15 @@ const otherCats = Object.keys(CATEGORIES).filter(c => c !== cat);
   )}
 
   <div class="max-w-7xl mx-auto px-5 md:px-8" id="listings">
+    <VendorFilter vendors={vendors} category={cat} />
+    <div id="vf-source">
     {featured.length > 0 && (
       <section class="pt-14">
         <div class="flex items-end justify-between gap-6 mb-6 border-b border-hairline pb-3">
           <h2 class="display text-2xl md:text-3xl">Featured <span class="serif-i text-ink/60 text-lg">{meta.name.toLowerCase()}</span></h2>
           <p class="text-xs text-ink/50">Featured listings are paid placements and are always labeled.</p>
         </div>
-        <div class="grid gap-5 md:grid-cols-3">{featured.map(v => <VendorCard v={v} />)}</div>
+        <div class="grid gap-5 md:grid-cols-3">{featured.map(v => <div data-vcard={v.slug}><VendorCard v={v} /></div>)}</div>
       </section>
     )}
     {byRegion.map(([r, vs]) => (
@@ -121,9 +124,10 @@ const otherCats = Object.keys(CATEGORIES).filter(c => c !== cat);
           <h2 class="display text-2xl md:text-3xl">{r === 'other-colorado' ? <>Serving <span class="serif-i">all of Colorado</span></> : REGIONS[r].name} <span class="text-ink/40 text-base">({vs.length})</span></h2>
           <a href={regionHref(r)} class="text-sm font-medium underline underline-offset-4 hover:text-clay-700 shrink-0">{regionHref(r).startsWith('/photographers') ? `${REGIONS[r].name} photographers →` : 'Everything in this region →'}</a>
         </div>
-        <div class="grid gap-5 md:grid-cols-3">{vs.map(v => <VendorCard v={v} />)}</div>
+        <div class="grid gap-5 md:grid-cols-3">{vs.map(v => <div data-vcard={v.slug}><VendorCard v={v} /></div>)}</div>
       </section>
     ))}
+    </div>
     <p class="mt-6 text-xs text-ink/50">Ratings come from Google and are refreshed weekly. Tap the heart on any listing to save it to your planner. Are you a {meta.singular}? <a href="/for-vendors" class="underline">Claim or add your free listing</a>.</p>
   </div>
 

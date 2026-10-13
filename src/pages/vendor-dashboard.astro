@@ -8,6 +8,7 @@ const vlist = vendors.map(v => ({ s: v.slug, n: v.name }));
 const catNames = Object.fromEntries(Object.entries(CATEGORIES).map(([k,c]) => [k, c.name]));
 const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r.name]));
 // Slot line templates per category and region ("999 of 3 Featured spots open for Estes Park photographers").
+const editRegions = Object.entries(REGIONS).filter(([k]) => k !== 'other-colorado').map(([k, r]) => ({ k, n: r.name }));
 const slotTemplates = Object.fromEntries(Object.keys(CATEGORIES).flatMap(c => Object.keys(REGIONS).map(r => [`${c}|${r}`, slotLine(999, c, r)])));
 ---
 <Base title="Vendor Dashboard | Colorado Elopement Guide" description="Manage your free listing: update your details and see how many couples click through to you." noindex={true}>
@@ -83,6 +84,49 @@ const slotTemplates = Object.fromEntries(Object.keys(CATEGORIES).flatMap(c => Ob
               <div><label class="eyebrow text-ink/60 block mb-2">Website</label>
                 <input id="ve-web" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" placeholder="https://…" /></div>
             </div>
+            <fieldset class="border-t border-hairline pt-5 space-y-4" id="ve-profile">
+              <legend class="eyebrow text-clay-600 pr-3">Pricing And Profile</legend>
+              <div class="grid md:grid-cols-2 gap-4">
+                <div><label for="ve-price" class="eyebrow text-ink/60 block mb-2">Starting Price (USD)</label>
+                  <input id="ve-price" type="number" min="0" max="100000" step="1" inputmode="numeric" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" placeholder="3200" /></div>
+                <div><label for="ve-pnote" class="eyebrow text-ink/60 block mb-2">Price Note</label>
+                  <input id="ve-pnote" maxlength="80" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" placeholder="elopement collections from" /></div>
+                <div><label for="ve-ig" class="eyebrow text-ink/60 block mb-2">Instagram</label>
+                  <input id="ve-ig" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" placeholder="https://instagram.com/yourhandle" /></div>
+                <div><label for="ve-years" class="eyebrow text-ink/60 block mb-2">Years In Business</label>
+                  <input id="ve-years" type="number" min="0" max="100" step="1" inputmode="numeric" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" /></div>
+                <div class="md:col-span-2"><label for="ve-langs" class="eyebrow text-ink/60 block mb-2">Languages</label>
+                  <input id="ve-langs" maxlength="200" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" placeholder="English, Spanish" /><p class="text-xs text-ink/40 mt-1.5">Separate with commas, up to 8.</p></div>
+              </div>
+              <div><p class="eyebrow text-ink/60 mb-2" id="ve-styles-label">Style</p><div id="ve-styles" role="group" aria-labelledby="ve-styles-label" class="flex flex-wrap gap-2 text-sm"></div></div>
+              <div><p class="eyebrow text-ink/60 mb-2" id="ve-regions-label">Regions You Also Serve</p>
+                <div id="ve-regions" role="group" aria-labelledby="ve-regions-label" class="flex flex-wrap gap-2 text-sm">
+                  {editRegions.map(r => <label class="inline-flex items-center gap-2 rounded-full border border-hairline bg-ivory px-3 py-1.5"><input type="checkbox" value={r.k} /> {r.n}</label>)}
+                </div></div>
+              <div><p class="eyebrow text-ink/60 mb-2">Packages <span class="normal-case tracking-normal text-ink/40">(up to 4, leave blank to skip)</span></p>
+                <div class="space-y-3" id="ve-packages">
+                <div class="grid md:grid-cols-6 gap-2 rounded-2xl border border-hairline p-3" data-pkg="0">
+                  <input aria-label="Package 1 name" maxlength="240" class="md:col-span-4 w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" data-pk="name" placeholder="Package name" />
+                  <input aria-label="Package 1 price in USD" type="number" min="0" max="100000" step="1" inputmode="numeric" class="md:col-span-2 w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" data-pk="price" placeholder="Price $" />
+                  <textarea aria-label="Package 1 what is included" maxlength="240" rows="2" class="md:col-span-6 w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" data-pk="includes" placeholder="What is included (240 characters max)"></textarea>
+                </div>
+                <div class="grid md:grid-cols-6 gap-2 rounded-2xl border border-hairline p-3" data-pkg="1">
+                  <input aria-label="Package 2 name" maxlength="240" class="md:col-span-4 w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" data-pk="name" placeholder="Package name" />
+                  <input aria-label="Package 2 price in USD" type="number" min="0" max="100000" step="1" inputmode="numeric" class="md:col-span-2 w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" data-pk="price" placeholder="Price $" />
+                  <textarea aria-label="Package 2 what is included" maxlength="240" rows="2" class="md:col-span-6 w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" data-pk="includes" placeholder="What is included (240 characters max)"></textarea>
+                </div>
+                <div class="grid md:grid-cols-6 gap-2 rounded-2xl border border-hairline p-3" data-pkg="2">
+                  <input aria-label="Package 3 name" maxlength="240" class="md:col-span-4 w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" data-pk="name" placeholder="Package name" />
+                  <input aria-label="Package 3 price in USD" type="number" min="0" max="100000" step="1" inputmode="numeric" class="md:col-span-2 w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" data-pk="price" placeholder="Price $" />
+                  <textarea aria-label="Package 3 what is included" maxlength="240" rows="2" class="md:col-span-6 w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" data-pk="includes" placeholder="What is included (240 characters max)"></textarea>
+                </div>
+                <div class="grid md:grid-cols-6 gap-2 rounded-2xl border border-hairline p-3" data-pkg="3">
+                  <input aria-label="Package 4 name" maxlength="240" class="md:col-span-4 w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" data-pk="name" placeholder="Package name" />
+                  <input aria-label="Package 4 price in USD" type="number" min="0" max="100000" step="1" inputmode="numeric" class="md:col-span-2 w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" data-pk="price" placeholder="Price $" />
+                  <textarea aria-label="Package 4 what is included" maxlength="240" rows="2" class="md:col-span-6 w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" data-pk="includes" placeholder="What is included (240 characters max)"></textarea>
+                </div>
+                </div></div>
+            </fieldset>
             <div class="flex items-center gap-4">
               <button id="ve-save" class="rounded-full bg-ink text-ivory px-7 py-3 text-sm font-semibold hover:bg-spruce-800">Save Changes</button>
               <span id="ve-msg" class="text-sm text-ink/40"></span>
@@ -469,7 +513,19 @@ const slotTemplates = Object.fromEntries(Object.keys(CATEGORIES).flatMap(c => Ob
       document.getElementById('ve-web').value = v.website||'';
       document.getElementById('ve-desc-count').textContent = num((v.description||'').length);
       const editable = VD.verified;
+      document.getElementById('ve-price').value = v.starting_price ?? '';
+      document.getElementById('ve-pnote').value = v.price_note || '';
+      document.getElementById('ve-ig').value = v.instagram || '';
+      document.getElementById('ve-years').value = v.years_in_business ?? '';
+      document.getElementById('ve-langs').value = (v.languages || []).join(', ');
+      const stSel = new Set(v.styles || []);
+      document.getElementById('ve-styles').innerHTML = (v.style_options || []).map(o => `<label class="inline-flex items-center gap-2 rounded-full border border-hairline bg-ivory px-3 py-1.5 capitalize"><input type="checkbox" value="${esc(o)}" ${stSel.has(o)?'checked':''}/> ${esc(o)}</label>`).join('') || '<span class="text-ink/40">No style options for this category.</span>';
+      const srSel = new Set(v.served_regions || []);
+      document.querySelectorAll('#ve-regions input').forEach(i => { i.checked = srSel.has(i.value); i.disabled = !editable || i.value === v.sub_region; });
+      const pks = Array.isArray(v.packages) ? v.packages : [];
+      document.querySelectorAll('[data-pkg]').forEach((row, i) => { const p = pks[i] || {}; row.querySelector('[data-pk=name]').value = p.name || ''; row.querySelector('[data-pk=price]').value = p.price ?? ''; row.querySelector('[data-pk=includes]').value = p.includes || ''; });
       ['ve-desc','ve-phone','ve-web','ve-save'].forEach(id=>{ document.getElementById(id).disabled = !editable; });
+      document.querySelectorAll('#ve-profile input, #ve-profile textarea').forEach(el => { if (!el.closest('#ve-regions')) el.disabled = !editable; });
       document.getElementById('vd-badge').classList.toggle('hidden', !VD.verified);
       document.getElementById('vd-badge-code').value = '<a href="https://coloradoelopementguide.com/vendor/' + v.slug + '?ref=badge"><img src="https://coloradoelopementguide.com/badge/listed.svg" alt="Listed on Colorado Elopement Guide" width="180"></a>';
     }
@@ -515,11 +571,16 @@ const slotTemplates = Object.fromEntries(Object.keys(CATEGORIES).flatMap(c => Ob
         return;
       }
       if(e.target.closest('#ve-save')){
+        const prof = readProfile(), vm = document.getElementById('ve-msg');
+        if (prof.error) { vm.textContent = prof.error; return; }
+        const web = document.getElementById('ve-web').value.trim();
+        if (web && !/^https?:\/\/[^\s.]+\.[^\s]+$/i.test(web)) { vm.textContent = 'Website should start with https://'; return; }
         const ok=await rpc('ceg_vendor_update',{p_token:vtok(),
           p_phone:document.getElementById('ve-phone').value,
-          p_website:document.getElementById('ve-web').value,
-          p_description:document.getElementById('ve-desc').value});
-        document.getElementById('ve-msg').textContent = ok?'Saved ✓ · rebuilding site…':'Could not save';
+          p_website:web,
+          p_description:document.getElementById('ve-desc').value,
+          p_profile:prof.data});
+        vm.textContent = ok?'Saved ✓ · rebuilding site…':'Could not save. Check the fields and try again.';
         if(ok){
           try{ fetch('/api/refresh-site',{method:'POST'}); }catch(_){}
           const fresh=await rpc('ceg_vendor_get',{p_token:vtok()});
@@ -527,6 +588,32 @@ const slotTemplates = Object.fromEntries(Object.keys(CATEGORIES).flatMap(c => Ob
         }
       }
     });
+    // Profile editor: validate in the browser; ceg_vendor_update enforces the same rules in the database.
+    function readProfile(){
+      const intOrNull = (id, lo, hi, label) => { const raw = document.getElementById(id).value.trim(); if (raw === '') return [null]; const n = Number(raw); if (!Number.isInteger(n) || n < lo || n > hi) return [null, `${label} should be a whole number from ${num(lo)} to ${num(hi)}.`]; return [n]; };
+      const [price, e1] = intOrNull('ve-price', 0, 100000, 'Starting price'); if (e1) return { error: e1 };
+      const [years, e2] = intOrNull('ve-years', 0, 100, 'Years in business'); if (e2) return { error: e2 };
+      let ig = document.getElementById('ve-ig').value.trim();
+      if (ig && /^@?[A-Za-z0-9_.]{1,30}$/.test(ig)) ig = 'https://instagram.com/' + ig.replace(/^@/, '');
+      if (ig && /^http:\/\//i.test(ig)) ig = ig.replace(/^http:/i, 'https:');
+      if (ig) ig = ig.replace(/\?.*$/, '');
+      if (ig && !/^https:\/\/(www\.)?instagram\.com\/[A-Za-z0-9_.]{1,30}\/?$/i.test(ig)) return { error: 'Instagram should look like https://instagram.com/yourhandle' };
+      const note = document.getElementById('ve-pnote').value.trim(); if (note.length > 80) return { error: 'Keep the price note under 80 characters.' };
+      const langs = document.getElementById('ve-langs').value.split(',').map(x => x.trim()).filter(Boolean);
+      if (langs.length > 8 || langs.some(l => l.length > 30)) return { error: 'List up to 8 languages, separated by commas.' };
+      const packages = [];
+      for (const row of document.querySelectorAll('[data-pkg]')) {
+        const name = row.querySelector('[data-pk=name]').value.trim(), inc = row.querySelector('[data-pk=includes]').value.trim(), pr = row.querySelector('[data-pk=price]').value.trim();
+        if (!name) { if (inc || pr) return { error: 'Give each package a name.' }; continue; }
+        const pn = pr === '' ? null : Number(pr);
+        if (pn !== null && (!Number.isInteger(pn) || pn < 0 || pn > 100000)) return { error: 'Package prices should be whole numbers from 0 to 100,000.' };
+        if (name.length > 240 || inc.length > 240) return { error: 'Package fields are limited to 240 characters.' };
+        packages.push({ name, price: pn, includes: inc || null });
+      }
+      const styles = [...document.querySelectorAll('#ve-styles input:checked')].map(i => i.value);
+      const served_regions = [...document.querySelectorAll('#ve-regions input:checked')].map(i => i.value).filter(r => r !== VD.vendor.sub_region);
+      return { data: { starting_price: price, price_note: note || null, instagram: ig || null, years_in_business: years, languages: langs, styles, served_regions, packages } };
+    }
     document.addEventListener('DOMContentLoaded', boot);
   </script>
 </Base>

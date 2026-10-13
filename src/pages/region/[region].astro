@@ -2,7 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import VendorCard from '../../components/VendorCard.astro';
 import EmailCapture from '../../components/EmailCapture.astro';
-import { allVendors } from '../../lib/vendors';
+import { allVendors, servedRegions } from '../../lib/vendors';
 import { CATEGORIES, REGIONS } from '../../lib/taxonomy';
 import { regionImg, opt, optSet } from '../../lib/assets';
 import { VENUE_PAGES, REGION_VENUE_LINKS, MIN_VENUES, matchVenues } from '../../data/venue-pages';
@@ -18,10 +18,12 @@ const all = await allVendors();
 const vendors = all.filter(v => v.sub_region === region);
 const venueLinks = (REGION_VENUE_LINKS[region] || []).map(s => VENUE_PAGES.find(p => p.slug === s)!).filter(p => p && matchVenues(p, all).length >= MIN_VENUES);
 const photoPage = livePhotographerPages(all).find(p => p.region === region);
+// Vendors based elsewhere who list this region as a place they serve (p2_vendors.served_regions).
+const alsoServing = region === 'other-colorado' ? [] : Object.keys(CATEGORIES).flatMap(c => all.filter(v => v.category === c && v.sub_region !== region && servedRegions(v).includes(region)));
 const byCat = Object.keys(CATEGORIES).map(c => [c, vendors.filter(v => v.category===c)]).filter(([,vs]) => vs.length);
 const sparse = region === 'other-colorado' ? [] : Object.keys(CATEGORIES)
   .map(c => [c, vendors.filter(v => v.category===c).length, all.filter(v => v.sub_region==='other-colorado' && v.category===c)])
-  .filter(([,localCount,statewide]) => localCount < 3 && statewide.length > 0)
+  .filter(([c,localCount,statewide]) => (localCount as number) + alsoServing.filter(v => v.category === c).length < 3 && (statewide as any[]).length > 0)
   .map(([c,,statewide]) => [c, statewide.slice(0,6)]);
 const copy = REGION_COPY[region];
 const guide = (await getCollection('guides')).find(g => g.data.region === region);
@@ -96,6 +98,15 @@ const title = statewide ? 'More Colorado Elopement Vendors: Statewide and Beyond
         <div class="grid gap-5 md:grid-cols-3">{vs.map(v => <VendorCard v={v} />)}</div>
       </section>
     ))}
+    {alsoServing.length > 0 && (
+      <section class="pt-14" id="also-serving">
+        <div class="flex items-end justify-between gap-6 mb-2 border-b border-hairline pb-3">
+          <h2 class="display text-2xl md:text-3xl">Also serving <span class="serif-i">{meta.name}</span> <span class="text-ink/40 text-base">({alsoServing.length})</span></h2>
+        </div>
+        <p class="text-sm text-ink/55 mb-6">Based in another part of Colorado and listing {meta.name} as a place they work. Ask each one about travel fees.</p>
+        <div class="grid gap-5 md:grid-cols-3">{alsoServing.map(v => <VendorCard v={v} />)}</div>
+      </section>
+    )}
     {sparse.map(([c, vs]) => (
       <section class="pt-14">
         <div class="flex items-end justify-between gap-6 mb-2">

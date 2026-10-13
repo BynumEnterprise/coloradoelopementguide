@@ -2,7 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import VendorCard from '../../components/VendorCard.astro';
 import EmailCapture from '../../components/EmailCapture.astro';
-import { allVendors } from '../../lib/vendors';
+import { allVendors, servedRegions } from '../../lib/vendors';
 import { REGIONS } from '../../lib/taxonomy';
 import { regionImg, opt, optSet } from '../../lib/assets';
 import { livePhotographerPages, photographersIn, LIVE_STATUSES } from '../../data/category-copy';
@@ -18,7 +18,8 @@ const all = await allVendors();
 const local = photographersIn(page.region, all);
 const featured = local.filter(v => v.status === 'featured');
 const ordered = [...featured, ...local.filter(v => v.status !== 'featured')];
-const travelers = all.filter(v => v.category === 'photographers' && v.sub_region === 'other-colorado' && LIVE_STATUSES.includes(v.status)).slice(0, 6);
+const alsoServing = all.filter(v => v.category === 'photographers' && v.sub_region !== page.region && LIVE_STATUSES.includes(v.status) && servedRegions(v).includes(page.region));
+const travelers = all.filter(v => v.category === 'photographers' && v.sub_region === 'other-colorado' && LIVE_STATUSES.includes(v.status) && !alsoServing.includes(v)).slice(0, 6);
 const n = local.length;
 const fill = (s: string) => s.replace(/\{n\}/g, String(n));
 
@@ -70,6 +71,15 @@ const ldCrumbs = {
       </div>
       <div class="grid gap-5 md:grid-cols-3">{ordered.map(v => <VendorCard v={v} />)}</div>
     </section>
+    {alsoServing.length > 0 && (
+      <section class="pt-14" id="also-serving">
+        <div class="flex items-end justify-between gap-6 mb-2 border-b border-hairline pb-3">
+          <h2 class="display text-2xl md:text-3xl">Also serving <span class="serif-i">{page.place}</span> <span class="text-ink/40 text-base">({alsoServing.length})</span></h2>
+        </div>
+        <p class="text-sm text-ink/55 mb-6">Photographers based elsewhere in Colorado who list {REGIONS[page.region].name} as a place they shoot. Ask each one about travel fees.</p>
+        <div class="grid gap-5 md:grid-cols-3">{alsoServing.map(v => <VendorCard v={v} />)}</div>
+      </section>
+    )}
     {travelers.length > 0 && (
       <section class="pt-14">
         <div class="flex items-end justify-between gap-6 mb-2 border-b border-hairline pb-3">

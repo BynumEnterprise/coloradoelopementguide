@@ -1,0 +1,144 @@
+---
+// Client side vendor filter (GAP 1.3). Facet data is embedded as JSON at build time; the page's own
+// listing (wrapped in #vf-source, each card in [data-vcard]) shows when no filter is active, and a
+// filtered, sorted copy shows in #vf-results otherwise. State lives in the URL query; canonical stays bare.
+import { CATEGORIES, REGIONS } from '../lib/taxonomy';
+import { STYLE_OPTIONS, PRICE_BUCKETS, facet } from '../lib/vendors';
+interface Props { vendors: any[]; category?: string }
+const { vendors, category } = Astro.props;
+const data = vendors.map((v, i) => facet(v, i));
+const regions = Object.entries(REGIONS).map(([k, r]) => ({ k, n: k === 'other-colorado' ? 'Statewide and other areas' : r.name }));
+const cats = Object.entries(CATEGORIES).map(([k, c]) => ({ k, n: c.name }));
+const styleCats = category ? [category] : Object.keys(STYLE_OPTIONS);
+const buckets = PRICE_BUCKETS.map(b => ({ id: b.id, label: b.label, min: b.min, max: Number.isFinite(b.max) ? b.max : 1e9 }));
+const sel = 'w-full rounded-xl border border-hairline bg-white px-3 py-2.5 text-sm';
+---
+<div class="vf mt-10" data-vf data-fixed-cat={category || ''}>
+  <div class="flex items-center justify-between gap-4 border-y border-hairline py-3">
+    <p class="text-sm text-ink/70" aria-live="polite"><span id="vf-count">{vendors.length}</span> of {vendors.length} shown</p>
+    <div class="flex items-center gap-3">
+      <button type="button" id="vf-reset" class="hidden text-sm underline underline-offset-4 hover:text-clay-700">Clear All</button>
+      <button type="button" id="vf-open" aria-controls="vf-panel" aria-expanded="false" class="md:hidden rounded-full border border-ink/60 px-5 py-2 text-sm font-medium">Filters <span id="vf-n" class="text-clay-600"></span></button>
+    </div>
+  </div>
+  <div id="vf-backdrop" class="hidden fixed inset-0 z-40 bg-ink/40 md:hidden"></div>
+  <form id="vf-panel" role="search" aria-label="Filter vendors" class="vf-panel hidden md:block fixed md:static inset-x-0 bottom-0 z-50 max-h-[85vh] overflow-y-auto md:overflow-visible rounded-t-3xl md:rounded-none bg-ivory md:bg-transparent p-5 md:px-0 md:py-4 shadow-2xl md:shadow-none" onsubmit="return false">
+    <div class="flex items-center justify-between md:hidden mb-4"><p class="display text-xl">Filters</p><button type="button" id="vf-close" class="rounded-full border border-hairline px-4 py-1.5 text-sm">Done</button></div>
+    <div class="grid gap-4 md:grid-cols-5">
+      <div><label for="vf-region" class="eyebrow text-ink/60 block mb-1.5">Region</label>
+        <select id="vf-region" name="region" class={sel}><option value="">All regions</option>{regions.map(r => <option value={r.k} data-l={r.n}>{r.n}</option>)}</select></div>
+      {category ? <input type="hidden" id="vf-cat" name="cat" value={category} /> : (
+      <div><label for="vf-cat" class="eyebrow text-ink/60 block mb-1.5">Category</label>
+        <select id="vf-cat" name="cat" class={sel}><option value="">All categories</option>{cats.map(c => <option value={c.k} data-l={c.n}>{c.n}</option>)}</select></div>)}
+      <div><label for="vf-price" class="eyebrow text-ink/60 block mb-1.5">Starting Price</label>
+        <select id="vf-price" name="price" class={sel}><option value="">Any price</option>{buckets.map(b => <option value={b.id} data-l={b.label}>{b.label}</option>)}</select></div>
+      <div><label for="vf-sort" class="eyebrow text-ink/60 block mb-1.5">Sort</label>
+        <select id="vf-sort" name="sort" class={sel}><option value="">Recommended</option><option value="rating">Highest rated</option><option value="price">Price, low to high</option></select></div>
+      <div class="flex items-end"><label class="inline-flex items-center gap-2 text-sm py-2.5"><input type="checkbox" id="vf-photos" name="photos" value="1" class="w-4 h-4" /> Has photos <span class="text-ink/40" id="vf-photos-n"></span></label></div>
+    </div>
+    <fieldset id="vf-styles" class="mt-4">
+      <legend class="eyebrow text-ink/60 mb-1.5">Style</legend>
+      <p id="vf-styles-hint" class="text-xs text-ink/45">Pick a category to filter by style.</p>
+      <div class="flex flex-wrap gap-2 text-sm">
+        {styleCats.flatMap(c => STYLE_OPTIONS[c].map(s => <label data-stcat={c} class="vf-chip hidden items-center gap-2 rounded-full border border-hairline bg-white px-3 py-1.5 capitalize cursor-pointer"><input type="checkbox" name="style" value={s} class="w-3.5 h-3.5" /> {s} <span class="text-ink/40" data-stn></span></label>))}
+      </div>
+    </fieldset>
+  </form>
+  <p id="vf-empty" class="hidden mt-8 rounded-2xl border border-hairline bg-white p-6 text-sm text-ink/70">No vendors match all of those filters yet. Try a wider price range or another region, or <button type="button" class="underline" data-vf-reset>clear the filters</button>.</p>
+  <div id="vf-results" hidden class="grid gap-5 md:grid-cols-3 lg:grid-cols-4 mt-8" aria-label="Filtered vendors"></div>
+  <script type="application/json" id="vf-data" set:html={JSON.stringify({ v: data, b: buckets }).replace(/</g, '\\u003c')} />
+</div>
+<style>
+  .vf-chip:not(.hidden) { display: inline-flex; }
+  .vf-chip:has(input:checked) { border-color: var(--color-ink); background: var(--color-parchment); }
+  @media (max-width: 767px) { .vf-panel.open { display: block; } }
+</style>
+<script is:inline>
+(function(run){ if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run(); })(function(){
+  var root = document.querySelector('[data-vf]'); if (!root) return;
+  var D = JSON.parse(document.getElementById('vf-data').textContent), V = D.v, B = D.b;
+  var fixedCat = root.getAttribute('data-fixed-cat') || '';
+  var $ = function(id){ return document.getElementById(id); };
+  var form = $('vf-panel'), res = $('vf-results'), srcEl = function(){ return document.getElementById('vf-source'); };
+  var bucket = function(id){ for (var i = 0; i < B.length; i++) if (B[i].id === id) return B[i]; return null; };
+  function state(){
+    var st = [].slice.call(form.querySelectorAll('input[name=style]:checked')).map(function(i){ return i.value; });
+    return { region: $('vf-region').value, cat: fixedCat || $('vf-cat').value, price: $('vf-price').value, style: st, photos: $('vf-photos').checked, sort: $('vf-sort').value };
+  }
+  function match(v, s, skip){
+    if (skip !== 'region' && s.region && v.r !== s.region && v.sr.indexOf(s.region) < 0) return false;
+    if (skip !== 'cat' && s.cat && v.c !== s.cat) return false;
+    if (skip !== 'price' && s.price){ var b = bucket(s.price); if (b){ if (b.id === 'none' ? v.p !== null : (v.p === null || v.p < b.min || v.p > b.max)) return false; } }
+    if (skip !== 'photos' && s.photos && !v.ph) return false;
+    if (skip !== 'style' && s.style.length){ for (var i = 0; i < s.style.length; i++) if (v.st.indexOf(s.style[i]) < 0) return false; }
+    return true;
+  }
+  function label(sel, fn){
+    [].forEach.call($(sel).options, function(o){ if (!o.value) return; var n = fn(o.value); o.textContent = o.getAttribute('data-l') + ' (' + n + ')'; });
+  }
+  var cache = {};
+  function card(slug){
+    if (!cache[slug]){ var el = document.querySelector('#vf-source [data-vcard="' + slug + '"]'); cache[slug] = el ? el.cloneNode(true) : null; }
+    return cache[slug];
+  }
+  function apply(push){
+    var s = state();
+    var active = !!(s.region || (!fixedCat && s.cat) || s.price || s.photos || s.style.length || s.sort);
+    var list = V.filter(function(v){ return match(v, s); });
+    if (s.sort === 'rating') list.sort(function(a, b){ return (b.rt - a.rt) || (b.rv - a.rv) || (a.i - b.i); });
+    else if (s.sort === 'price') list.sort(function(a, b){ return (a.p === null) - (b.p === null) || (a.p - b.p) || (a.i - b.i); });
+    else list.sort(function(a, b){ return (b.f - a.f) || (a.i - b.i); });
+    $('vf-count').textContent = String(list.length);
+    // Live counts for every option given the other active filters.
+    label('vf-region', function(r){ return V.filter(function(v){ return match(v, s, 'region') && (v.r === r || v.sr.indexOf(r) >= 0); }).length; });
+    if (!fixedCat) label('vf-cat', function(c){ return V.filter(function(v){ return match(v, s, 'cat') && v.c === c; }).length; });
+    label('vf-price', function(id){ var t = Object.assign({}, s, { price: id }); return V.filter(function(v){ return match(v, t); }).length; });
+    $('vf-photos-n').textContent = '(' + V.filter(function(v){ return match(v, s, 'photos') && v.ph; }).length + ')';
+    var anyStyle = false;
+    [].forEach.call(form.querySelectorAll('[data-stcat]'), function(l){
+      var on = !!s.cat && l.getAttribute('data-stcat') === s.cat; l.classList.toggle('hidden', !on);
+      var inp = l.querySelector('input'); if (!on && inp.checked) inp.checked = false;
+      if (on){ anyStyle = true; var val = inp.value; l.querySelector('[data-stn]').textContent = '(' + V.filter(function(v){ return match(v, s, 'style') && v.st.indexOf(val) >= 0; }).length + ')'; }
+    });
+    $('vf-styles-hint').textContent = anyStyle ? '' : 'Pick a category to filter by style.';
+    $('vf-styles-hint').classList.toggle('hidden', anyStyle);
+    var n = (s.region ? 1 : 0) + (!fixedCat && s.cat ? 1 : 0) + (s.price ? 1 : 0) + (s.photos ? 1 : 0) + s.style.length;
+    $('vf-n').textContent = n ? '(' + n + ')' : '';
+    $('vf-reset').classList.toggle('hidden', !active);
+    if (active){
+      res.textContent = '';
+      list.forEach(function(v){ var c = card(v.s); if (c) res.appendChild(c); });
+      res.hidden = false; var src = srcEl(); if (src) src.hidden = true;
+    } else { res.hidden = true; res.textContent = ''; var src = srcEl(); if (src) src.hidden = false; }
+    $('vf-empty').classList.toggle('hidden', list.length > 0);
+    var q = new URLSearchParams();
+    if (s.region) q.set('region', s.region);
+    if (!fixedCat && s.cat) q.set('cat', s.cat);
+    if (s.price) q.set('price', s.price);
+    if (s.style.length) q.set('style', s.style.join(','));
+    if (s.photos) q.set('photos', '1');
+    if (s.sort) q.set('sort', s.sort);
+    var qs = q.toString(), url = location.pathname + (qs ? '?' + qs : '') + location.hash;
+    if (url !== location.pathname + location.search + location.hash) history.replaceState(null, '', url);
+  }
+  // Restore from the URL.
+  var p = new URLSearchParams(location.search);
+  var setSel = function(id, val){ var el = $(id); if (el && val && [].some.call(el.options || [], function(o){ return o.value === val; })) el.value = val; };
+  setSel('vf-region', p.get('region')); if (!fixedCat) setSel('vf-cat', p.get('cat')); setSel('vf-price', p.get('price')); setSel('vf-sort', p.get('sort'));
+  $('vf-photos').checked = p.get('photos') === '1';
+  var want = (p.get('style') || '').split(',');
+  [].forEach.call(form.querySelectorAll('input[name=style]'), function(i){ var c = i.closest('[data-stcat]').getAttribute('data-stcat'); i.checked = want.indexOf(i.value) >= 0 && c === (fixedCat || $('vf-cat').value); });
+  form.addEventListener('change', function(){ apply(); });
+  function reset(){ form.reset(); if (fixedCat) $('vf-cat').value = fixedCat; apply(); }
+  $('vf-reset').addEventListener('click', reset);
+  document.querySelector('[data-vf-reset]').addEventListener('click', reset);
+  // Mobile drawer.
+  var openBtn = $('vf-open'), bd = $('vf-backdrop');
+  function drawer(open){ form.classList.toggle('open', open); bd.classList.toggle('hidden', !open); openBtn.setAttribute('aria-expanded', String(open)); document.body.style.overflow = open ? 'hidden' : ''; if (open) $('vf-region').focus(); else openBtn.focus(); }
+  openBtn.addEventListener('click', function(){ drawer(true); });
+  $('vf-close').addEventListener('click', function(){ drawer(false); });
+  bd.addEventListener('click', function(){ drawer(false); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && form.classList.contains('open')) drawer(false); });
+  apply();
+});
+</script>
