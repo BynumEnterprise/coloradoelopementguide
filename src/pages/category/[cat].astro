@@ -113,7 +113,7 @@ const otherCats = Object.keys(CATEGORIES).filter(c => c !== cat);
       <section class="pt-14">
         <div class="flex items-end justify-between gap-6 mb-6 border-b border-hairline pb-3">
           <h2 class="display text-2xl md:text-3xl">Featured <span class="serif-i text-ink/60 text-lg">{meta.name.toLowerCase()}</span></h2>
-          <p class="text-xs text-ink/50">Featured listings are paid placements and are always labeled.</p>
+          <p class="text-xs text-ink/50">Featured listings are paid placements, plus a rotating launch selection featured at no charge. Always labeled.</p>
         </div>
         <div class="grid gap-5 md:grid-cols-3">{featured.map(v => <div data-vcard={v.slug}><VendorCard v={v} /></div>)}</div>
       </section>

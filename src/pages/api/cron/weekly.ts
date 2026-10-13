@@ -136,6 +136,24 @@ export function buildDigest(d: any, run: Record<string, any>, date: string): str
   L.push(`Live listings ${w.live_listings ?? 0}, ${w.released_7d ?? 0} went live this week, ${run.released ?? 0} released by this run`);
   L.push(`Featured ${w.featured ?? 0}, founding spots open ${w.founding_left ?? 10} of 10, waitlist ${w.waitlist ?? 0}, Featured checkout clicks ${ev('featured_checkout_click')}, pitches sent ${w.pitches_7d ?? 0}`);
   L.push('');
+  const tr = (d.trial && Array.isArray(d.trial.cohorts)) ? d.trial.cohorts as any[] : [];
+  if (tr.length) {
+    L.push('FEATURED TRIAL (free rotation, no vendor emails)');
+    const cur = tr.find(c => c.active);
+    if (cur) {
+      L.push(`Current cohort ${cur.cohort_start} to ${cur.cohort_end}:`);
+      const byCat: Record<string, string[]> = {};
+      for (const v of cur.vendors || []) (byCat[v.category] ||= []).push(v.name);
+      for (const [c, ns] of Object.entries(byCat)) L.push(`  ${c}: ${ns.join('; ')}`);
+    } else L.push(`No active cohort (rotation runs Tuesdays through ${d.trial.rotation_until}).`);
+    const last = tr.find(c => !c.active);
+    if (last) {
+      const lift = (x: any) => (x == null ? 'no baseline' : `${x >= 0 ? 'up' : 'down'} ${Math.abs(x)} percent per day`);
+      L.push(`Last ended cohort ${last.cohort_start} (${last.days} days vs 7 day baseline): views ${last.baseline_views} to ${last.trial_views}, ${lift(last.views_lift_pct)}; clicks ${last.baseline_clicks} to ${last.trial_clicks}, ${lift(last.clicks_lift_pct)}; inquiries ${last.baseline_inquiries} to ${last.trial_inquiries}`);
+      for (const v of last.vendors || []) L.push(`  ${v.name} (${v.category}): views ${v.baseline_views} to ${v.trial_views}, clicks ${v.baseline_clicks} to ${v.trial_clicks}`);
+    }
+    L.push('');
+  }
   L.push('OUTREACH');
   L.push(`Claim invites ${w.outreach_sent ?? 0}, follow ups ${w.followups_sent ?? 0}, contactable left ${w.contactable_left ?? 0}`);
   const lp = w.link_prospects || {};

@@ -307,7 +307,7 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
       const cards = [
         kpi('Live Vendors', t.live_vendors, `${num(s.seeded)} seeded · ${num(s.claimed)} claimed · ${num(s.featured)} featured · ${num(s.queued)} queued`),
         kpi('Claimed', t.claimed, `${num(t.claims_total)} claim requests all time`),
-        kpi('Featured', t.featured, t.featured ? 'Paid placements live now' : 'No paid placements yet'),
+        kpi('Featured', t.featured, (t.featured ? 'Paid placements live now' : 'No paid placements yet') + (t.featured_trial ? ` · ${t.featured_trial} on free trial` : '')),
         kpi('Verified Accounts', t.accounts_verified, `${num(t.accounts_pending)} pending review`),
         kpi('Couples', t.couples, `${num(t.saved_vendors)} saved vendors · ${num(t.booked)} booked`),
         kpi('Subscribers', t.subscribers, 'Newsletter signups'),
@@ -540,6 +540,22 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
       paintSales();
     }
     const slotPill = n => n > 0 ? `<span class="text-[11px] rounded-full bg-spruce-800/10 text-spruce-800 px-2.5 py-1 whitespace-nowrap tabular-nums">${n} of 3 open</span>` : '<span class="text-[11px] rounded-full bg-clay-500/10 text-clay-700 px-2.5 py-1 whitespace-nowrap">Full</span>';
+    // Free Featured trial rotation (p2_featured_trials via ceg_admin_sales.trial): baseline 7 days before vs the trial window.
+    function trialHtml(T){
+      const C = (T && T.cohorts) || [];
+      const lift = x => x == null ? '<span class="text-ink/40">n/a</span>' : `<span class="${x >= 0 ? 'text-spruce-800' : 'text-clay-700'}">${x >= 0 ? '+' : ''}${x}%</span>`;
+      const blocks = C.map(c => `
+        <div class="mt-6 rounded-3xl border border-hairline bg-white overflow-x-auto">
+          <div class="px-4 py-3 bg-parchment/60 flex flex-wrap gap-x-6 gap-y-1 text-sm"><span class="font-medium">${esc(c.cohort_start)} to ${esc(c.cohort_end)}${c.active ? ' (live now)' : ''}</span>
+            <span>${num(c.days)} days vs 7 day baseline</span><span>Views ${num(c.baseline_views)} → ${num(c.trial_views)} ${lift(c.views_lift_pct)} per day</span><span>Clicks ${num(c.baseline_clicks)} → ${num(c.trial_clicks)} ${lift(c.clicks_lift_pct)} per day</span><span>Inquiries ${num(c.baseline_inquiries)} → ${num(c.trial_inquiries)}</span></div>
+          <table class="w-full min-w-[760px] text-sm"><thead><tr class="text-ink/55"><th class="text-left font-medium px-3 py-2">Vendor</th><th class="text-right font-medium px-3 py-2">Views before → during</th><th class="text-right font-medium px-3 py-2">Clicks before → during</th><th class="text-right font-medium px-3 py-2">Inquiries before → during</th><th class="text-left font-medium px-3 py-2">Ended</th></tr></thead><tbody>
+          ${(c.vendors || []).map(v => `<tr class="border-t border-hairline"><td class="px-3 py-2"><a href="/vendor/${esc(v.slug)}" target="_blank" rel="noopener" class="font-medium hover:text-clay-700">${esc(v.name)}</a><span class="block text-[11px] text-ink/45">${esc(catShort(v.category))} · ${esc(regNames[v.sub_region] || v.sub_region || '')} · was ${esc(v.prev_status)}</span></td>
+            <td class="px-3 py-2 text-right tabular-nums">${num(v.baseline_views)} → ${num(v.trial_views)}</td><td class="px-3 py-2 text-right tabular-nums">${num(v.baseline_clicks)} → ${num(v.trial_clicks)}</td><td class="px-3 py-2 text-right tabular-nums">${num(v.baseline_inquiries)} → ${num(v.trial_inquiries)}</td><td class="px-3 py-2 text-ink/60">${esc(v.end_reason || '')}</td></tr>`).join('')}
+          </tbody></table></div>`).join('');
+      return `<p class="display text-2xl mt-12">Featured trial <span class="text-ink/40 text-lg">(free rotation through ${esc((T && T.rotation_until) || '')})</span></p>
+        <p class="text-xs text-ink/50 mt-1">3 vendors per category, rotated Tuesdays. Not counted in paid slots or founding spots. No emails go to these vendors.</p>
+        ${blocks || '<p class="mt-4 text-sm text-ink/50">No cohorts yet.</p>'}`;
+    }
     function paintSales(){
       const pane = document.getElementById('pane-sales');
       if (!SL) { pane.innerHTML = '<p class="py-16 text-center text-ink/50">Could not load sales. Refresh or sign in again.</p>'; return; }
@@ -579,6 +595,7 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
         <div class="overflow-x-auto rounded-3xl border border-hairline bg-white"><table class="w-full min-w-[860px] text-sm"><thead><tr class="bg-parchment/60 text-ink/55"><th class="text-left font-medium px-3 py-3">Vendor</th><th class="text-left font-medium px-3 py-3">Featured Until</th><th class="text-left font-medium px-3 py-3">Account</th><th class="text-right font-medium px-3 py-3">Views 30d</th><th class="text-right font-medium px-3 py-3">Site / Phone</th><th class="text-right font-medium px-3 py-3">Inquiries 30d</th><th class="text-left font-medium px-3 py-3">Last Login</th></tr></thead><tbody>${fRows || '<tr><td colspan="7" class="px-4 py-10 text-center text-ink/50">No Featured vendors yet.</td></tr>'}</tbody></table></div>
         <p class="display text-2xl mt-12 mb-4">Featured waitlist <span class="text-ink/40 text-lg">(${num(W.length)})</span></p>
         <div class="overflow-x-auto rounded-3xl border border-hairline bg-white"><table class="w-full min-w-[860px] text-sm"><thead><tr class="bg-parchment/60 text-ink/55"><th class="text-left font-medium px-3 py-3">Vendor</th><th class="text-left font-medium px-3 py-3">Group</th><th class="text-left font-medium px-3 py-3">Slots</th><th class="text-left font-medium px-3 py-3">Email</th><th class="text-left font-medium px-3 py-3">Source</th><th class="text-left font-medium px-3 py-3">Joined</th></tr></thead><tbody>${wRows || '<tr><td colspan="6" class="px-4 py-10 text-center text-ink/50">Nobody on the waitlist.</td></tr>'}</tbody></table></div>
+        ${trialHtml(SL.trial)}
         <p class="text-[11px] text-ink/40 mt-3">Updated ${fmtDT(SL.generated_at)}.</p>`;
     }
     async function openPitch(id){

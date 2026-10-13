@@ -15,7 +15,7 @@ try {
   const r = await fetch(`${SB_URL}/rest/v1/rpc/ceg_public_stats`, { method: 'POST', headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' }, body: '{}' });
   if (r.ok) stats = await r.json();
 } catch { /* proof falls back to the build time vendor list */ }
-const featuredNow = typeof stats.featured === 'number' ? stats.featured : vendors.filter(v => v.status === 'featured').length;
+const featuredNow = typeof stats.featured === 'number' ? stats.featured : vendors.filter(v => v.status === 'featured' && v.featured_source !== 'trial').length;
 const foundingLeft = typeof stats.founding_left === 'number' ? stats.founding_left : Math.max(0, FOUNDING_CAP - featuredNow);
 // Site wide views are shown only once they pass 500 in the trailing 30 days (bot filtered epoch applied in the RPC).
 const views30 = typeof stats.views_30d === 'number' && stats.views_30d > 500 ? stats.views_30d : null;
@@ -51,7 +51,7 @@ const fmt = (n: number) => n.toLocaleString('en-US');
         </div>
         <div>
           <p class="display text-xl mb-2">3 · <span class="serif-i">Labeled</span></p>
-          <p class="text-sm text-ink/70 leading-relaxed">Featured placement is paid and always labeled. Ratings are Google's. We never write or alter reviews.</p>
+          <p class="text-sm text-ink/70 leading-relaxed">Featured placement is paid and always labeled. During our launch we also feature a rotating selection of vendors at no charge. Ratings are Google's. We never write or alter reviews.</p>
         </div>
       </div>
     </section>

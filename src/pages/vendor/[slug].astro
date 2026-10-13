@@ -128,7 +128,7 @@ const metaDesc = v.description.length > 155 ? v.description.slice(0, 152).replac
             </dl>
           </div>}
           {isClaimed
-            ? <p class="mt-8 text-xs text-ink/40">This listing is claimed and kept up to date by {v.name}.{isFeatured && ' Featured placement is paid and always labeled.'}</p>
+            ? <p class="mt-8 text-xs text-ink/40">This listing is claimed and kept up to date by {v.name}.{isFeatured && ' Featured placement is labeled; it is paid, or part of our rotating no charge launch selection.'}</p>
             : <p class="mt-8 text-xs text-ink/40">Listing compiled from public listings and Google Business Profile data. Details may have changed since. <a href={`/claim/${v.slug}`} data-track="claim_click" class="underline underline-offset-2 hover:text-clay-700">Is this your business? Claim it free</a></p>}
           <aside id="how-we-check" class="mt-4 rounded-2xl border border-hairline bg-ivory/60 p-4 text-xs text-ink/60 leading-relaxed" aria-label="How we check listings">
             <p class="eyebrow text-clay-600 mb-1.5">How We Check Listings</p>

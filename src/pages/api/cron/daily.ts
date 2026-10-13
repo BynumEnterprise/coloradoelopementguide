@@ -1,6 +1,6 @@
 export const prerender = false;
 import type { APIRoute } from 'astro';
-import { json, rpc, sleep, authSecret, cronAuthorized, fetchWithTimeout, mapLimit } from '../../../lib/cron';
+import { json, rpc, sleep, authSecret, cronAuthorized, fetchWithTimeout, mapLimit, fireDeployHook } from '../../../lib/cron';
 import { sendMailResult } from '../../../lib/mail';
 import { renderV4, renderDrip, renderFollowup, renderActivation, type OutreachVendor, type DripUser, type FollowupVendor, type ActivationUser } from '../../../lib/outreach';
 import { renderNurture, sendCoupleMail, type NurtureRecipient } from '../../../lib/couple-mail';
@@ -13,7 +13,10 @@ import { renderReplyReminder, renderPhotoNudge, type ReplyReminder, type PhotoNu
 //   4. couple nurture emails (kit, region, permits, vendors, planner nudge), 50 per Denver day
 //   2c. one time activation note (drip step 10) to accounts that existed on 2026-10-12, sent once each
 //       vendor is clear of any email from us for 3 days; it runs before the drips so it takes the slot
-// Query flags for manual runs: ?dry=1 renders and checks but sends nothing; ?only=discovery|outreach|followups|activation|drips|nurture.
+// Query flags for manual runs: ?dry=1 renders and checks but sends nothing; ?only=discovery|outreach|followups|activation|drips|nurture|featured_rotation;
+//   ?force=1 lets featured_rotation run on a day other than Tuesday (manual first run).
+//   7. featured_rotation: free Featured trial. Tuesdays (Denver) through p2_config trial_rotation_until, ends the active
+//      cohort and starts a new 7 day one (3 per category) via ceg_cron_trial_rotate, then fires the deploy hook.
 // Function duration is raised to 300s in astro.config.mjs (adapter maxDuration).
 
 const DISCOVERY_LIMIT = 12;
@@ -332,6 +335,31 @@ export const GET: APIRoute = async ({ request }) => {
       }
     } catch (e) { pn.fatal = String(e).slice(0, 300); summary.ok = false; }
     summary.photo_nudges = pn;
+  }
+
+  // 7. Featured trial rotation (?only=featured_rotation, ?force=1 ignores the weekday). Idempotent per Denver date.
+  if (run('featured_rotation')) {
+    const fr: Record<string, unknown> = {};
+    try {
+      const now = new Date();
+      const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Denver', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
+      const weekday = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Denver', weekday: 'short' }).format(now);
+      const force = url.searchParams.get('force') === '1';
+      fr.today = today; fr.weekday = weekday;
+      const until = await rpc<string | null>('ceg_cron_trial_until', { p_secret: secret });
+      fr.until = until;
+      if (!force && weekday !== 'Tue') fr.skipped = 'not Tuesday';
+      else if (!until || today > until) fr.skipped = 'rotation window over';
+      else {
+        const end = new Date(today + 'T12:00:00Z'); end.setUTCDate(end.getUTCDate() + 7);
+        const startNew = today < until;
+        const res = await rpc<any>('ceg_cron_trial_rotate', { p_secret: secret, p_cohort_start: today,
+          p_cohort_end: startNew ? end.toISOString().slice(0, 10) : null, p_per_category: 3, p_dry: dry });
+        fr.result = res;
+        if (!dry && res && ((res.started ?? 0) > 0 || (res.ended ?? 0) > 0)) fr.deploy = await fireDeployHook();
+      }
+    } catch (e) { fr.fatal = String(e).slice(0, 300); summary.ok = false; }
+    summary.featured_rotation = fr;
   }
 
   summary.ms = Date.now() - started;
