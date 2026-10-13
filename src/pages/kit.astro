@@ -1,0 +1,78 @@
+---
+// /kit landing page for the Colorado Elopement Planning Kit (the PDF lives at /kit/colorado-elopement-planning-kit.pdf).
+// The signup uses the shared EmailCapture form and /api/subscribe (kit email plus the three note nurture). With JS the
+// form posts in place and reveals the direct download; without JS it falls back to /thanks?kit=1, which links the PDF too.
+import Base from '../layouts/Base.astro';
+import EmailCapture from '../components/EmailCapture.astro';
+const PDF = '/kit/colorado-elopement-planning-kit.pdf';
+const pages = [
+  { n: 'Page 1', t: 'The timeline', d: 'Twelve months out to the week after: when the Rocky Mountain National Park and Maroon Bells windows open, when to book your photographer, the 35 day license window and the 63 day certificate return.' },
+  { n: 'Page 2', t: 'The marriage license, step by step', d: 'What to bring to the county clerk, fees, absentee affidavits, how to fill in the certificate if you marry yourselves, and county notes for Boulder, El Paso and Denver.' },
+  { n: 'Page 3', t: 'Permits by place', d: 'A table of what you need, the fee, the group size and the key rules for Rocky Mountain National Park, Maroon Bells, Sapphire Point and other popular spots.' },
+  { n: 'Page 4', t: 'Your team', d: 'The booking order that saves the most stress, and the questions to ask every vendor before you sign: what is included, who shows up, permit and travel fees, and weather plans.' },
+  { n: 'Page 5', t: 'Vendor tracker', d: 'A printable grid for photographer, venue, officiant, planner, florist, hair and makeup and lodging, plus your key dates and permit numbers in one place.' }
+];
+const ld = {
+  '@context': 'https://schema.org', '@type': 'WebPage', name: 'The Colorado Elopement Planning Kit',
+  url: 'https://coloradoelopementguide.com/kit/',
+  description: 'A free five page printable PDF for planning a Colorado elopement: timeline, marriage license steps, permits by place, vendor questions and a tracker.',
+  publisher: { '@type': 'Organization', name: 'Colorado Elopement Guide', url: 'https://coloradoelopementguide.com/' }
+};
+---
+<Base title="Free Colorado Elopement Planning Kit (Printable PDF) | Colorado Elopement Guide"
+  description="A free five page printable kit for planning a Colorado elopement: a twelve month timeline, marriage license steps, permits by place for RMNP, Maroon Bells and Sapphire Point, vendor questions and a tracker.">
+  <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+  <div class="max-w-3xl mx-auto px-5 md:px-8 pt-14">
+    <p class="eyebrow text-clay-600 mb-3">Free printable PDF</p>
+    <h1 class="display text-4xl md:text-5xl leading-tight">The Colorado Elopement <span class="serif-i">Planning Kit</span></h1>
+    <p class="text-ink/65 mt-4 leading-relaxed">Five pages made to print and carry: the timeline, the marriage license steps, a permits table for the places couples ask about most, the questions to ask every vendor, and a tracker. Every fact comes from the official sources cited in our guides and was checked in October 2026.</p>
+
+    <div class="mt-8" id="kit-signup">
+      <EmailCapture variant="inline" source="kit" />
+    </div>
+    <div id="kit-done" class="hidden mt-8 rounded-2xl border border-hairline bg-parchment/70 p-6 md:p-7" role="status">
+      <div class="display text-xl md:text-2xl leading-snug">You are in. Here is your <span class="serif-i">kit</span></div>
+      <p class="text-sm text-ink/65 mt-2 leading-relaxed">A copy is on its way to your inbox too, with the subject line "Your Colorado elopement planning kit".</p>
+      <a href={PDF} target="_blank" rel="noopener" class="inline-block mt-4 rounded-full bg-ink text-ivory hover:bg-spruce-800 px-6 py-3 text-sm font-semibold transition-colors">Download The Kit (PDF)</a>
+    </div>
+
+    <h2 class="display text-2xl md:text-3xl mt-14">What is inside</h2>
+    <ol class="mt-5 space-y-4">
+      {pages.map(p => (
+        <li class="rounded-3xl border border-hairline bg-white p-6 md:p-7">
+          <p class="eyebrow text-ink/50 mb-1">{p.n}</p>
+          <h3 class="display text-xl">{p.t}</h3>
+          <p class="text-sm text-ink/70 mt-2 leading-relaxed">{p.d}</p>
+        </li>
+      ))}
+    </ol>
+
+    <section class="mt-10 rounded-3xl border border-hairline bg-parchment/60 p-6 md:p-8">
+      <h2 class="display text-xl">A preview: the three facts couples miss most</h2>
+      <ul class="mt-3 space-y-2 text-sm text-ink/75 list-disc pl-5">
+        <li>Rocky Mountain National Park takes ceremony permit applications one year ahead of your month, and popular months fill.</li>
+        <li>Colorado lets the two of you marry without an officiant or witnesses. The license is $30 in most counties and must be used within 35 days.</li>
+        <li>The signed certificate goes back to the clerk that issued it within 63 days of the ceremony.</li>
+      </ul>
+      <p class="text-sm text-ink/60 mt-4">Prefer to read on screen? The same checklist is on the site: <a href="/checklist" class="underline underline-offset-4">Colorado elopement checklist</a>. When you start comparing vendors, the <a href="/account" class="underline underline-offset-4">free planner</a> keeps your shortlist, quotes and budget together.</p>
+    </section>
+
+    <p class="text-xs text-ink/45 mt-8 mb-16">General planning information, not legal advice. Fees and rules change, so confirm with the office named before you book travel.</p>
+  </div>
+  <script is:inline>
+    (function () {
+      var wrap = document.getElementById('kit-signup'); if (!wrap) return;
+      var f = wrap.querySelector('form[data-subscribe]'); if (!f || !window.fetch) return;
+      f.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var btn = f.querySelector('button'); if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+        fetch(f.action, { method: 'POST', body: new FormData(f) })
+          .then(function (r) {
+            if (r.url && r.url.indexOf('e=invalid') !== -1) { if (btn) { btn.disabled = false; btn.textContent = 'Get The Planning Kit'; } alert('That email address did not look right. Please check it.'); return; }
+            wrap.classList.add('hidden'); document.getElementById('kit-done').classList.remove('hidden');
+          })
+          .catch(function () { f.submit(); });
+      });
+    })();
+  </script>
+</Base>

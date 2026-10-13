@@ -6,6 +6,7 @@ import { REGIONS } from '../../../lib/taxonomy';
 import { IMG } from '../../../lib/assets';
 import { displayName } from '../../../lib/outreach';
 import { runMonthlyReports } from '../../../lib/vendor-report';
+import { runCanary } from '../../../lib/canary';
 
 // Weekly P2 automation (Vercel cron, Monday 14:00 UTC):
 //   1. release up to 40 queued vendors (balanced across regions, junk names excluded)
@@ -14,7 +15,8 @@ import { runMonthlyReports } from '../../../lib/vendor-report';
 //   4. email the owner the KPI digest
 //   5. create 3 Pinterest pins when PINTEREST_ACCESS_TOKEN and PINTEREST_BOARD_ID are set
 //   6. monthly_reports: first Monday of the month (Denver), the previous month's stats email to each verified vendor account
-// Flags for manual runs: ?dry=1 (release count 0, no sends, no pins), ?release=N, ?only=monthly_reports (stage 6 alone).
+//   7. canary: money path canary against the hidden synthetic vendor (src/lib/canary.ts); alerts the owner on failure
+// Flags for manual runs: ?dry=1 (release count 0, no sends, no pins), ?release=N, ?only=monthly_reports or ?only=canary (that stage alone).
 
 const RELEASE_N = 40;
 const DASHES = /[\-‐‑‒–—―]/g;
@@ -150,6 +152,14 @@ export const GET: APIRoute = async ({ request }) => {
     return json(run);
   }
 
+  if (url.searchParams.get('only') === 'canary') {
+    try { run.canary = await runCanary(secret, dry); run.ok = !!(run.canary as any).pass; }
+    catch (e) { run.canary = { error: String(e).slice(0, 300) }; run.ok = false; }
+    run.ms = Date.now() - started;
+    console.log('CRON weekly', JSON.stringify(run));
+    return json(run);
+  }
+
   // 1. Release
   let released: Released[] = [];
   try {
@@ -247,6 +257,10 @@ export const GET: APIRoute = async ({ request }) => {
       run.digest_sent = res.ok; if (!res.ok) run.digest_error = res.error;
     } else run.digest_preview = text;
   } catch (e) { run.digest_error = String(e).slice(0, 300); run.ok = false; }
+
+  // 7. Canary (additive; its own owner alert on failure)
+  try { run.canary = await runCanary(secret, dry); }
+  catch (e) { run.canary = { error: String(e).slice(0, 300) }; }
 
   // 6. Monthly vendor stats reports (additive; sends only on the first Monday, stops before the 300s limit)
   try { run.monthly_reports = await runMonthlyReports(secret, dry, started + 270_000); }

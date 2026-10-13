@@ -2,6 +2,7 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { json, rpc, authSecret } from '../../lib/cron';
 import { sendMailResult, MAIL_FROM, OWNER_EMAIL } from '../../lib/mail';
+import { renderInquiryConfirm } from '../../lib/couple-mail';
 import { inquiryVendorEmail, inquiryNoticeEmail, naturalCheck, type InquiryIn } from '../../lib/outreach';
 
 // Couple inquiry from a vendor page ("Check Availability"). Validates, filters spam, rate limits and stores
@@ -114,7 +115,23 @@ export const POST: APIRoute = async ({ request }) => {
     await sendMailResult(OWNER_EMAIL, subj, line);
   } catch (e) { console.error('owner notice failed', e); }
 
-  return json({ ok: true, mode: res.mode === 'account' ? 'account' : 'notice', vendor: v.name, email });
+  // Couple confirmation: one per inquiry (ceg_inquiry_confirm holds the slot; spam never reaches here).
+  let confirmed = false;
+  try {
+    const c = await rpc<any>('ceg_inquiry_confirm', { p_secret: secret, p_id: res.id });
+    if (c?.ok) {
+      let ok = false;
+      try {
+        const m = renderInquiryConfirm({ mode: res.mode, vendor: c.vendor, similar: c.similar || [], names, email, weddingDate, guests, message });
+        const r = await sendMailResult(email, m.subject, m.text, m.html);
+        ok = r.ok; if (!r.ok) console.error('couple confirm failed', r.status, r.error);
+      } catch (e) { console.error('couple confirm render/send error', e); }
+      await rpc('ceg_inquiry_confirm_mark', { p_secret: secret, p_id: res.id, p_ok: ok });
+      confirmed = ok;
+    }
+  } catch (e) { console.error('couple confirm error', e); }
+
+  return json({ ok: true, mode: res.mode === 'account' ? 'account' : 'notice', vendor: v.name, email, confirm: confirmed });
 };
 
 export const GET: APIRoute = () => new Response('Method not allowed', { status: 405 });

@@ -3,7 +3,7 @@
 // day 12 vendor team, plus one planner nudge for couples who saved no vendors after 2 days.
 // Every body passes naturalCheck and carries the Denver address and a one click unsubscribe link.
 import { MAIL_FROM, MAIL_REPLY_TO, textToHtml } from './mail';
-import { naturalCheck, POSTAL_ADDRESS, SITE_URL } from './outreach';
+import { naturalCheck, POSTAL_ADDRESS, SITE_URL, displayName, categoryPlural, regionName, fmtDateLong } from './outreach';
 import { REGIONS } from './taxonomy';
 
 export const KIT_URL = `${SITE_URL}/kit/colorado-elopement-planning-kit.pdf`;
@@ -192,4 +192,61 @@ export async function sendCoupleMail(to: string, m: CoupleMail): Promise<{ ok: b
     try { id = JSON.parse(body)?.id; } catch { /* noop */ }
     return { ok: true, status: r.status, id };
   } catch (e) { return { ok: false, status: 0, error: String(e) }; }
+}
+
+// Couple confirmation after an inquiry (/api/inquiry). One per inquiry, never for spam (ceg_inquiry_confirm
+// holds the slot). Transactional: no list, no nurture enrollment. Couple text and business names are exempt
+// from naturalCheck through the allow list; every word we write is checked.
+export type ConfirmVendor = { slug: string; name: string; category: string; sub_region: string | null; website?: string | null; phone?: string | null };
+export type ConfirmIn = {
+  mode: string; vendor: ConfirmVendor; similar: { slug: string; name: string; sub_region?: string | null }[];
+  names: string; email: string; weddingDate: string | null; guests: number | null; message: string;
+};
+
+export function renderInquiryConfirm(q: ConfirmIn): { subject: string; text: string; html: string } {
+  const business = displayName(q.vendor.name);
+  const page = `${SITE_URL}/vendor/${q.vendor.slug}/`;
+  let next: string;
+  if (q.mode === 'account') {
+    next = `${business} manages their listing with us, so your note went straight to their inbox. When they reply, it comes to you here at ${q.email}. If a few days pass with no answer, check your spam folder, then try their page again:\n${page}`;
+  } else {
+    const ways = [q.vendor.website ? `Website: ${q.vendor.website}` : '', q.vendor.phone ? `Phone: ${q.vendor.phone}` : ''].filter(Boolean).join('\n');
+    const lead = q.mode === 'notice'
+      ? `${business} has not set up their free account with us yet, so we passed a note along letting them know a couple asked about their availability. Your email address stays with us until they claim the listing.`
+      : `We do not have a direct email address for ${business} yet, so we are holding your note for them.`;
+    next = `${lead} The quickest way to reach them is the website or phone listed on their page:\n${page}${ways ? `\n\n${ways}` : ''}`;
+  }
+  const sims = q.similar.slice(0, 3);
+  const where = sims.every(s => s.sub_region === q.vendor.sub_region) ? regionName(q.vendor.sub_region) : null;
+  const simBlock = sims.length
+    ? `While you wait, here are ${sims.length === 1 ? 'one other' : sims.length === 2 ? 'two other' : 'three other'} ${categoryPlural(q.vendor.category)}${where ? ` couples look at for ${where}` : ' couples also look at'}:\n\n${sims.map(s => `${displayName(s.name)}\n${SITE_URL}/vendor/${s.slug}/`).join('\n\n')}\n\n`
+    : '';
+  const subject = `Your note to ${business} is on its way`;
+  const text = `${greeting(q.names)}
+
+Thanks for sending your note through Colorado Elopement Guide. Here is a copy of what went to ${business}.
+
+Wedding date: ${fmtDateLong(q.weddingDate) || 'not given'}
+Guests: ${q.guests ?? 'not given'}
+
+Your message:
+${q.message}
+
+What happens next. ${next}
+
+${simBlock}Tap the heart on any vendor to save them to your free planner, which keeps your shortlist, quotes and budget in one place:
+${SITE_URL}/account/
+
+If anything here looks wrong, reply to this email. It comes to me.
+
+Ryan
+Colorado Elopement Guide
+${POSTAL_ADDRESS}
+
+You are getting this one email because you sent an inquiry on coloradoelopementguide.com. We did not add you to any list.
+`;
+  const allow = [q.vendor.name, business, q.names, q.email, q.message, q.vendor.website || '', q.vendor.phone || '', ...sims.flatMap(s => [s.name, displayName(s.name)])];
+  naturalCheck(subject, `confirm subject (${q.vendor.slug})`, allow);
+  naturalCheck(text, `confirm body (${q.vendor.slug})`, allow);
+  return { subject, text, html: textToHtml(text) };
 }
