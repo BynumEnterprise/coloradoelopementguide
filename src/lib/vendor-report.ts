@@ -137,11 +137,12 @@ export async function runMonthlyReports(secret: string, dry: boolean, deadline: 
   const detail: Record<string, any>[] = []; const errors: string[] = [];
   let samples = 0;
   for (const r of rows) {
-    if (r.already_sent) { s.skipped_already++; detail.push({ slug: r.slug, skip: 'already sent' }); continue; }
-    if (r.mailed_recently) { s.skipped_recent++; detail.push({ slug: r.slug, skip: 'emailed in last 3 days' }); continue; }
+    // Render first so a dry run proves every account's email passes naturalCheck, skipped or not.
     let m: RenderedMail;
     try { m = renderMonthlyReport(r); } catch (e) { s.render_errors++; errors.push(String(e).slice(0, 200)); continue; }
     const words = wordCount(m.text);
+    if (r.already_sent) { s.skipped_already++; detail.push({ slug: r.slug, words, skip: 'already sent' }); continue; }
+    if (r.mailed_recently) { s.skipped_recent++; detail.push({ slug: r.slug, words, skip: 'emailed in last 3 days' }); continue; }
     if (dry) {
       if (s.would_send >= REPORT_CAP) break;
       s.would_send++;
