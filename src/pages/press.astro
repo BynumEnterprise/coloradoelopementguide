@@ -1,0 +1,47 @@
+---
+import Base from '../layouts/Base.astro';
+import { siteStats } from '../lib/site-stats';
+const s = await siteStats();
+const facts = [
+  ['Name', 'Colorado Elopement Guide'],
+  ['Website', 'coloradoelopementguide.com'],
+  ['Based in', 'Denver, Colorado'],
+  ['Run by', 'Ryan, founder'],
+  ['Vendor listings', String(s.vendors)],
+  ['Vendor categories', s.categoryNames.join(', ')],
+  ['Regions covered', s.regionNames.join(', ')],
+  ['Destination guides', String(s.guides)],
+  ['Permit and planning resources', String(s.resources)],
+  ['Cost to couples', 'Free, including the planner and the planning kit'],
+  ['Cost to vendors', 'Listings free forever; optional Featured placement at $40 a month, always labeled'],
+  ['Ratings', 'Google ratings, refreshed weekly'],
+];
+---
+<Base title="Press | Colorado Elopement Guide" description="Press information for Colorado Elopement Guide: boilerplate, facts at a glance and how to reach us.">
+  <div class="max-w-3xl mx-auto px-5 md:px-8 pt-14">
+    <p class="eyebrow text-clay-600 mb-3">Press</p>
+    <h1 class="display text-4xl md:text-5xl leading-tight">Press and <span class="serif-i">media</span></h1>
+    <p class="text-ink/65 mt-4 leading-relaxed">Writing about elopements, micro weddings or getting married outdoors in Colorado? Here is what you need about us, and we are glad to help with data or background on permits and marriage licenses.</p>
+
+    <section class="mt-10">
+      <h2 class="display text-2xl text-ink mb-3">Boilerplate</h2>
+      <div class="rounded-3xl border border-hairline bg-white p-6 md:p-7 text-ink/75 leading-relaxed">
+        <p>Colorado Elopement Guide (coloradoelopementguide.com) is an independent directory and planning resource for couples eloping or having a micro wedding in Colorado. It lists {s.vendors} photographers, venues, officiants, planners, florists and hair and makeup artists across {s.regions} regions, alongside destination guides and plain English pages on marriage licenses and ceremony permits. Listings are free for every business, and couples use the site and its planner at no cost. The guide is based in Denver.</p>
+      </div>
+    </section>
+
+    <section class="mt-10">
+      <h2 class="display text-2xl text-ink mb-3">Facts at a glance</h2>
+      <dl class="divide-y divide-hairline border-y border-hairline text-sm">
+        {facts.map(([k, v]) => <div class="grid sm:grid-cols-3 gap-1 sm:gap-4 py-3"><dt class="text-ink/55">{k}</dt><dd class="sm:col-span-2 text-ink/80">{v}</dd></div>)}
+      </dl>
+      <p class="text-xs text-ink/50 mt-3">Counts as of {s.built}.</p>
+    </section>
+
+    <section class="mt-10 text-ink/75 leading-relaxed">
+      <h2 class="display text-2xl text-ink mb-3">Contact</h2>
+      <p>Send press requests through the <a href="/contact" class="underline underline-offset-4">contact page</a> and start your message with the word Press so it reaches Ryan first. We reply within two business days, and faster on deadline if you tell us when it is. Mail: Colorado Elopement Guide, 1905 Sherman Street, Ste 200 1074, Denver, CO 80203.</p>
+      <p class="mt-3 text-sm text-ink/55">Background: <a href="/about" class="underline underline-offset-4">About</a>, <a href="/editorial-policy" class="underline underline-offset-4">Editorial Policy</a>, <a href="/resources" class="underline underline-offset-4">Permits and Licenses</a>.</p>
+    </section>
+  </div>
+</Base>

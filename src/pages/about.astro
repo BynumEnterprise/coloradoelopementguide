@@ -1,14 +1,34 @@
 ---
 import Base from '../layouts/Base.astro';
+import { siteStats } from '../lib/site-stats';
+const s = await siteStats();
 ---
-<Base title="About | Colorado Elopement Guide" description="Who runs Colorado Elopement Guide, how listings work, and how the site makes money.">
-  <div class="max-w-2xl mx-auto px-5 md:px-8 pt-14">
-    <h1 class="display text-4xl leading-tight">About this <span class="serif-i">guide</span></h1>
-    <div class="mt-6 space-y-5 text-ink/75 leading-relaxed">
-      <p>Colorado Elopement Guide is an independent directory of Colorado's elopement and micro-wedding vendors, run by Ryan Bynum. It exists because finding vendors who genuinely work small weddings — a sunrise ceremony at Sapphire Point, ten guests at a Lyons barn — shouldn't require digging through platforms built for 200-person ballrooms.</p>
-      <p><strong>How listings work:</strong> we compile every listing from public business information and Google Business Profile data (with AI assistance, reviewed before publishing), and every listing is free, permanently. Vendors can claim their listing to correct their description, phone and website, receive couple inquiries, and see a 30 day chart of the real views and clicks their page generated, bot filtered and never inflated.</p>
-      <p><strong>How we make money:</strong> one way only — vendors can pay $40/month for Featured placement, which is always labeled. Placement never changes the Google ratings shown, we never write or alter reviews, and no vendor can pay to make a competitor disappear.</p>
-      <p><strong>Something wrong?</strong> If you're listed and want changes — or want out — <a href="/claim" class="underline underline-offset-4">claim your listing</a> or <a href="/contact" class="underline underline-offset-4">contact us</a>; removals happen within one business day.</p>
+<Base title="About | Colorado Elopement Guide" description="Who runs Colorado Elopement Guide, why it exists, how listings are built, and how the site is funded.">
+  <div class="max-w-3xl mx-auto px-5 md:px-8 pt-14">
+    <p class="eyebrow text-clay-600 mb-3">About</p>
+    <h1 class="display text-4xl md:text-5xl leading-tight">About this <span class="serif-i">guide</span></h1>
+
+    <div class="mt-8 space-y-5 text-ink/75 leading-relaxed">
+      <p>Colorado Elopement Guide is an independent directory and planning resource for couples eloping or having a micro wedding in Colorado. It is run by Ryan from Denver, with a mailing address at 1905 Sherman Street, Ste 200 1074, Denver, CO 80203.</p>
+      <p><span class="text-ink font-medium">Why it exists.</span> Most wedding directories are built for 150 guest ballroom weddings. If you want a sunrise ceremony at a trailhead with two witnesses, or dinner for twelve in a mountain town, it is hard to tell which photographers, officiants and venues actually do that work, and which permits you need for the spot you have in mind. This site tries to answer both questions in one place.</p>
+      <p><span class="text-ink font-medium">How listings work.</span> Listings start from public business information and Google Business Profile data, with AI assistance and checks against each business's own website. Every listing is free, permanently. Vendors can claim their listing to correct it, add their own photos, receive inquiries from couples, and see the views and clicks their page gets. Ratings are Google's, refreshed weekly. The details are in our <a href="/editorial-policy" class="underline underline-offset-4">Editorial Policy</a>.</p>
+      <p><span class="text-ink font-medium">How it is funded.</span> Vendors can pay $40 a month for Featured placement near the top of their category and region pages. Featured listings are always labeled, capped at 3 per category in each region, and never change a rating or hide another business. We do not run ads, sell data, charge couples or take commission on bookings.</p>
+    </div>
+
+    <div class="mt-10 rounded-3xl border border-hairline bg-parchment/60 p-6 md:p-8">
+      <p class="eyebrow text-ink/60 mb-4">The Guide Today</p>
+      <dl class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div><dt class="text-xs text-ink/55">Vendor listings</dt><dd class="display text-3xl text-ink mt-1">{s.vendors}</dd></div>
+        <div><dt class="text-xs text-ink/55">Regions</dt><dd class="display text-3xl text-ink mt-1">{s.regions}</dd></div>
+        <div><dt class="text-xs text-ink/55">Destination guides</dt><dd class="display text-3xl text-ink mt-1">{s.guides}</dd></div>
+        <div><dt class="text-xs text-ink/55">Permit and planning resources</dt><dd class="display text-3xl text-ink mt-1">{s.resources}</dd></div>
+      </dl>
+      <p class="text-xs text-ink/50 mt-5">Counts as of {s.built}.</p>
+    </div>
+
+    <div class="mt-10 space-y-5 text-ink/75 leading-relaxed">
+      <p><span class="text-ink font-medium">Something wrong?</span> If you are listed and want a change, or want out, <a href="/claim" class="underline underline-offset-4">claim your listing</a> or <a href="/contact" class="underline underline-offset-4">contact us</a>. Removals happen within one business day.</p>
+      <p class="text-sm text-ink/55">More: <a href="/press" class="underline underline-offset-4">Press</a>, <a href="/vendor-terms" class="underline underline-offset-4">Vendor Terms</a>, <a href="/privacy" class="underline underline-offset-4">Privacy Policy</a>, <a href="/accessibility" class="underline underline-offset-4">Accessibility</a>.</p>
     </div>
   </div>
 </Base>

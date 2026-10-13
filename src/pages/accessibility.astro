@@ -1,0 +1,48 @@
+---
+import Base from '../layouts/Base.astro';
+const effective = 'October 13, 2026';
+---
+<Base title="Accessibility Statement | Colorado Elopement Guide" description="Colorado Elopement Guide aims to meet WCAG 2.1 Level AA. What we do, the gaps we know about, and how to report a barrier.">
+  <div class="max-w-3xl mx-auto px-5 md:px-8 pt-14">
+    <p class="eyebrow text-clay-600 mb-3">Policies</p>
+    <h1 class="display text-4xl md:text-5xl leading-tight">Accessibility <span class="serif-i">statement</span></h1>
+    <p class="text-ink/50 text-sm mt-3">Effective {effective}.</p>
+
+    <div class="mt-10 space-y-10 text-ink/75 leading-relaxed text-[0.95rem]">
+      <section>
+        <h2 class="display text-2xl text-ink mb-3">Our goal</h2>
+        <p>We want everyone planning a Colorado elopement or micro wedding to be able to use this site, including people who use screen readers, keyboard navigation, magnification or voice control. We aim to meet the Web Content Accessibility Guidelines (WCAG) 2.1 at Level AA. The site has not been formally audited by a third party, so this is our intent and our own assessment, not a certification.</p>
+      </section>
+
+      <section>
+        <h2 class="display text-2xl text-ink mb-3">What we do</h2>
+        <ul class="list-disc pl-5 space-y-2">
+          <li>Pages use real headings, landmarks and lists so they can be navigated with assistive technology.</li>
+          <li>Forms have labels, and the site can be used with a keyboard.</li>
+          <li>Images carry text alternatives.</li>
+          <li>Text can be resized and the layout adapts to small screens and zoom.</li>
+          <li>The site does not autoplay video or sound.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="display text-2xl text-ink mb-3">Known gaps</h2>
+        <p>We know about these issues and are working through them:</p>
+        <ul class="list-disc pl-5 mt-3 space-y-2">
+          <li>Some light gray secondary text and small labels may fall below the AA contrast ratio against the ivory background.</li>
+          <li>Many vendor photos come from public business profiles and have generic alternative text, such as the business name, rather than a description of the photo.</li>
+          <li>The photo gallery lightbox and some vendor dashboard controls may not move keyboard focus as expected or announce changes to screen readers.</li>
+          <li>The Colorado Elopement Planning Kit is a PDF and may not be fully tagged for screen readers. Ask us and we will send the same content as plain text.</li>
+          <li>Pages we link to, such as vendor websites, government permit portals and Stripe checkout, are run by others and may have their own barriers.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="display text-2xl text-ink mb-3">Report a barrier</h2>
+        <p>If something on the site is hard or impossible for you to use, please tell us through the <a href="/contact" class="underline underline-offset-4">contact page</a> or by mail at Colorado Elopement Guide, 1905 Sherman Street, Ste 200 1074, Denver, CO 80203. Include the page address and what happened, and the device, browser or assistive technology you use if you can. We reply within two business days, and if we cannot fix the problem quickly we will get you the information another way.</p>
+      </section>
+    </div>
+
+    <p class="mt-12 pt-6 border-t border-hairline text-sm text-ink/55">Related: <a href="/privacy" class="underline underline-offset-4">Privacy Policy</a>, <a href="/terms" class="underline underline-offset-4">Terms of Service</a>, <a href="/contact" class="underline underline-offset-4">Contact</a>.</p>
+  </div>
+</Base>

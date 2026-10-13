@@ -1,0 +1,121 @@
+---
+import Base from '../layouts/Base.astro';
+const effective = 'October 13, 2026';
+const toc = [
+  ['listings', 'Free listings'], ['claiming', 'Claiming and accounts'], ['accuracy', 'Listing accuracy'],
+  ['photos', 'Photos and content you add'], ['prohibited', 'Prohibited content'], ['inquiries', 'Inquiries from couples'],
+  ['featured', 'Featured placement'], ['billing', 'Featured billing'], ['founding', 'Founding price lock'],
+  ['slots', 'Slot cap and waitlist'], ['removal', 'Suspension and removal'], ['general', 'General terms'],
+];
+---
+<Base title="Vendor Terms | Colorado Elopement Guide" description="Terms for businesses listed on Colorado Elopement Guide: free listings, claiming, accuracy, photo rights, inquiries, and Featured placement billing, founding price lock and slot cap.">
+  <div class="max-w-3xl mx-auto px-5 md:px-8 pt-14">
+    <p class="eyebrow text-clay-600 mb-3">Policies</p>
+    <h1 class="display text-4xl md:text-5xl leading-tight">Vendor <span class="serif-i">terms</span></h1>
+    <p class="text-ink/50 text-sm mt-3">Effective {effective}. These terms apply to every business listed on Colorado Elopement Guide and to anyone who claims or manages a listing. Our general <a href="/terms" class="underline underline-offset-4">Terms of Service</a> and <a href="/privacy" class="underline underline-offset-4">Privacy Policy</a> also apply.</p>
+
+    <div class="mt-8 rounded-3xl border border-hairline bg-parchment/60 p-6 md:p-7">
+      <p class="eyebrow text-ink/60 mb-3">The Short Version</p>
+      <ul class="space-y-2 text-sm text-ink/75 leading-relaxed list-disc pl-5">
+        <li>Your basic listing is free, forever. You never have to pay to be listed, to receive inquiries or to see your stats.</li>
+        <li>Featured placement is optional, costs $40 a month, and is always labeled as Featured.</li>
+        <li>Cancel Featured anytime. It stays on until the end of the period you paid for. We do not refund partial months.</li>
+        <li>Keep your listing honest. Misrepresentation gets a listing removed.</li>
+        <li>You keep ownership of your photos. You give us permission to show them on your listing.</li>
+      </ul>
+    </div>
+
+    <nav aria-label="On this page" class="mt-8 text-sm">
+      <p class="eyebrow text-ink/50 mb-2">On This Page</p>
+      <ol class="grid sm:grid-cols-2 gap-x-6 gap-y-1.5 list-decimal pl-5 text-ink/70">
+        {toc.map(([id, label]) => <li><a href={`#${id}`} class="underline underline-offset-4 hover:text-clay-700">{label}</a></li>)}
+      </ol>
+    </nav>
+
+    <div class="mt-10 space-y-10 text-ink/75 leading-relaxed text-[0.95rem]">
+      <section id="listings">
+        <h2 class="display text-2xl text-ink mb-3">1. Free listings</h2>
+        <p>Every listing on Colorado Elopement Guide is free and will stay free. Many listings start from public business information, as explained in our <a href="/editorial-policy" class="underline underline-offset-4">Editorial Policy</a>. A free listing includes your name, category, region, contact links, Google rating, photos, inquiries from couples and a dashboard with your page views and clicks. If you would rather not be listed at all, ask and we remove the listing within one business day.</p>
+      </section>
+
+      <section id="claiming">
+        <h2 class="display text-2xl text-ink mb-3">2. Claiming and accounts</h2>
+        <p>Only the owner of a business or someone authorized by the owner may claim its listing. We may ask you to verify your connection to the business, for example by using an email address on the business's own domain or replying from the address listed on its website. We may refuse or revoke a claim that we cannot verify. You are responsible for everything done with your account, and for keeping your sign in links and password private.</p>
+      </section>
+
+      <section id="accuracy">
+        <h2 class="display text-2xl text-ink mb-3">3. Listing accuracy</h2>
+        <p>Once you claim a listing, you are responsible for keeping it accurate. Your name, services, service area, contact details and description must be true and current. Do not claim awards, credentials, licenses, insurance or reviews you do not have. Ratings and review counts come from Google and cannot be edited by vendors or by us. If you change your business name, move or close, update the listing or tell us.</p>
+      </section>
+
+      <section id="photos">
+        <h2 class="display text-2xl text-ink mb-3">4. Photos and content you add</h2>
+        <p>You may upload a cover photo and up to six gallery photos, and edit your description and contact links. By uploading a photo you confirm that you own it or have permission from the photographer and from any identifiable people in it to use it for marketing your business.</p>
+        <p class="mt-3">You keep ownership of everything you upload. You give Colorado Elopement Guide a non exclusive, royalty free license to host, resize, crop and display your photos and text on your listing and on pages of this site that link to your listing, for as long as the content is on your listing. We do not sell your photos or license them to anyone else. Delete a photo in your dashboard and we stop displaying it.</p>
+        <p class="mt-3">If someone tells us a photo infringes their rights, we may take it down while we look into it.</p>
+      </section>
+
+      <section id="prohibited">
+        <h2 class="display text-2xl text-ink mb-3">5. Prohibited content</h2>
+        <p>Do not post or send through the site:</p>
+        <ul class="list-disc pl-5 mt-3 space-y-2">
+          <li>content that is false, misleading or impersonates another business;</li>
+          <li>photos you do not have the rights to, including other vendors' work presented as your own;</li>
+          <li>sexually explicit, hateful, harassing or violent content;</li>
+          <li>content that discriminates against couples on the basis of race, religion, sex, sexual orientation, gender identity, disability or any other protected characteristic;</li>
+          <li>fake reviews, testimonials or ratings, or offers of payment for reviews;</li>
+          <li>services that are illegal in Colorado, or that require a permit or license you do not hold;</li>
+          <li>spam, malware, or links unrelated to your wedding services.</li>
+        </ul>
+      </section>
+
+      <section id="inquiries">
+        <h2 class="display text-2xl text-ink mb-3">6. Inquiries from couples</h2>
+        <p>When a couple uses the Check Availability form on your listing, we send their inquiry to you and to no other vendor. If you have claimed your listing, you get the full inquiry with the couple's email address as the reply address. If you have not, you get a notice that a couple asked about a date, and the inquiry waits for you until you claim.</p>
+        <p class="mt-3">You may use a couple's contact details only to answer their inquiry and to work with them on their wedding. Do not add them to a marketing list without their consent, sell or share their details, or contact them after they ask you to stop. Please reply promptly, even if the answer is no. We charge nothing for inquiries and take no commission on bookings.</p>
+      </section>
+
+      <section id="featured">
+        <h2 class="display text-2xl text-ink mb-3">7. Featured placement</h2>
+        <p>Featured is an optional paid upgrade that places your listing near the top of the category and region pages it belongs to and adds a highlighted card. Featured listings are always marked with a visible Featured label so couples know the placement is paid. Featured does not change your Google rating, does not hide or demote any other vendor, and does not mean we have reviewed or endorse your business. We decide the design and exact position of Featured placement and may change it, as long as it stays clearly labeled and meaningfully more prominent than a free listing.</p>
+      </section>
+
+      <section id="billing">
+        <h2 class="display text-2xl text-ink mb-3">8. Featured billing</h2>
+        <ul class="list-disc pl-5 space-y-2">
+          <li><span class="text-ink font-medium">Price.</span> Featured costs $40 a month, billed monthly in advance through Stripe, plus any sales tax that applies.</li>
+          <li><span class="text-ink font-medium">First month offer.</span> With the code FIRSTMONTH1, your first month costs $1. From the second month the regular price applies. The code works once per business and cannot be combined with other offers.</li>
+          <li><span class="text-ink font-medium">Renewal.</span> Your subscription renews automatically each month until you cancel. Stripe emails a receipt each time.</li>
+          <li><span class="text-ink font-medium">Cancelling.</span> Cancel anytime from the link in your Stripe receipt or by contacting us. Cancellation takes effect at the end of the period you have already paid for, and Featured stays on until then. Your free listing continues after that.</li>
+          <li><span class="text-ink font-medium">Refunds.</span> We do not refund partial months. If Featured placement was not shown for a meaningful part of a period because of a problem on our side, tell us and we will credit or refund that time.</li>
+          <li><span class="text-ink font-medium">Failed payments.</span> If a payment fails and is not fixed after Stripe's retries, Featured is turned off and your listing returns to a free listing.</li>
+          <li><span class="text-ink font-medium">Price changes.</span> We may change the price for new subscribers at any time. For existing subscribers we give at least 30 days notice by email before a change, except where the founding price lock below applies.</li>
+        </ul>
+      </section>
+
+      <section id="founding">
+        <h2 class="display text-2xl text-ink mb-3">9. Founding price lock</h2>
+        <p>The first 10 businesses to subscribe to Featured are founding members. A founding member keeps the $40 monthly price for as long as their subscription stays active without a break, even if the regular price goes up. The lock ends if the subscription is cancelled, lapses for non payment, or the listing is removed under section 11. It belongs to the business, not the person, and moves with the business if it is sold. It cannot be transferred to a different business.</p>
+      </section>
+
+      <section id="slots">
+        <h2 class="display text-2xl text-ink mb-3">10. Slot cap and waitlist</h2>
+        <p>To keep Featured meaningful for couples, we allow at most 3 Featured listings per category in each region. When a category and region is full, you can join the waitlist from your dashboard or the Featured page. When a slot opens, we offer it to the waitlist in the order people joined. An offer stays open for a reasonable time, and if it is not taken we move to the next business. Joining the waitlist is free and does not commit you to pay.</p>
+      </section>
+
+      <section id="removal">
+        <h2 class="display text-2xl text-ink mb-3">11. Suspension and removal</h2>
+        <p>We may edit, hide or remove a listing, revoke a claim, or end a Featured subscription if a business misrepresents itself, breaks these terms, mistreats couples who contact it through the site, or closes. Where we can, we tell you why and give you a chance to fix the problem first. If we end a Featured subscription for misrepresentation or another breach of these terms, we do not refund the current period. If we end it for any other reason, we refund the unused part of the period.</p>
+        <p class="mt-3">You can remove your own listing or close your account at any time by contacting us.</p>
+      </section>
+
+      <section id="general">
+        <h2 class="display text-2xl text-ink mb-3">12. General terms</h2>
+        <p>We do not guarantee any number of views, clicks, inquiries or bookings. The site is provided as is, and the liability limits in our <a href="/terms" class="underline underline-offset-4">Terms of Service</a> apply to vendors too, except that for a paying vendor our total liability is limited to the amount you paid us in the 12 months before the claim. You agree to cover our reasonable costs if a third party brings a claim against us because of content you posted or how you dealt with a couple. These terms are governed by Colorado law. We may update them; for meaningful changes we email claimed vendors at least 30 days before they take effect.</p>
+        <p class="mt-3">Questions: use the <a href="/contact" class="underline underline-offset-4">contact page</a> or write to Colorado Elopement Guide, 1905 Sherman Street, Ste 200 1074, Denver, CO 80203.</p>
+      </section>
+    </div>
+
+    <p class="mt-12 pt-6 border-t border-hairline text-sm text-ink/55">Related: <a href="/for-vendors" class="underline underline-offset-4">For Vendors</a>, <a href="/editorial-policy" class="underline underline-offset-4">Editorial Policy</a>, <a href="/terms" class="underline underline-offset-4">Terms of Service</a>, <a href="/privacy" class="underline underline-offset-4">Privacy Policy</a>.</p>
+  </div>
+</Base>

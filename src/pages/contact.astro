@@ -1,27 +1,50 @@
 ---
 import Base from '../layouts/Base.astro';
-const err = false;
+const paths = [
+  ['Couples', 'Questions about a vendor, a permit or the planner, or a request to see or delete your data. If you want to reach a vendor, use the Check Availability form on their page so your message goes straight to them.'],
+  ['Vendors', 'The fastest way to correct your listing, add photos or get inquiries is to claim it. Use this form for removals, billing questions about Featured, or anything the dashboard does not cover. Removals happen within one business day.'],
+  ['Press', 'Start your message with the word Press. Boilerplate and facts are on the press page.'],
+];
 ---
-<Base title="Contact | Colorado Elopement Guide" description="Contact Colorado Elopement Guide — corrections, removals, vendor questions. We reply within two business days.">
-  <div class="max-w-2xl mx-auto px-5 md:px-8 pt-14">
-    <h1 class="display text-4xl leading-tight">Contact <span class="serif-i">us</span></h1>
-    <p class="text-ink/65 mt-4 leading-relaxed">Corrections, listing removals, vendor questions, or anything else — we reply within two business days. Vendors: the fastest way to update a listing is to <a href="/claim" class="underline underline-offset-4">claim it</a>.</p>
+<Base title="Contact | Colorado Elopement Guide" description="Contact Colorado Elopement Guide. Paths for couples, vendors and press. We reply within two business days.">
+  <div class="max-w-3xl mx-auto px-5 md:px-8 pt-14">
+    <p class="eyebrow text-clay-600 mb-3">Contact</p>
+    <h1 class="display text-4xl md:text-5xl leading-tight">Contact <span class="serif-i">us</span></h1>
+    <p class="text-ink/65 mt-4 leading-relaxed">Corrections, removals, questions or ideas. A real person reads every message, and we reply within two business days.</p>
+
+    <div class="mt-8 grid md:grid-cols-3 gap-4">
+      {paths.map(([who, text]) => (
+        <div class="rounded-2xl border border-hairline bg-parchment/60 p-5">
+          <h2 class="eyebrow text-clay-700 mb-2">{who}</h2>
+          <p class="text-sm text-ink/70 leading-relaxed">{text}</p>
+          {who === 'Vendors' && <a href="/claim" class="inline-block mt-3 text-sm underline underline-offset-4">Claim your listing</a>}
+          {who === 'Press' && <a href="/press" class="inline-block mt-3 text-sm underline underline-offset-4">Press page</a>}
+          {who === 'Couples' && <a href="/vendors" class="inline-block mt-3 text-sm underline underline-offset-4">Find a vendor</a>}
+        </div>
+      ))}
+    </div>
+
     <form method="post" action="/api/contact" class="mt-8 space-y-5 rounded-3xl border border-hairline bg-white p-7 md:p-8">
       <input type="text" name="website_url" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
       <div>
         <label class="eyebrow text-ink/60 block mb-2" for="name">Your name</label>
-        <input id="name" name="name" required class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" />
+        <input id="name" name="name" required autocomplete="name" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" />
       </div>
       <div>
         <label class="eyebrow text-ink/60 block mb-2" for="email">Email</label>
-        <input id="email" name="email" type="email" required class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" />
+        <input id="email" name="email" type="email" required autocomplete="email" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" />
       </div>
       <div>
         <label class="eyebrow text-ink/60 block mb-2" for="message">Message</label>
         <textarea id="message" name="message" rows="5" required class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm"></textarea>
       </div>
       <button class="rounded-full bg-ink text-ivory px-7 py-3.5 text-sm font-semibold hover:bg-spruce-800 transition-colors">Send Message</button>
+      <p class="text-xs text-ink/50">We use what you send only to reply to you. See the <a href="/privacy" class="underline underline-offset-4">Privacy Policy</a>.</p>
     </form>
-    <p class="text-ink/50 mt-5 text-sm">Colorado Elopement Guide · <a href="/about" class="underline underline-offset-4">About us</a></p>
+
+    <div class="mt-8 text-sm text-ink/60 leading-relaxed">
+      <p class="eyebrow text-ink/50 mb-2">By Mail</p>
+      <p>Colorado Elopement Guide<br />1905 Sherman Street, Ste 200 1074<br />Denver, CO 80203</p>
+    </div>
   </div>
 </Base>
