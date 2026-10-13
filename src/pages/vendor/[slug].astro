@@ -119,7 +119,7 @@ const metaDesc = v.description.length > 155 ? v.description.slice(0, 152).replac
             </section>}
             {styles.length > 0 && <div><p class="eyebrow text-clay-600 mb-2">Style</p><ul class="flex flex-wrap gap-2">{styles.map(t => <li class="rounded-full border border-hairline bg-white px-3 py-1 text-sm capitalize">{t}</li>)}</ul></div>}
             <dl class="grid sm:grid-cols-2 gap-4 text-sm">
-              {served.length > 0 && <div><dt class="eyebrow text-clay-600 mb-1">Service Area</dt><dd class="text-ink/75">{[reg.name, ...served.map(r => REGIONS[r].name)].filter((x, i, a) => a.indexOf(x) === i).map((n, i, a) => <>{i > 0 && ', '}{n}</>)}</dd></div>}
+              {served.length > 0 && <div><dt class="eyebrow text-clay-600 mb-1">Service Area</dt><dd class="text-ink/75">{[...(v.sub_region === 'other-colorado' ? [] : [reg.name]), ...served.map(r => REGIONS[r].name)].join(', ')}</dd></div>}
               {languages.length > 0 && <div><dt class="eyebrow text-clay-600 mb-1">Languages</dt><dd class="text-ink/75">{languages.join(', ')}</dd></div>}
               {years && <div><dt class="eyebrow text-clay-600 mb-1">In Business</dt><dd class="text-ink/75">{years} {years === 1 ? 'year' : 'years'}</dd></div>}
             </dl>
