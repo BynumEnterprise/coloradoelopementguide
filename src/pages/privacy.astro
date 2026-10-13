@@ -1,18 +1,176 @@
 ---
 import Base from '../layouts/Base.astro';
+const effective = 'October 13, 2026';
+const toc = [
+  ['who', 'Who we are'],
+  ['couples', 'What we collect from couples'],
+  ['vendors', 'What we collect from vendors'],
+  ['analytics', 'Analytics'],
+  ['email', 'Email and unsubscribing'],
+  ['use', 'How we use information'],
+  ['share', 'Who we share it with'],
+  ['retention', 'How long we keep it'],
+  ['security', 'Security'],
+  ['rights', 'Your choices and rights'],
+  ['children', 'Children'],
+  ['changes', 'Changes to this policy'],
+  ['contact', 'Contact'],
+];
 ---
-<Base title="Privacy Policy | Colorado Elopement Guide" description="What Colorado Elopement Guide collects, why, and your choices.">
-  <div class="max-w-2xl mx-auto px-5 md:px-8 pt-14">
-    <h1 class="display text-4xl leading-tight">Privacy <span class="serif-i">policy</span></h1>
-    <p class="text-ink/50 text-sm mt-2">Effective August 5, 2026</p>
-    <div class="mt-6 space-y-5 text-ink/75 leading-relaxed text-[0.95rem]">
-      <p><strong>What we collect.</strong> If you request the planning checklist, we store your email address. If you submit the contact or claim forms, we store what you send (name, email, message). We measure site usage with Google Analytics and our own first-party event counter, which records page paths, click events on vendor links, and referrers — no accounts, no advertising profiles, and we filter automated traffic.</p>
-      <p><strong>How we use it.</strong> Emails are used to send what you asked for (the checklist, claim confirmations, occasional planning notes) and nothing else. Vendor-page click counts are aggregated and shared with that vendor as part of their listing reports. We do not sell or rent personal information to anyone.</p>
-      <p><strong>Vendor inquiries.</strong> When you use Check Availability on a vendor's page, we store your names, email, wedding date, guest count and message, and share them with the vendor you chose so they can reply to you. We do not send your inquiry to any other vendor.</p>
-      <p><strong>Vendor listings</strong> are compiled from publicly available business information (names, addresses, phone numbers, websites, Google ratings). If your business is listed and you want it corrected or removed, <a href="/contact" class="underline underline-offset-4">contact us</a> — removals happen within one business day.</p>
-      <p><strong>Service providers.</strong> We use Vercel (hosting), Supabase (database), Google Analytics (analytics), Resend and Kit (email delivery), and Stripe (payments, for vendors only). Each receives only what it needs to do its job.</p>
-      <p><strong>Your choices.</strong> Every email includes an unsubscribe option that we honor immediately. To access or delete data we hold about you, <a href="/contact" class="underline underline-offset-4">contact us</a>.</p>
-      <p><strong>Who we are.</strong> Colorado Elopement Guide, 1905 Sherman Street, Ste 200 1074, Denver, CO 80203.</p>
+<Base title="Privacy Policy | Colorado Elopement Guide" description="What Colorado Elopement Guide collects from couples and vendors, how analytics work, who we share data with, how long we keep it, and how to ask for a copy or deletion.">
+  <div class="max-w-3xl mx-auto px-5 md:px-8 pt-14">
+    <p class="eyebrow text-clay-600 mb-3">Policies</p>
+    <h1 class="display text-4xl md:text-5xl leading-tight">Privacy <span class="serif-i">policy</span></h1>
+    <p class="text-ink/50 text-sm mt-3">Effective {effective}. This version replaces the policy dated August 5, 2026.</p>
+
+    <div class="mt-8 rounded-3xl border border-hairline bg-parchment/60 p-6 md:p-7">
+      <p class="eyebrow text-ink/60 mb-3">The Short Version</p>
+      <ul class="space-y-2 text-sm text-ink/75 leading-relaxed list-disc pl-5">
+        <li>You can read every listing and guide on this site without an account and without giving us anything.</li>
+        <li>If you send a vendor an inquiry, we pass it to that one vendor and nobody else.</li>
+        <li>If you open a planner account, we store what you type into it so you can come back to it.</li>
+        <li>Our own analytics are cookieless and cannot identify you. We also use Google Analytics to measure traffic.</li>
+        <li>We never sell or rent personal information, and we do not run advertising.</li>
+        <li>Vendor listings are built from public business information. A business can correct or remove its listing at any time.</li>
+        <li>Ask us for a copy of your data, a correction, or deletion and we answer within 30 days.</li>
+      </ul>
     </div>
+
+    <nav aria-label="On this page" class="mt-8 text-sm">
+      <p class="eyebrow text-ink/50 mb-2">On This Page</p>
+      <ol class="grid sm:grid-cols-2 gap-x-6 gap-y-1.5 list-decimal pl-5 text-ink/70">
+        {toc.map(([id, label]) => <li><a href={`#${id}`} class="underline underline-offset-4 hover:text-clay-700">{label}</a></li>)}
+      </ol>
+    </nav>
+
+    <div class="mt-10 space-y-10 text-ink/75 leading-relaxed text-[0.95rem]">
+      <section id="who">
+        <h2 class="display text-2xl text-ink mb-3">1. Who we are</h2>
+        <p>Colorado Elopement Guide is an independent directory and planner for couples eloping or having a micro wedding in Colorado. It is run by Ryan from Denver. Our mailing address is Colorado Elopement Guide, 1905 Sherman Street, Ste 200 1074, Denver, CO 80203. The fastest way to reach us is the <a href="/contact" class="underline underline-offset-4">contact page</a>.</p>
+        <p class="mt-3">This policy covers coloradoelopementguide.com, the emails we send, and the vendor and couple accounts on the site. It does not cover the websites of the vendors we list or the payment pages run by Stripe, which have their own policies.</p>
+      </section>
+
+      <section id="couples">
+        <h2 class="display text-2xl text-ink mb-3">2. What we collect from couples</h2>
+        <p><span class="text-ink font-medium">Browsing.</span> Nothing beyond the analytics described in section 4. You can read listings, guides and permit pages without an account.</p>
+        <p class="mt-3"><span class="text-ink font-medium">Saving vendors without an account.</span> The heart button saves vendors in your own browser (local storage on your device). That list never leaves your device unless you create an account or ask us to email it to you. If you ask us to email your list, we store your email address and send the list to you.</p>
+        <p class="mt-3"><span class="text-ink font-medium">Planner account.</span> If you start a planner we store your email address, a hashed version of your password if you set one, the sign in links we send you, and when you last signed in. Inside the planner we store only what you choose to enter: partner names, wedding date, region, guest count, budget, saved vendors, your notes and quote amounts for each saved vendor, and which checklist items you have ticked off. Nothing in your planner is shown to vendors or to anyone else.</p>
+        <p class="mt-3"><span class="text-ink font-medium">Vendor inquiries.</span> When you use the Check Availability form on a vendor's page we store your names, email address, wedding date, guest count and message, along with the vendor you wrote to. If that vendor has claimed their listing, we email them your full inquiry with your address as the reply address so they can answer you directly. If the vendor has not claimed their listing, they get a notice that a couple asked about a date without your contact details, and your message waits for them in our system until they claim. We never send your inquiry to any other vendor. We filter obvious spam and limit how many inquiries one address can send in a day.</p>
+        <p class="mt-3"><span class="text-ink font-medium">Planning kit and planning notes.</span> If you ask for the Colorado Elopement Planning Kit we store your email address, where on the site you signed up, and which emails in the series we have sent you. We email the kit right away, then three short planning notes over about two weeks. Every one of those emails has a one click unsubscribe link.</p>
+        <p class="mt-3"><span class="text-ink font-medium">Contact form.</span> We store your name, email address and message so we can reply and keep a record of the conversation.</p>
+      </section>
+
+      <section id="vendors">
+        <h2 class="display text-2xl text-ink mb-3">3. What we collect from vendors</h2>
+        <p><span class="text-ink font-medium">Public business information.</span> Listings start from information a business has already published: its name, address, phone number, website, category, Google rating and review count, a public photo, and map coordinates. We gather this from the business's own website and from its Google Business Profile through a data provider called DataForSEO. When a business publishes a contact email on its own website we may store it so we can invite the business to claim its free listing. This is business contact information and we use it only to run the directory and to send that invitation. Every invitation has a way to opt out, and we stop when you ask.</p>
+        <p class="mt-3"><span class="text-ink font-medium">Claim forms and accounts.</span> When you claim a listing or open a vendor account we store your name, email address, message, a hashed version of your password if you set one, sign in links, whether your account is verified, when you last signed in, and whether you have unsubscribed from reminder emails. Email addresses used in sign in attempts are stored briefly so we can limit abuse.</p>
+        <p class="mt-3"><span class="text-ink font-medium">Listing edits and photos.</span> Changes you make to your description, phone number and website, the photos you upload, and your Featured waitlist signup are stored and shown on your public listing.</p>
+        <p class="mt-3"><span class="text-ink font-medium">Inquiries and stats.</span> Inquiries couples send you are stored so you can find them in your dashboard. Your dashboard also shows how many times your page was viewed and how often your website and phone links were clicked. Those counts come from the cookieless analytics described below and cannot identify the couples behind them.</p>
+        <p class="mt-3"><span class="text-ink font-medium">Featured billing.</span> Payments are handled by Stripe. We receive your name, email address, the amount paid and the billing period so we can turn Featured on and off. We never see or store card numbers.</p>
+      </section>
+
+      <section id="analytics">
+        <h2 class="display text-2xl text-ink mb-3">4. Analytics</h2>
+        <p>We use two systems to understand how the site is used.</p>
+        <p class="mt-3"><span class="text-ink font-medium">Our own first party analytics.</span> These set no cookies. For each page view we record the page path, the referring website, campaign tags from the link you clicked, device type (phone, tablet or desktop), browser family, country, and a visitor hash. The hash is made by hashing your connection address and browser string, then hashing the result again with a random value that changes every day. We never store your IP address or your browser string, the hash cannot be reversed, and because the salt changes daily the same visitor cannot be followed from one day to the next. We also record a few clicks that matter to the site, such as clicking through to a vendor's website or sending an inquiry, without the content of what you sent. Automated traffic and our own devices are excluded.</p>
+        <p class="mt-3"><span class="text-ink font-medium">Google Analytics 4.</span> Google Analytics sets cookies and processes data under <a href="https://policies.google.com/privacy" rel="noopener" class="underline underline-offset-4">Google's privacy policy</a>. We use it to measure traffic and which pages people find useful. We do not use it for advertising, we do not run ads, and we strip sign in tokens from page addresses before they are sent to Google. Google keeps event data for 14 months. You can block it with Google's <a href="https://tools.google.com/dlpage/gaoptout" rel="noopener" class="underline underline-offset-4">opt out browser add on</a> or any content blocker.</p>
+        <p class="mt-3"><span class="text-ink font-medium">Server logs.</span> Our hosting provider, Vercel, keeps short lived request logs that include IP addresses for security and debugging. They are deleted automatically after a short period measured in days.</p>
+        <p class="mt-3"><span class="text-ink font-medium">Fonts.</span> The site loads its typefaces from Google Fonts, which means your browser requests the font files from Google and Google sees your IP address in that request, as with any file loaded from another website.</p>
+      </section>
+
+      <section id="email">
+        <h2 class="display text-2xl text-ink mb-3">5. Email and unsubscribing</h2>
+        <p>Our emails are sent through Resend from the address hello@send.coloradoelopementguide.com. Replies come to a Google mailbox that Ryan reads. We send three kinds of email:</p>
+        <ul class="list-disc pl-5 mt-3 space-y-2">
+          <li><span class="text-ink font-medium">Things you asked for.</span> Sign in links, the planning kit, your emailed vendor list, inquiry deliveries to vendors, claim confirmations, Featured billing notices and replies to your messages. These continue for as long as you have an account or an open request.</li>
+          <li><span class="text-ink font-medium">Planning notes for couples.</span> Three short notes over about two weeks for people who asked for the planning kit or started a planner. One click on the unsubscribe link in any of them stops the series immediately, with no sign in needed.</li>
+          <li><span class="text-ink font-medium">Vendor invitations and reminders.</span> A short series inviting a business to claim its listing, and a few onboarding reminders after an account is created. Each has an opt out. We never send more than one to the same vendor within three days and the series stops on its own.</li>
+        </ul>
+        <p class="mt-3">If a link does not work, reply to the email or use the <a href="/contact" class="underline underline-offset-4">contact page</a> and we will stop by hand.</p>
+      </section>
+
+      <section id="use">
+        <h2 class="display text-2xl text-ink mb-3">6. How we use information</h2>
+        <ul class="list-disc pl-5 space-y-2">
+          <li>To run the directory and the planner, and to show vendors the edits and photos they publish.</li>
+          <li>To deliver an inquiry to the vendor a couple chose, and to let that vendor reply.</li>
+          <li>To send what you asked for and to answer your messages.</li>
+          <li>To show each vendor the views and clicks on their own page.</li>
+          <li>To turn Featured placement on when a vendor pays and off when a subscription ends, and to keep tax and accounting records of those payments.</li>
+          <li>To keep out spam, bots and abuse, and to limit how fast forms can be submitted.</li>
+          <li>To understand which pages are useful so we can improve the site.</li>
+          <li>To meet legal obligations and to respond to lawful requests.</li>
+        </ul>
+        <p class="mt-3">We do not sell or rent personal information. We do not share a couple's inquiry with any vendor other than the one they wrote to. We do not share the newsletter list with vendors or anyone else. We do not use personal information for advertising.</p>
+      </section>
+
+      <section id="share">
+        <h2 class="display text-2xl text-ink mb-3">7. Who we share it with</h2>
+        <p>We use a small number of companies to run the site. Each gets only what it needs for its job.</p>
+        <ul class="list-disc pl-5 mt-3 space-y-2">
+          <li><span class="text-ink font-medium">Supabase</span> hosts our database and the vendor photos, on servers in the United States.</li>
+          <li><span class="text-ink font-medium">Vercel</span> hosts the website and runs the code behind our forms, in the United States.</li>
+          <li><span class="text-ink font-medium">Resend</span> sends our email.</li>
+          <li><span class="text-ink font-medium">Stripe</span> processes Featured payments for vendors. Stripe sees your card details; we do not.</li>
+          <li><span class="text-ink font-medium">Google Analytics</span> measures site traffic as described in section 4. Google Fonts serves our typefaces.</li>
+          <li><span class="text-ink font-medium">DataForSEO</span> provides the public Google Business Profile data behind vendor listings. No visitor information is sent to them.</li>
+          <li><span class="text-ink font-medium">The vendor you chose</span> receives your inquiry when you send one.</li>
+        </ul>
+        <p class="mt-3">We would also share information if the law required it, or to protect the site and its users from fraud or abuse. If the site were ever sold, the new owner would have to honor this policy for information collected under it.</p>
+        <p class="mt-3">All of our systems are hosted in the United States. If you visit from elsewhere, your information is processed in the United States.</p>
+      </section>
+
+      <section id="retention">
+        <h2 class="display text-2xl text-ink mb-3">8. How long we keep it</h2>
+        <ul class="list-disc pl-5 space-y-2">
+          <li><span class="text-ink font-medium">Planner accounts</span> are kept for as long as you use them. Ask us to delete your account and we remove it, your saved vendors, notes and checklist within 30 days.</li>
+          <li><span class="text-ink font-medium">Inquiries</span> are kept so the vendor can find them in their dashboard and so we can resolve disputes. Ask us and we delete your inquiry from our records; we will also ask the vendor to delete their copy.</li>
+          <li><span class="text-ink font-medium">Newsletter addresses</span> are kept until you unsubscribe. Unsubscribed addresses are kept only on a suppression list so we do not email you again.</li>
+          <li><span class="text-ink font-medium">Vendor accounts and listing edits</span> are kept while the listing is live. When a listing is removed we keep a short record of the removal so the business is not added again by mistake.</li>
+          <li><span class="text-ink font-medium">Vendor photos</span> are deleted when you delete them in your dashboard or when your listing is removed.</li>
+          <li><span class="text-ink font-medium">Payment records</span> are kept for as long as tax and accounting rules require, normally seven years.</li>
+          <li><span class="text-ink font-medium">Analytics</span> are kept in aggregate. Visitor hashes cannot be linked to a person and are not linked across days.</li>
+          <li><span class="text-ink font-medium">Sign in attempt records</span> are kept for a short time for rate limiting and then discarded.</li>
+          <li><span class="text-ink font-medium">Contact form messages</span> are kept so we have a record of the conversation. Ask us and we delete them.</li>
+        </ul>
+      </section>
+
+      <section id="security">
+        <h2 class="display text-2xl text-ink mb-3">9. Security</h2>
+        <p>The site is served over HTTPS only. Passwords are stored as bcrypt hashes, never in plain text. Sign in links work once and expire after 30 minutes. The database allows no public access; every action that touches personal data goes through access controlled functions, and secrets are never shipped to the browser. Vendor photos are checked for file type and size before they are stored.</p>
+        <p class="mt-3">No system is perfectly secure. If a breach ever affects your personal information we will tell you by email and notify authorities as Colorado law requires.</p>
+      </section>
+
+      <section id="rights">
+        <h2 class="display text-2xl text-ink mb-3">10. Your choices and rights</h2>
+        <p>Wherever you live, you can ask us to:</p>
+        <ul class="list-disc pl-5 mt-3 space-y-2">
+          <li>tell you what personal information we hold about you and send you a copy;</li>
+          <li>correct it;</li>
+          <li>delete it, including closing a planner or vendor account;</li>
+          <li>stop emailing you;</li>
+          <li>remove or correct a business listing (see the <a href="/editorial-policy" class="underline underline-offset-4">editorial policy</a>; removals happen within one business day).</li>
+        </ul>
+        <p class="mt-3">Send requests through the <a href="/contact" class="underline underline-offset-4">contact page</a> or by mail to the address in section 1. We confirm you are the account holder by replying to the email address on the account, then answer within 30 days. There is no charge, and we will never treat you differently for asking. If you think we have handled your information badly, tell us first and we will try to fix it; you can also complain to the Colorado Attorney General or your local data protection authority.</p>
+        <p class="mt-3">Because our own analytics cannot identify you and we do not sell data or run ads, there is nothing to opt out of there. Browser signals such as Global Privacy Control are respected in the sense that there is no sale or targeted advertising to object to. To block Google Analytics, use the add on or a content blocker mentioned in section 4.</p>
+      </section>
+
+      <section id="children">
+        <h2 class="display text-2xl text-ink mb-3">11. Children</h2>
+        <p>This site is for adults planning a wedding. It is not directed at anyone under 18 and we do not knowingly collect information from children. If you believe a child has given us personal information, contact us and we will delete it.</p>
+      </section>
+
+      <section id="changes">
+        <h2 class="display text-2xl text-ink mb-3">12. Changes to this policy</h2>
+        <p>When we change this policy we update the effective date at the top. If a change affects what we collect from account holders or how we use it, we also email account holders before it takes effect. Older versions are available on request.</p>
+      </section>
+
+      <section id="contact">
+        <h2 class="display text-2xl text-ink mb-3">13. Contact</h2>
+        <p>Use the <a href="/contact" class="underline underline-offset-4">contact page</a> or write to Colorado Elopement Guide, 1905 Sherman Street, Ste 200 1074, Denver, CO 80203. We reply within two business days.</p>
+      </section>
+    </div>
+
+    <p class="mt-12 pt-6 border-t border-hairline text-sm text-ink/55">Related: <a href="/terms" class="underline underline-offset-4">Terms of Service</a>, <a href="/vendor-terms" class="underline underline-offset-4">Vendor Terms</a>, <a href="/editorial-policy" class="underline underline-offset-4">Editorial Policy</a>, <a href="/accessibility" class="underline underline-offset-4">Accessibility</a>.</p>
   </div>
 </Base>
