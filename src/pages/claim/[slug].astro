@@ -9,7 +9,7 @@ export async function getStaticPaths() {
 const { v } = Astro.props;
 ---
 <Base title={`Claim ${v.name} | Colorado Elopement Guide`}
-  description={`Claim the free ${v.name} listing on Colorado Elopement Guide. Update your details, receive couple inquiries, and see your click counts.`} noindex={true}>
+  description={`Claim the free ${v.name.length > 50 ? v.name.slice(0, 50).replace(/\s+\S*$/, '') : v.name} listing on Colorado Elopement Guide. Update your details, get couple inquiries and see your clicks.`} noindex={true}>
   <div class="max-w-2xl mx-auto px-5 md:px-8 pt-14">
     <p class="eyebrow text-clay-600 mb-3">Free, forever</p>
     <h1 class="display text-4xl leading-tight">Claim <span class="serif-i">{v.name}</span></h1>
