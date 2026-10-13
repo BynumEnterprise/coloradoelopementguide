@@ -218,9 +218,10 @@ const metaDesc = v.description.length > 155 ? v.description.slice(0, 152).replac
           if (!res || !res.ok) { btn.disabled = false; btn.textContent = 'Check Availability'; return fail((res && res.error) || 'Something went wrong. Please try again.'); }
           if (window.cegTrack) cegTrack('inquiry_submitted', slug, 'generate_lead', { vendor_slug: slug, category: category, region: subRegion });
           var em = String(d.email || '').trim();
-          document.getElementById('inq-done-body').textContent = res.mode === 'account'
+          document.getElementById('inq-done-body').textContent = (res.mode === 'account'
             ? vname + ' will reply to ' + em + ' directly.'
-            : 'We passed your note along. If they do not reply within a few days, try their website or phone listed above.';
+            : 'We passed your note along. If they do not reply within a few days, try their website or phone listed above.')
+            + (res.confirm ? ' A copy of your note is on its way to ' + em + '.' : '');
           f.classList.add('hidden'); document.getElementById('inq-done').classList.remove('hidden');
         })
         .catch(function(){ btn.disabled = false; btn.textContent = 'Check Availability'; fail('Could not send. Check your connection and try again.'); });
