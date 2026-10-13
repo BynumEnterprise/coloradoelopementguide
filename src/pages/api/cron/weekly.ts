@@ -5,6 +5,7 @@ import { sendMailResult, OWNER_EMAIL } from '../../../lib/mail';
 import { REGIONS } from '../../../lib/taxonomy';
 import { IMG } from '../../../lib/assets';
 import { displayName } from '../../../lib/outreach';
+import { runMonthlyReports } from '../../../lib/vendor-report';
 
 // Weekly P2 automation (Vercel cron, Monday 14:00 UTC):
 //   1. release up to 40 queued vendors (balanced across regions, junk names excluded)
@@ -12,7 +13,8 @@ import { displayName } from '../../../lib/outreach';
 //   3. fire the Vercel deploy hook so the released vendors go live
 //   4. email the owner the KPI digest
 //   5. create 3 Pinterest pins when PINTEREST_ACCESS_TOKEN and PINTEREST_BOARD_ID are set
-// Flags for manual runs: ?dry=1 (release count 0, no sends, no pins), ?release=N.
+//   6. monthly_reports: first Monday of the month (Denver), the previous month's stats email to each verified vendor account
+// Flags for manual runs: ?dry=1 (release count 0, no sends, no pins), ?release=N, ?only=monthly_reports (stage 6 alone).
 
 const RELEASE_N = 40;
 const DASHES = /[\-‐‑‒–—―]/g;
@@ -140,6 +142,13 @@ export const GET: APIRoute = async ({ request }) => {
   const releaseN = dry ? 0 : Math.max(0, Math.min(RELEASE_N, Number(url.searchParams.get('release') ?? RELEASE_N) || 0));
   const started = Date.now();
   const run: Record<string, any> = { ok: true, ran_at: new Date().toISOString(), dry };
+  if (url.searchParams.get('only') === 'monthly_reports') {
+    try { run.monthly_reports = await runMonthlyReports(secret, dry, started + 270_000); }
+    catch (e) { run.monthly_reports = { error: String(e).slice(0, 300) }; run.ok = false; }
+    run.ms = Date.now() - started;
+    console.log('CRON weekly', JSON.stringify(run));
+    return json(run);
+  }
 
   // 1. Release
   let released: Released[] = [];
@@ -238,6 +247,10 @@ export const GET: APIRoute = async ({ request }) => {
       run.digest_sent = res.ok; if (!res.ok) run.digest_error = res.error;
     } else run.digest_preview = text;
   } catch (e) { run.digest_error = String(e).slice(0, 300); run.ok = false; }
+
+  // 6. Monthly vendor stats reports (additive; sends only on the first Monday, stops before the 300s limit)
+  try { run.monthly_reports = await runMonthlyReports(secret, dry, started + 270_000); }
+  catch (e) { run.monthly_reports = { error: String(e).slice(0, 300) }; }
 
   run.ms = Date.now() - started;
   console.log('CRON weekly', JSON.stringify(run));
