@@ -57,6 +57,7 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
         <button data-tab="vendors" class="tab-btn px-5 py-3 text-sm font-medium rounded-t-xl whitespace-nowrap">Vendors <span id="tab-vcount" class="opacity-50"></span></button>
         <button data-tab="couples" class="tab-btn px-5 py-3 text-sm font-medium rounded-t-xl whitespace-nowrap">Couples <span id="tab-ccount" class="opacity-50"></span></button>
         <button data-tab="outreach" class="tab-btn px-5 py-3 text-sm font-medium rounded-t-xl whitespace-nowrap">Outreach</button>
+        <button data-tab="sales" class="tab-btn px-5 py-3 text-sm font-medium rounded-t-xl whitespace-nowrap">Sales <span id="tab-scount" class="opacity-50"></span></button>
       </div>
 
       <div id="pane-traffic" class="pane pt-8"></div>
@@ -64,6 +65,7 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
       <div id="pane-vendors" class="pane pt-8 hidden"></div>
       <div id="pane-couples" class="pane pt-8 hidden"></div>
       <div id="pane-outreach" class="pane pt-8 hidden"></div>
+      <div id="pane-sales" class="pane pt-8 hidden"><p class="py-16 text-center text-ink/50">Loading sales…</p></div>
     </div>
   </div>
 
@@ -71,6 +73,12 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
   <div id="drawer-wrap" class="hidden fixed inset-0 z-50">
     <div id="drawer-bg" class="absolute inset-0 bg-ink/40"></div>
     <aside id="drawer" class="absolute right-0 top-0 h-full w-full max-w-xl bg-ivory border-l border-hairline shadow-2xl overflow-y-auto p-6 md:p-8"></aside>
+  </div>
+
+  <!-- SALES PITCH DRAWER -->
+  <div id="sales-wrap" class="hidden fixed inset-0 z-50">
+    <div id="sales-bg" class="absolute inset-0 bg-ink/40"></div>
+    <aside id="sales-drawer" class="absolute right-0 top-0 h-full w-full max-w-xl bg-ivory border-l border-hairline shadow-2xl overflow-y-auto p-6 md:p-8"></aside>
   </div>
 
   <script is:inline define:vars={{ catNames, regNames }}>
@@ -516,6 +524,124 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
         </div>`;
       chart('ch-outreach', (OV.outreach_weekly || []).map(w => ({ d: w.week, views: w.sent })), { h: 200, keys: ['views'], unit: 'emails', every: 1, label: 'Outreach emails sent per week', xlabel: p => fmtDay(p.d) });
     }
+
+
+    // ---------- sales (ceg_admin_sales, personal pitches through /api/admin-pitch) ----------
+    let SL = null, SLOAD = null, sSort = 'score', sDir = -1, SP = null;
+    async function loadSales(force){
+      if (SL && !force) return SL;
+      if (!SLOAD) SLOAD = rpc('ceg_admin_sales', { p_token: tok() }).then(r => { SLOAD = null; if (r) SL = r; return SL; });
+      return SLOAD;
+    }
+    async function openSales(force){
+      const pane = document.getElementById('pane-sales');
+      if (!SL || force) pane.innerHTML = '<p class="py-16 text-center text-ink/50">Loading sales…</p>';
+      await loadSales(force);
+      paintSales();
+    }
+    const slotPill = n => n > 0 ? `<span class="text-[11px] rounded-full bg-spruce-800/10 text-spruce-800 px-2.5 py-1 whitespace-nowrap tabular-nums">${n} of 3 open</span>` : '<span class="text-[11px] rounded-full bg-clay-500/10 text-clay-700 px-2.5 py-1 whitespace-nowrap">Full</span>';
+    function paintSales(){
+      const pane = document.getElementById('pane-sales');
+      if (!SL) { pane.innerHTML = '<p class="py-16 text-center text-ink/50">Could not load sales. Refresh or sign in again.</p>'; return; }
+      document.getElementById('tab-scount').textContent = `(${num((SL.prospects || []).length)})`;
+      const P = (SL.prospects || []).slice();
+      const val = (x, k) => k === 'last_email_at' || k === 'account_last_login' ? (x[k] ? new Date(x[k]).getTime() : 0) : k === 'site_30d' ? (x.site_30d || 0) + (x.phone_30d || 0) : k === 'category_rank' ? (x.category_rank || 1e9) : x[k];
+      P.sort((a, b) => { const A = val(a, sSort), B = val(b, sSort); return (typeof A === 'string' ? String(A).localeCompare(String(B)) : (A || 0) - (B || 0)) * sDir; });
+      const cols = [['name','Vendor','left'],['views_30d','Views 30d','right'],['site_30d','Clicks 30d','right'],['inquiries_30d','Inquiries 30d','right'],['category_rank','Rank','right'],['slots_open','Open Slots','left'],['account_last_login','Last Login','left'],['last_email_at','Last Email','left'],['score','Readiness','right']];
+      const th = cols.map(([k, l, al]) => `<th data-ssort="${k}" class="px-3 py-3 font-medium text-${al} cursor-pointer select-none whitespace-nowrap ${sSort === k ? 'text-ink' : 'text-ink/55'}">${l}${sSort === k ? (sDir > 0 ? ' ↑' : ' ↓') : ''}</th>`).join('');
+      const tr = P.map(x => `<tr data-sid="${x.id}" class="border-t border-hairline hover:bg-parchment/50 cursor-pointer">
+        <td class="px-3 py-2.5"><span class="font-medium">${esc(x.name)}</span><span class="block text-[11px] text-ink/45">${esc(catShort(x.category))} · ${esc(regNames[x.sub_region] || x.sub_region || '')}</span></td>
+        <td class="px-3 py-2.5 text-right tabular-nums">${num(x.views_30d)}</td>
+        <td class="px-3 py-2.5 text-right tabular-nums whitespace-nowrap">${num(x.site_30d)} <span class="text-ink/40">/</span> ${num(x.phone_30d)}</td>
+        <td class="px-3 py-2.5 text-right tabular-nums">${num(x.inquiries_30d)}</td>
+        <td class="px-3 py-2.5 text-right tabular-nums whitespace-nowrap">#${num(x.category_rank)} <span class="text-ink/40">of ${num(x.category_count)}</span></td>
+        <td class="px-3 py-2.5">${slotPill(x.slots_open)}</td>
+        <td class="px-3 py-2.5 whitespace-nowrap text-ink/70">${ago(x.account_last_login)}</td>
+        <td class="px-3 py-2.5 whitespace-nowrap text-ink/70">${x.last_email_at ? ago(x.last_email_at) + `<span class="block text-[11px] text-ink/45">${esc(x.last_email_kind || '')}</span>` : 'Never'}</td>
+        <td class="px-3 py-2.5 text-right"><span class="display text-xl tabular-nums">${num(x.score)}</span>${x.can_pitch ? '<span class="block text-[11px] text-spruce-800">Ready</span>' : '<span class="block text-[11px] text-clay-700">Wait</span>'}</td></tr>`).join('');
+      const F = SL.featured || [], W = SL.waitlist || [];
+      const fRows = F.map(x => `<tr class="border-t border-hairline"><td class="px-3 py-2.5"><a href="/vendor/${esc(x.slug)}" target="_blank" rel="noopener" class="font-medium hover:text-clay-700">${esc(x.name)}</a><span class="block text-[11px] text-ink/45">${esc(catShort(x.category))} · ${esc(regNames[x.sub_region] || x.sub_region || '')}</span></td><td class="px-3 py-2.5 whitespace-nowrap">${x.featured_until ? fmtDate(x.featured_until) + (x.days_left != null ? ` <span class="text-ink/45">(${num(x.days_left)}d)</span>` : '') : 'Open ended'}</td><td class="px-3 py-2.5 text-ink/70">${esc(x.account_email || '')}</td><td class="px-3 py-2.5 text-right tabular-nums">${num(x.views_30d)}</td><td class="px-3 py-2.5 text-right tabular-nums">${num(x.site_30d)} / ${num(x.phone_30d)}</td><td class="px-3 py-2.5 text-right tabular-nums">${num(x.inquiries_30d)}</td><td class="px-3 py-2.5 whitespace-nowrap text-ink/70">${ago(x.account_last_login)}</td></tr>`).join('');
+      const wRows = W.map(x => `<tr class="border-t border-hairline"><td class="px-3 py-2.5"><a href="/vendor/${esc(x.slug)}" target="_blank" rel="noopener" class="font-medium hover:text-clay-700">${esc(x.name)}</a> ${chip(x.status)}</td><td class="px-3 py-2.5 whitespace-nowrap">${esc(catShort(x.category))} · ${esc(regNames[x.sub_region] || x.sub_region || '')}</td><td class="px-3 py-2.5">${slotPill(x.slots_open)}</td><td class="px-3 py-2.5 text-ink/70">${esc(x.email || '')}</td><td class="px-3 py-2.5 text-ink/70">${esc(x.source || '')}${x.note ? ' · ' + esc(x.note) : ''}</td><td class="px-3 py-2.5 whitespace-nowrap text-ink/70">${fmtDate(x.created_at)}</td></tr>`).join('');
+      const ready = P.filter(x => x.can_pitch).length;
+      pane.innerHTML = `
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-px bg-hairline border border-hairline rounded-2xl overflow-hidden text-center">
+          <div class="bg-ivory p-5"><p class="display text-3xl">${num(SL.featured_count)}</p><p class="text-xs text-ink/55 mt-1">Featured now</p></div>
+          <div class="bg-ivory p-5"><p class="display text-3xl">${num(SL.founding_left)}</p><p class="text-xs text-ink/55 mt-1">of ${num(SL.founding_cap)} founding spots left</p></div>
+          <div class="bg-ivory p-5"><p class="display text-3xl">${num(P.length)}</p><p class="text-xs text-ink/55 mt-1">claimed, not Featured</p></div>
+          <div class="bg-ivory p-5"><p class="display text-3xl">${num(ready)}</p><p class="text-xs text-ink/55 mt-1">ready to pitch today</p></div>
+        </div>
+        <div class="flex flex-wrap items-end justify-between gap-3 mt-8 mb-4">
+          <div><p class="display text-2xl">Prospects</p><p class="text-xs text-ink/50 mt-1">Claimed vendors who are not Featured. Readiness = views + 2 per click + 10 per inquiry + recent login. Click a row for a personal pitch.</p></div>
+          <a href="/featured" target="_blank" rel="noopener" class="text-sm underline underline-offset-4 text-ink/60">Open the /featured page</a>
+        </div>
+        <div class="overflow-x-auto rounded-3xl border border-hairline bg-white"><table class="w-full min-w-[1080px] text-sm"><thead><tr class="bg-parchment/60">${th}</tr></thead><tbody>${tr || '<tr><td colspan="9" class="px-4 py-10 text-center text-ink/50">No claimed vendors yet.</td></tr>'}</tbody></table></div>
+        <p class="display text-2xl mt-12 mb-4">Featured customers <span class="text-ink/40 text-lg">(${num(F.length)})</span></p>
+        <div class="overflow-x-auto rounded-3xl border border-hairline bg-white"><table class="w-full min-w-[860px] text-sm"><thead><tr class="bg-parchment/60 text-ink/55"><th class="text-left font-medium px-3 py-3">Vendor</th><th class="text-left font-medium px-3 py-3">Featured Until</th><th class="text-left font-medium px-3 py-3">Account</th><th class="text-right font-medium px-3 py-3">Views 30d</th><th class="text-right font-medium px-3 py-3">Site / Phone</th><th class="text-right font-medium px-3 py-3">Inquiries 30d</th><th class="text-left font-medium px-3 py-3">Last Login</th></tr></thead><tbody>${fRows || '<tr><td colspan="7" class="px-4 py-10 text-center text-ink/50">No Featured vendors yet.</td></tr>'}</tbody></table></div>
+        <p class="display text-2xl mt-12 mb-4">Featured waitlist <span class="text-ink/40 text-lg">(${num(W.length)})</span></p>
+        <div class="overflow-x-auto rounded-3xl border border-hairline bg-white"><table class="w-full min-w-[860px] text-sm"><thead><tr class="bg-parchment/60 text-ink/55"><th class="text-left font-medium px-3 py-3">Vendor</th><th class="text-left font-medium px-3 py-3">Group</th><th class="text-left font-medium px-3 py-3">Slots</th><th class="text-left font-medium px-3 py-3">Email</th><th class="text-left font-medium px-3 py-3">Source</th><th class="text-left font-medium px-3 py-3">Joined</th></tr></thead><tbody>${wRows || '<tr><td colspan="6" class="px-4 py-10 text-center text-ink/50">Nobody on the waitlist.</td></tr>'}</tbody></table></div>
+        <p class="text-[11px] text-ink/40 mt-3">Updated ${fmtDT(SL.generated_at)}.</p>`;
+    }
+    async function openPitch(id){
+      const x = (SL && SL.prospects || []).find(p => p.id === id); if (!x) return;
+      SP = { id, x, p: null, msg: '' };
+      document.getElementById('sales-wrap').classList.remove('hidden'); document.body.style.overflow = 'hidden';
+      paintPitch();
+      const r = await fetch('/api/admin-pitch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: tok(), vendor_id: id, action: 'preview' }) }).then(r => r.json()).catch(() => null);
+      if (SP && SP.id === id) { SP.p = r || { ok: false, error: 'Could not reach the server.' }; paintPitch(); }
+    }
+    function closePitch(){ SP = null; document.getElementById('sales-wrap').classList.add('hidden'); document.body.style.overflow = ''; }
+    function paintPitch(){
+      if (!SP) return;
+      const x = SP.x, p = SP.p;
+      const stat = (l, v) => `<div class="bg-white p-3"><p class="display text-2xl tabular-nums">${v}</p><p class="text-[11px] text-ink/50">${l}</p></div>`;
+      let body = '<p class="mt-6 text-sm text-ink/50">Writing the pitch from live numbers…</p>';
+      if (p && !p.ok) body = `<p class="mt-6 text-sm text-clay-700">${esc(p.error || 'Could not build the pitch.')}</p>`;
+      if (p && p.ok) body = `
+        ${p.blocked ? `<div class="mt-6 rounded-2xl border border-gold/60 bg-gold/10 px-4 py-3 text-sm">${esc(p.blocked)} Copy still works if you want to send it yourself later.</div>` : ''}
+        <label class="eyebrow text-ink/60 block mt-6 mb-1">To</label><p class="text-sm">${esc(p.to || 'No account email')}</p>
+        <label class="eyebrow text-ink/60 block mt-4 mb-1">Subject</label><p id="sp-subject" class="text-sm font-medium">${esc(p.subject)}</p>
+        <label class="eyebrow text-ink/60 block mt-4 mb-1">Email</label>
+        <textarea id="sp-body" readonly rows="18" class="w-full rounded-xl border border-hairline bg-white px-4 py-3 text-sm leading-relaxed text-ink/85">${esc(p.text)}</textarea>
+        <div class="mt-4 flex flex-wrap items-center gap-2">
+          <button id="sp-copy" class="rounded-full border border-ink/60 px-5 py-2.5 text-sm font-semibold hover:bg-parchment">Copy</button>
+          <button id="sp-send" ${p.blocked || !p.to ? 'disabled' : ''} class="rounded-full bg-clay-500 text-ivory px-5 py-2.5 text-sm font-semibold hover:bg-clay-600 disabled:opacity-40 disabled:cursor-not-allowed">Send From Site</button>
+        </div>
+        <p class="text-[11px] text-ink/45 mt-2">Sends from hello@send.coloradoelopementguide.com as Ryan, replies come to your Gmail. Logged in p2_pitch_log. Blocked if we emailed them in the last 3 days or they unsubscribed. ${num(p.pitches_sent)} earlier ${p.pitches_sent === 1 ? 'pitch' : 'pitches'}.</p>`;
+      document.getElementById('sales-drawer').innerHTML = `
+        <div class="flex items-start justify-between gap-4">
+          <div class="min-w-0"><p class="eyebrow text-clay-600 mb-2">Featured Pitch</p>
+            <h2 class="display text-2xl md:text-3xl leading-tight"><a href="/vendor/${esc(x.slug)}" target="_blank" rel="noopener" class="hover:text-clay-700">${esc(x.name)}</a></h2>
+            <p class="text-xs text-ink/55 mt-2">${esc(catShort(x.category))} · ${esc(regNames[x.sub_region] || x.sub_region || '')} · ${x.slots_open} of 3 slots open · last login ${ago(x.account_last_login)}</p></div>
+          <button id="sales-close" class="shrink-0 rounded-full border border-hairline w-9 h-9 flex items-center justify-center text-ink/60 hover:bg-parchment" aria-label="Close">✕</button>
+        </div>
+        <div class="mt-5 grid grid-cols-4 gap-px bg-hairline border border-hairline rounded-2xl overflow-hidden text-center">
+          ${stat('views 30d', num(x.views_30d))}${stat('site / phone', num(x.site_30d) + ' / ' + num(x.phone_30d))}${stat('inquiries 30d', num(x.inquiries_30d))}${stat('rank of ' + num(x.category_count), '#' + num(x.category_rank))}
+        </div>
+        <p id="sp-msg" class="text-sm mt-3 min-h-5 ${/^Sent/.test(SP.msg) ? 'text-spruce-800' : 'text-clay-700'}">${esc(SP.msg)}</p>
+        ${body}`;
+    }
+    async function sendPitchNow(){
+      if (!SP || !SP.p || !SP.p.ok || SP.p.blocked) return;
+      if (!confirm(`Send this pitch to ${SP.p.to} now?`)) return;
+      const btn = document.getElementById('sp-send'); btn.disabled = true; btn.textContent = 'Sending…';
+      const id = SP.id;
+      const r = await fetch('/api/admin-pitch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: tok(), vendor_id: id, action: 'send' }) }).then(r => r.json()).catch(() => null);
+      if (!SP || SP.id !== id) return;
+      if (r && r.ok) { SP.msg = `Sent to ${r.to}.`; SP.p.blocked = 'Pitch sent just now.'; await loadSales(true); paintSales(); }
+      else SP.msg = (r && r.error) || 'Could not send. Nothing was sent.';
+      paintPitch();
+    }
+    document.addEventListener('click', async e => {
+      const t = e.target;
+      if (t.closest('[data-tab="sales"]')) { openSales(false); return; }
+      if (t.closest('#ad-refresh') && SL) { SL = null; setTimeout(() => { if (activeTab === 'sales') openSales(true); }, 0); return; }
+      const sth = t.closest('th[data-ssort]'); if (sth) { const k = sth.dataset.ssort; if (sSort === k) sDir = -sDir; else { sSort = k; sDir = ['name', 'category_rank'].includes(k) ? 1 : -1; } paintSales(); return; }
+      const srow = t.closest('tr[data-sid]'); if (srow) { openPitch(Number(srow.dataset.sid)); return; }
+      if (t.closest('#sales-close') || t.closest('#sales-bg')) { closePitch(); return; }
+      if (t.closest('#sp-copy')) { const b = t.closest('#sp-copy'); const txt = `Subject: ${SP.p.subject}\n\n${SP.p.text}`; try { await navigator.clipboard.writeText(txt); b.textContent = 'Copied ✓'; } catch (_) { const ta = document.getElementById('sp-body'); ta.select(); b.textContent = 'Selected, press Ctrl C'; } setTimeout(() => { b.textContent = 'Copy'; }, 2000); return; }
+      if (t.closest('#sp-send')) { sendPitchNow(); return; }
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && SP) closePitch(); });
 
     // ---------- events ----------
     document.addEventListener('click', async e => {

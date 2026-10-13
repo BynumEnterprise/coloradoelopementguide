@@ -111,6 +111,13 @@ const slotTemplates = Object.fromEntries(Object.keys(CATEGORIES).flatMap(c => Ob
             <p class="mt-3 text-xs text-ink/50">Use code <strong>FIRSTMONTH1</strong> at checkout.</p>
           </div>
 
+          <!-- WHY FEATURED (filled from this vendor's own numbers and the live slot count) -->
+          <div id="vd-why" class="hidden mt-6 rounded-3xl border border-hairline bg-parchment/50 p-6">
+            <p class="eyebrow text-clay-600">Why Featured</p>
+            <div id="vd-why-body" class="mt-3 text-sm text-ink/75 leading-relaxed space-y-3"></div>
+            <a href="/featured" class="inline-block mt-4 text-sm font-semibold text-clay-700 underline underline-offset-4">How Featured works and every open spot →</a>
+          </div>
+
           <!-- BADGE -->
           <div id="vd-badge" class="hidden mt-8">
             <p class="eyebrow text-clay-600 mb-4">Put Our Badge On Your Site</p>
@@ -223,6 +230,25 @@ const slotTemplates = Object.fromEntries(Object.keys(CATEGORIES).flatMap(c => Ob
       const tpl = slotTemplates[v.category + '|' + v.sub_region];
       if (tpl) { slot.textContent = tpl.replace('999', String(s.open)); slot.classList.remove('hidden'); }
       if (s.open <= 0) { document.getElementById('vd-buy').classList.add('hidden'); document.getElementById('vd-wait').classList.remove('hidden'); }
+      paintWhy(s.open, tpl ? tpl.replace('999', String(s.open)) : '');
+    }
+
+    // ---------- why Featured: their own numbers next to the live slot count ----------
+    function paintWhy(open, slotText){
+      const st = VD.stats || {}, b = VD.benchmark || {};
+      const t = VD.totals || { views_30d: st.views_30d, site_30d: st.site_clicks_30d, phone_30d: st.phone_clicks_30d, inquiries_total: st.inquiries_total };
+      const views = Number(t.views_30d || 0), clicks = Number(t.site_30d || 0) + Number(t.phone_30d || 0), inq = Number(t.inquiries_total || 0);
+      const cat = (catNames[VD.vendor.category] || 'vendors').toLowerCase();
+      const lines = [];
+      lines.push(views > 0
+        ? `In the last 30 days your page had <strong class="text-ink">${num(views)}</strong> ${views === 1 ? 'view' : 'views'} and <strong class="text-ink">${num(clicks)}</strong> ${clicks === 1 ? 'click' : 'clicks'} to your website or phone${inq ? `, and couples have sent you <strong class="text-ink">${num(inq)}</strong> ${inq === 1 ? 'inquiry' : 'inquiries'} so far` : ''}.`
+        : 'Your page has had few views in the last 30 days. Free listings are sorted by Google rating and review count, so a newer or less reviewed listing can sit low on the page.');
+      if (b.category_count && b.category_rank_30d) lines.push(`You rank #${num(b.category_rank_30d)} of ${num(b.category_count)} ${esc(cat)} by views. Featured listings show above every free listing on your category and region pages, so rank stops mattering.`);
+      lines.push(open > 0
+        ? `${esc(slotText)}. Spots go in order of signup, and a full group means a waitlist.`
+        : `${esc(slotText)}. Join the waitlist above and you are first in line when one opens.`);
+      document.getElementById('vd-why-body').innerHTML = lines.map(l => `<p>${l}</p>`).join('');
+      document.getElementById('vd-why').classList.remove('hidden');
     }
 
     // ---------- photos: upload, cover, order, delete ----------

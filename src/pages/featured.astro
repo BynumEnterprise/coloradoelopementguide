@@ -1,0 +1,169 @@
+---
+import Base from '../layouts/Base.astro';
+import { IMG } from '../lib/assets';
+import { SB_URL, SB_KEY } from '../lib/supabase';
+import { CATEGORIES, REGIONS } from '../lib/taxonomy';
+import { FEATURED_CAP, FOUNDING_CAP, FEATURED_LINK, foundingLine } from '../lib/outreach';
+
+// Live slot grid from the database at build time (ceg_featured_slots_all); the browser refreshes it on load.
+type Slot = { category: string; sub_region: string; taken: number; open: number; live: number };
+let grid: { featured?: number; founding_left?: number; slots?: Slot[] } = {};
+try {
+  const r = await fetch(`${SB_URL}/rest/v1/rpc/ceg_featured_slots_all`, { method: 'POST', headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' }, body: '{}' });
+  if (r.ok) grid = await r.json();
+} catch { /* the client fetch fills it in */ }
+const slots: Slot[] = grid.slots || [];
+const foundingLeft = typeof grid.founding_left === 'number' ? grid.founding_left : FOUNDING_CAP;
+const cats = Object.keys(CATEGORIES);
+const regs = Object.keys(REGIONS);
+const catShort: Record<string, string> = { photographers: 'Photographers', venues: 'Venues', florists: 'Florists', 'hair-makeup': 'Hair and Makeup', officiants: 'Officiants', planners: 'Planners' };
+const cell = (c: string, r: string) => slots.find(s => s.category === c && s.sub_region === r);
+const openTotal = slots.reduce((a, s) => a + (s.open || 0), 0);
+const allTotal = cats.length * regs.length * FEATURED_CAP;
+
+const faqs: [string, string][] = [
+  ['Is there a contract?', 'No. Featured is a monthly subscription through Stripe. Cancel anytime by replying to any of our emails, and your listing simply goes back to a free listing.'],
+  ['What does the founding price lock mean?', `The first ${FOUNDING_CAP} vendors to go Featured keep $40 a month for as long as they stay subscribed, even if the price goes up later. If you cancel and come back, the current price applies.`],
+  ['How does the $1 first month work?', 'Enter the code FIRSTMONTH1 at checkout. The first month is $1, then $40 a month after that.'],
+  ['What happens when my category and region is full?', `Each category in each region has ${FEATURED_CAP} Featured spots. When all ${FEATURED_CAP} are taken, you can join the waitlist from your vendor dashboard and the waitlist is first in line when a spot opens. We do not add a fourth.`],
+  ['Do I need to claim my listing first?', 'Yes. Claim your free listing and create your vendor account, then check out with the same email address. That is how Featured switches on for the right listing without any back and forth.'],
+  ['Will Featured change my ratings or reviews?', 'No. Ratings come from Google and are shown as they are. Featured changes where your listing appears, and it is always labeled as Featured so couples know it is a paid placement.'],
+  ['Can you promise a number of inquiries?', 'No, and we would be wary of anyone who does. Your dashboard shows bot filtered views, clicks and inquiries so you can judge what the placement brings in and cancel if it is not worth it.']
+];
+const faqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) };
+
+const rows: [string, string, string][] = [
+  ['Listing with your details, ratings and links', '✓', '✓'],
+  ['Edit your listing anytime from your dashboard', '✓', '✓'],
+  ['Cover photo and up to six gallery photos', '✓', '✓'],
+  ['Couple inquiries delivered to your email', '✓', '✓'],
+  ['Bot filtered views, clicks and a 30 day chart', '✓', '✓'],
+  ['Website badge that links to your listing', '✓', '✓'],
+  ['Top of your category page', '', '✓'],
+  ['Top of your region page', '', '✓'],
+  ['Homepage rotation', '', '✓'],
+  ['Featured label on your listing card', '', '✓'],
+  [`Only ${FEATURED_CAP} per category per region`, '', '✓'],
+  ['Price', '$0 forever', '$40 a month, first month $1']
+];
+---
+<Base title="Featured Listings for Colorado Wedding Vendors | Colorado Elopement Guide" description={`Featured placement for Colorado elopement vendors: top of your category and region pages, homepage rotation, always labeled. ${FEATURED_CAP} spots per category per region. $40 a month, first month $1, cancel anytime.`}>
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(faqLd)} />
+  <section class="relative min-h-[38vh] flex items-end">
+    <img src={`${IMG}/vendors-cta.jpg`} alt="Florist arranging a bridal bouquet" class="absolute inset-0 w-full h-full object-cover" fetchpriority="high" />
+    <div class="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/25 to-black/25"></div>
+    <div class="relative z-10 max-w-7xl mx-auto px-5 md:px-8 pb-12 w-full">
+      <p class="eyebrow text-gold mb-3">Featured Listings</p>
+      <h1 class="display text-white text-4xl md:text-5xl leading-tight">Be one of three.<br /><span class="serif-i">Not one of a hundred.</span></h1>
+    </div>
+  </section>
+
+  <div class="max-w-5xl mx-auto px-5 md:px-8">
+    <section class="pt-12">
+      <p class="text-ink/70 leading-relaxed max-w-2xl">Every Colorado vendor on the guide gets a free listing, forever. Featured is the paid upgrade: your listing moves to the top of the pages couples browse, and only {FEATURED_CAP} vendors per category in each region can have it. Right now <span id="ft-open-total" class="font-semibold text-ink">{openTotal}</span> of {allTotal} spots are open.</p>
+    </section>
+
+    <section class="pt-10">
+      <div class="rounded-3xl bg-spruce-900 text-ivory p-7 md:p-9 md:flex items-center justify-between gap-8">
+        <div>
+          <p class="eyebrow text-gold mb-2">Founding Featured</p>
+          <p class="display text-2xl leading-snug">The first {FOUNDING_CAP} Featured vendors keep <span class="serif-i">$40 a month</span> for as long as they stay subscribed.</p>
+          <p class="text-sm text-ivory/75 mt-3 leading-relaxed max-w-xl">A price lock, not a promo. The first month is $1 with code FIRSTMONTH1. No contract, cancel anytime.</p>
+        </div>
+        <div class="mt-6 md:mt-0 shrink-0 text-center">
+          <p class="display text-5xl" id="ft-founding-n">{foundingLeft}</p>
+          <p class="text-xs text-ivory/70 mt-1" id="ft-founding-line">{foundingLine(foundingLeft)}</p>
+          <a href={FEATURED_LINK} rel="noopener" class="inline-block mt-4 rounded-full bg-ivory text-ink px-6 py-3 text-sm font-semibold hover:bg-white transition-colors">Go Featured, First Month $1 →</a>
+        </div>
+      </div>
+      <p class="text-[11px] text-ink/40 mt-2">Live count: {FOUNDING_CAP} minus the vendors who are Featured right now.</p>
+    </section>
+
+    <section class="pt-14">
+      <h2 class="display text-3xl leading-tight">What Featured <span class="serif-i">includes</span></h2>
+      <div class="grid md:grid-cols-2 gap-5 mt-8">
+        <div class="rounded-3xl border border-hairline bg-white p-7"><p class="eyebrow text-clay-600 mb-2">Placement</p><p class="display text-xl leading-snug">Top of your category <span class="serif-i">and region pages</span></p><p class="text-sm text-ink/70 leading-relaxed mt-3">Featured listings show first on the category page for what you do and on the region page where you work, ahead of the free listings.</p></div>
+        <div class="rounded-3xl border border-hairline bg-white p-7"><p class="eyebrow text-clay-600 mb-2">Homepage</p><p class="display text-xl leading-snug">Homepage <span class="serif-i">rotation</span></p><p class="text-sm text-ink/70 leading-relaxed mt-3">Featured vendors with a photo are shown first in the vendor row on the homepage, the page most couples land on.</p></div>
+        <div class="rounded-3xl border border-hairline bg-white p-7"><p class="eyebrow text-clay-600 mb-2">Honest Labeling</p><p class="display text-xl leading-snug">Always labeled <span class="serif-i">Featured</span></p><p class="text-sm text-ink/70 leading-relaxed mt-3">Your listing card carries a Featured label and a clay border. Couples know it is a paid placement, and your Google rating is shown exactly as it is.</p></div>
+        <div class="rounded-3xl border border-hairline bg-white p-7"><p class="eyebrow text-clay-600 mb-2">Inquiries And Stats</p><p class="display text-xl leading-snug">See what it <span class="serif-i">brings in</span></p><p class="text-sm text-ink/70 leading-relaxed mt-3">Couple inquiries go straight to your email with Reply To the couple. Your dashboard shows bot filtered views, website clicks, phone taps and inquiries, so you can decide if it is worth keeping.</p></div>
+      </div>
+    </section>
+
+    <section class="pt-14">
+      <h2 class="display text-3xl leading-tight">Open spots, <span class="serif-i">live</span></h2>
+      <p class="text-sm text-ink/60 mt-3 max-w-2xl">{FEATURED_CAP} Featured spots per category in each region. Spots go in order of signup; a full group means a waitlist, never a fourth spot.</p>
+      <div class="mt-6 overflow-x-auto rounded-3xl border border-hairline bg-white">
+        <table class="w-full min-w-[760px] text-sm" id="ft-grid">
+          <thead><tr class="bg-parchment/60 text-ink/55"><th class="text-left font-medium px-4 py-3">Region</th>{cats.map(c => <th class="text-center font-medium px-2 py-3">{catShort[c]}</th>)}</tr></thead>
+          <tbody>
+            {regs.map(r => (
+              <tr class="border-t border-hairline">
+                <td class="px-4 py-3 whitespace-nowrap">{REGIONS[r].name}</td>
+                {cats.map(c => { const s = cell(c, r); const open = s ? s.open : FEATURED_CAP; return (
+                  <td class="px-2 py-3 text-center" data-c={c} data-r={r}>
+                    {open > 0
+                      ? <span class="inline-block rounded-full bg-spruce-800/10 text-spruce-800 px-3 py-1 text-xs font-semibold tabular-nums">{open} of {FEATURED_CAP} open</span>
+                      : <span class="inline-block rounded-full bg-clay-500/10 text-clay-700 px-3 py-1 text-xs font-semibold">Full, waitlist</span>}
+                  </td>); })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="text-[11px] text-ink/40 mt-2" id="ft-updated">Counts come straight from the database.</p>
+    </section>
+
+    <section class="pt-14">
+      <h2 class="display text-3xl leading-tight">Free or <span class="serif-i">Featured</span></h2>
+      <div class="mt-6 overflow-x-auto rounded-3xl border border-hairline bg-white">
+        <table class="w-full min-w-[520px] text-sm">
+          <thead><tr class="bg-parchment/60 text-ink/55"><th class="text-left font-medium px-5 py-3"></th><th class="text-center font-medium px-4 py-3 w-36">Free</th><th class="text-center font-medium px-4 py-3 w-44 text-clay-700">Featured</th></tr></thead>
+          <tbody>
+            {rows.map(([l, f, p]) => <tr class="border-t border-hairline"><td class="px-5 py-3 text-ink/80">{l}</td><td class="px-4 py-3 text-center text-ink/70">{f || <span class="text-ink/25">·</span>}</td><td class="px-4 py-3 text-center font-medium text-ink">{p}</td></tr>)}
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-8 flex flex-wrap items-center gap-3">
+        <a href="/claim" class="inline-block rounded-full bg-ink text-ivory px-6 py-3 text-sm font-semibold hover:bg-spruce-800 transition-colors">Claim Your Free Listing First</a>
+        <a href={FEATURED_LINK} rel="noopener" class="inline-block rounded-full bg-clay-500 text-ivory px-6 py-3 text-sm font-semibold hover:bg-clay-600 transition-colors">Go Featured, First Month $1 →</a>
+        <a href="/vendor-dashboard" class="inline-block rounded-full px-4 py-3 text-sm font-medium text-ink/60 underline underline-offset-4">Vendor Sign In</a>
+      </div>
+      <p class="mt-3 text-xs text-ink/50">Use code <strong>FIRSTMONTH1</strong> at checkout, with the same email as your vendor account.</p>
+    </section>
+
+    <section class="pt-14 pb-16">
+      <h2 class="display text-3xl leading-tight">Questions</h2>
+      <div class="mt-6 divide-y divide-hairline border-y border-hairline">
+        {faqs.map(([q, a]) => (
+          <details class="group py-4">
+            <summary class="cursor-pointer list-none flex items-center justify-between gap-4 font-medium text-ink"><span>{q}</span><span class="text-ink/40 group-open:rotate-45 transition-transform text-xl leading-none">+</span></summary>
+            <p class="text-sm text-ink/70 leading-relaxed mt-3 max-w-3xl">{a}</p>
+          </details>
+        ))}
+      </div>
+      <p class="text-xs text-ink/40 mt-8">Featured placement is always labeled. Placement never changes the Google ratings shown, and we never write or alter reviews.</p>
+    </section>
+  </div>
+
+  <script is:inline define:vars={{ cap: FEATURED_CAP, fcap: FOUNDING_CAP }}>
+    fetch('https://yucgsuzveabsgntlmste.supabase.co/rest/v1/rpc/ceg_featured_slots_all', { method: 'POST', headers: { apikey: 'sb_publishable_acsHsb9mrZ756aT12EgAPQ_GugWXmjM', Authorization: 'Bearer sb_publishable_acsHsb9mrZ756aT12EgAPQ_GugWXmjM', 'Content-Type': 'application/json' }, body: '{}' })
+      .then(function(r){ return r.ok ? r.json() : null; }).then(function(g){
+        if (!g || !Array.isArray(g.slots)) return;
+        var total = 0;
+        g.slots.forEach(function(s){
+          total += s.open || 0;
+          var td = document.querySelector('#ft-grid td[data-c="' + s.category + '"][data-r="' + s.sub_region + '"]');
+          if (!td) return;
+          td.innerHTML = s.open > 0
+            ? '<span class="inline-block rounded-full bg-spruce-800/10 text-spruce-800 px-3 py-1 text-xs font-semibold tabular-nums">' + s.open + ' of ' + cap + ' open</span>'
+            : '<span class="inline-block rounded-full bg-clay-500/10 text-clay-700 px-3 py-1 text-xs font-semibold">Full, waitlist</span>';
+        });
+        document.getElementById('ft-open-total').textContent = String(total);
+        if (typeof g.founding_left === 'number') {
+          document.getElementById('ft-founding-n').textContent = String(g.founding_left);
+          document.getElementById('ft-founding-line').textContent = g.founding_left + ' of ' + fcap + ' founding spots left';
+        }
+        if (g.generated_at) document.getElementById('ft-updated').textContent = 'Counts come straight from the database. Checked ' + new Date(g.generated_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) + '.';
+      }).catch(function(){});
+  </script>
+</Base>
