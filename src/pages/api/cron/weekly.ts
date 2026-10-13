@@ -16,7 +16,7 @@ import { runCanary } from '../../../lib/canary';
 //   5. create 3 Pinterest pins when PINTEREST_ACCESS_TOKEN and PINTEREST_BOARD_ID are set
 //   6. monthly_reports: first Monday of the month (Denver), the previous month's stats email to each verified vendor account
 //   7. canary: money path canary against the hidden synthetic vendor (src/lib/canary.ts); alerts the owner on failure
-// Flags for manual runs: ?dry=1 (release count 0, no sends, no pins), ?release=N, ?only=monthly_reports or ?only=canary (that stage alone).
+// Flags for manual runs: ?dry=1 (release count 0, no sends, no pins), ?release=N, ?only=monthly_reports, ?only=canary or ?only=digest (that stage alone; digest also runs the canary so it can report it).
 
 const RELEASE_N = 40;
 const DASHES = /[\-‐‑‒–—―]/g;
@@ -107,32 +107,64 @@ function fmtCounts(o: Record<string, number> | null | undefined): string {
   return Object.entries(o).map(([k, v]) => `${k.replace(/_/g, ' ')} ${v}`).join(', ');
 }
 
+const pct = (a: number, b: number) => (b > 0 ? `${a >= b ? 'up' : 'down'} ${Math.round(Math.abs(a - b) / b * 100)} percent` : 'no data for the prior week');
+const prettyPath = (p: string) => (p === '/' ? 'home page' : p.replace(/\/$/, '').replace(/^\/(resources|venues|vendor|local|category|guides|region)\//, '').replace(/[\/-]+/g, ' ').trim() || p);
+
 export function buildDigest(d: any, run: Record<string, any>, date: string): string {
-  const lines: string[] = [];
-  lines.push(`Colorado Elopement Guide weekly numbers for ${date}.`);
-  lines.push('');
-  lines.push(`Vendors by status: ${fmtCounts(d.vendors_by_status)}.`);
-  lines.push(`Outreach status: ${fmtCounts(d.outreach_status)}.`);
-  lines.push(`Claim invites sent in the last 7 days: ${d.outreach_sent_7d ?? 0} (batch log total ${d.outreach_log_7d ?? 0}). Contactable backlog ${d.outreach_pending_contactable ?? 0}, discovery backlog ${d.discovery_backlog ?? 0}, still queued ${d.queued_remaining ?? 0}.`);
-  const vu = d.vendor_users || {};
-  lines.push(`Vendor accounts: ${vu.verified ?? 0} verified, ${vu.pending ?? 0} pending, ${vu.unsubscribed ?? 0} unsubscribed, ${vu.new_7d ?? 0} new this week.`);
-  lines.push(`Claims in the last 7 days: ${d.claims_7d ?? 0}.`);
-  for (const c of (d.claims_7d_list || []).slice(0, 10)) lines.push(`  ${displayName(c.vendor || 'unlisted business')} by ${displayName(c.claimant || '')} (${c.email || ''})`);
-  const feat = (d.featured || []) as { name: string; featured_until: string | null }[];
-  lines.push(`Featured: ${feat.length ? feat.map(f => `${displayName(f.name)} until ${f.featured_until || 'open'}`).join(', ') : 'none'}.`);
-  lines.push(`Site events this week: ${fmtCounts(d.events_7d)}. Previous week: ${fmtCounts(d.events_prev_7d)}.`);
-  const top = (d.top_vendors_7d || []) as { name: string; views: number }[];
-  lines.push(`Most viewed listings: ${top.length ? top.map(t => `${displayName(t.name)} ${t.views}`).join(', ') : 'none'}.`);
-  const drips = d.drips_7d && Object.keys(d.drips_7d).length ? Object.entries(d.drips_7d as Record<string, number>).map(([k, v]) => `step ${k} sent ${v}`).join(', ') : 'none';
-  lines.push(`Onboarding drips this week: ${drips}.`);
-  lines.push(`Inquiries this week: ${d.inquiries_7d ?? 0}. New subscribers: ${d.subscribers_7d ?? 0}.`);
-  lines.push('');
-  lines.push(`This run released ${run.released ?? 0} vendors (${run.regions || 'none'}). Maps refresh updated ${run.ratings_updated ?? 0} ratings and ${run.images_updated ?? 0} photos, ${run.maps_unmatched ?? 0} unmatched, ${run.maps_errors ?? 0} errors. Deploy hook ${run.deploy ? 'fired' : 'failed'}. Pinterest: ${run.pinterest || 'skipped'}.`);
-  lines.push('');
-  lines.push(`Admin: ${SITE}/admin`);
-  lines.push('');
-  lines.push('Ryan, this is the automated Monday digest from the site.');
-  return dedash(lines.join('\n'));
+  const w = d.week || {};
+  const se = (w.site_events || {}) as Record<string, number>;
+  const sp = (w.site_events_prev || {}) as Record<string, number>;
+  const ev = (k: string) => `${se[k] ?? 0}${sp[k] != null ? ` (prior ${sp[k]})` : ''}`;
+  const L: string[] = [];
+  L.push(`Colorado Elopement Guide, week ending ${date}`);
+  L.push('');
+  L.push('TRAFFIC');
+  L.push(`Visitors ${w.visitors ?? 0} (prior ${w.visitors_prev ?? 0}, ${pct(w.visitors ?? 0, w.visitors_prev ?? 0)})`);
+  L.push(`Pageviews ${w.pageviews ?? 0} (prior ${w.pageviews_prev ?? 0})`);
+  const tp = (w.top_pages || []) as { path: string; n: number }[];
+  L.push(`Top pages: ${tp.length ? tp.map(p => `${prettyPath(p.path)} ${p.n}`).join('; ') : 'none yet'}`);
+  const src = (w.sources || []) as { source: string; n: number }[];
+  L.push(`Sources (visits): ${src.length ? src.map(s => `${s.source} ${s.n}`).join(', ') : 'none yet'}`);
+  L.push('');
+  L.push('COUPLES');
+  L.push(`Inquiries ${w.inquiries ?? 0}, delivered ${w.inquiries_delivered ?? 0}, replied ${w.inquiries_replied == null ? 'not tracked yet' : w.inquiries_replied}`);
+  L.push(`Inquiry form submits ${ev('inquiry_submitted')}. Website clicks ${ev('vendor_website_click')}. Phone clicks ${ev('vendor_phone_click')}`);
+  L.push(`Planner signups ${ev('planner_signup')}, new couple accounts ${w.couples ?? 0}, subscribers ${w.subscribers ?? 0}, nurture emails sent ${w.nurture_sent ?? 0}`);
+  L.push('');
+  L.push('VENDORS');
+  L.push(`Claims ${w.claims ?? 0}, new vendor accounts ${w.vendor_accounts ?? 0} (verified total ${w.vendor_accounts_verified_total ?? 0}), vendor signups on site ${ev('vendor_signup')}`);
+  L.push(`Live listings ${w.live_listings ?? 0}, ${w.released_7d ?? 0} went live this week, ${run.released ?? 0} released by this run`);
+  L.push(`Featured ${w.featured ?? 0}, founding spots open ${w.founding_left ?? 10} of 10, waitlist ${w.waitlist ?? 0}, Featured checkout clicks ${ev('featured_checkout_click')}, pitches sent ${w.pitches_7d ?? 0}`);
+  L.push('');
+  L.push('OUTREACH');
+  L.push(`Claim invites ${w.outreach_sent ?? 0}, follow ups ${w.followups_sent ?? 0}, contactable left ${w.contactable_left ?? 0}`);
+  const lp = w.link_prospects || {};
+  L.push(`Link prospects: ${lp.total ?? 0} total, ${lp.sent_7d ?? 0} pitched this week, ${lp.replied ?? 0} replied`);
+  if (w.press) L.push(`Press contacts: ${w.press.total ?? 0} total, ${w.press.pitched ?? 0} pitched, ${w.press.replied ?? 0} replied`);
+  L.push('');
+  const c = run.canary as any;
+  const failed = c && Array.isArray(c.checks) ? c.checks.filter((x: any) => !x.ok).map((x: any) => x.name) : [];
+  L.push(`Canary: ${!c ? 'not run' : c.error ? `error, ${String(c.error).slice(0, 80)}` : c.pass ? `pass, ${c.checks?.length ?? 0} of ${c.checks?.length ?? 0} checks` : `FAILED on ${failed.join(', ')}`}`);
+  L.push(`Maps refresh ${run.ratings_updated ?? 0} ratings, ${run.images_updated ?? 0} photos. Deploy ${run.deploy ? 'fired' : 'not fired'}. Pinterest ${run.pinterest || 'skipped'}`);
+  L.push('');
+  L.push('THIS WEEK');
+  const todo: string[] = [];
+  if (c && !c.pass) todo.push('Fix the canary first. A broken inquiry or checkout path costs more than anything else on this list.');
+  if ((w.inquiries ?? 0) > 0 && w.inquiries_replied != null && w.inquiries_replied < w.inquiries) todo.push(`${w.inquiries - w.inquiries_replied} inquiries have no vendor reply yet. Nudge those vendors from the admin.`);
+  if ((se.featured_checkout_click ?? 0) > (w.featured ?? 0)) todo.push(`${se.featured_checkout_click} Featured checkout clicks did not convert. Send a personal note from the Sales tab.`);
+  if ((w.featured ?? 0) === 0 && (w.vendor_accounts_verified_total ?? 0) > 0 && (w.pitches_7d ?? 0) === 0) todo.push(`No Featured customers yet and no pitches this week. Open the Sales tab and send the founding offer to the ${Math.min(5, w.vendor_accounts_verified_total)} claimed vendors with the most views.`);
+  if ((w.pageviews ?? 0) < 500) {
+    const best = tp.find(p => p.path !== '/' && p.path !== '/thanks');
+    todo.push(best ? `Traffic is still small. ${prettyPath(best.path)} leads; link to it from two related guides and pitch it to one link prospect.` : 'Traffic is still small. Push the newest guides to link prospects and Pinterest.');
+  }
+  if ((lp.sent_7d ?? 0) > 0 && (lp.replied ?? 0) === 0) todo.push('No link replies yet. The 10 day follow up goes out once; then move on.');
+  if ((w.contactable_left ?? 0) < 25) todo.push(`Only ${w.contactable_left ?? 0} vendors are ready to invite. Run contact discovery or add supply.`);
+  if ((w.claims ?? 0) > 0) todo.push(`${w.claims} new claims. Check each new account finished its profile and photos.`);
+  todo.push('Check the admin Traffic tab for what moved.');
+  todo.slice(0, 3).forEach((t, i) => L.push(`${i + 1}. ${t}`));
+  L.push('');
+  L.push(`Admin: ${SITE}/admin`);
+  return dedash(L.join('\n'));
 }
 
 export const GET: APIRoute = async ({ request }) => {
@@ -157,6 +189,19 @@ export const GET: APIRoute = async ({ request }) => {
     catch (e) { run.canary = { error: String(e).slice(0, 300) }; run.ok = false; }
     run.ms = Date.now() - started;
     console.log('CRON weekly', JSON.stringify(run));
+    return json(run);
+  }
+
+  if (url.searchParams.get('only') === 'digest') {
+    try { run.canary = await runCanary(secret, dry); } catch (e) { run.canary = { error: String(e).slice(0, 300) }; }
+    try {
+      const date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/Denver' });
+      const text = buildDigest(await rpc<any>('ceg_cron_digest', { p_secret: secret }), run, date);
+      run.digest_words = text.split(/\s+/).length;
+      if (!dry) { const res = await sendMailResult(OWNER_EMAIL, `CEG weekly: ${date}`, text); run.digest_sent = res.ok; if (!res.ok) run.digest_error = res.error; }
+      else run.digest_preview = text;
+    } catch (e) { run.digest_error = String(e).slice(0, 300); run.ok = false; }
+    run.ms = Date.now() - started;
     return json(run);
   }
 
@@ -219,6 +264,10 @@ export const GET: APIRoute = async ({ request }) => {
     } catch (e) { run.indexnow = { error: String(e).slice(0, 200) }; }
   }
 
+  // 7. Canary (runs before the digest so the Monday email reports it; its own owner alert on failure)
+  try { run.canary = await runCanary(secret, dry); }
+  catch (e) { run.canary = { error: String(e).slice(0, 300) }; }
+
   // 4. Owner digest (date written without dashes: "Oct 12, 2026")
   const date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/Denver' });
   try {
@@ -257,10 +306,6 @@ export const GET: APIRoute = async ({ request }) => {
       run.digest_sent = res.ok; if (!res.ok) run.digest_error = res.error;
     } else run.digest_preview = text;
   } catch (e) { run.digest_error = String(e).slice(0, 300); run.ok = false; }
-
-  // 7. Canary (additive; its own owner alert on failure)
-  try { run.canary = await runCanary(secret, dry); }
-  catch (e) { run.canary = { error: String(e).slice(0, 300) }; }
 
   // 6. Monthly vendor stats reports (additive; sends only on the first Monday, stops before the 300s limit)
   try { run.monthly_reports = await runMonthlyReports(secret, dry, started + 270_000); }
