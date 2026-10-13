@@ -4,6 +4,7 @@ import { json, rpc, sleep, authSecret, cronAuthorized, fetchWithTimeout, mapLimi
 import { sendMailResult } from '../../../lib/mail';
 import { renderV4, renderDrip, renderFollowup, renderActivation, type OutreachVendor, type DripUser, type FollowupVendor, type ActivationUser } from '../../../lib/outreach';
 import { renderNurture, sendCoupleMail, type NurtureRecipient } from '../../../lib/couple-mail';
+import { renderReplyReminder, renderPhotoNudge, type ReplyReminder, type PhotoNudge } from '../../../lib/trust-mail';
 
 // Daily P2 automation (Vercel cron, 15:00 UTC):
 //   1. contact discovery for up to 12 seeded vendors with a website and no email
@@ -273,6 +274,64 @@ export const GET: APIRoute = async ({ request }) => {
       }
     } catch (e) { nu.fatal = String(e).slice(0, 300); summary.ok = false; }
     summary.nurture = nu;
+  }
+
+  // 5. Reply reminders (?only=reply_reminders): one gentle note per unreplied inquiry to a claimed or Featured
+  //    account two days after delivery, cap 30 a day. Also refreshes the 90 day median reply stats behind the badges.
+  //    reminder_sent_at is written before the send and cleared again if the send fails.
+  if (run('reply_reminders')) {
+    const rr: Record<string, unknown> = { due: 0, sent: [] as unknown[], failed: [] as unknown[], blocked: [] as unknown[] };
+    try {
+      if (!dry) { try { rr.stats_refreshed = await rpc<number>('ceg_cron_reply_stats_refresh', { p_secret: secret }); } catch (e) { rr.stats_error = String(e).slice(0, 200); } }
+      const due = await rpc<ReplyReminder[]>('ceg_cron_reply_reminders_due', { p_secret: secret, p_limit: 30 });
+      rr.due = due.length;
+      for (const r of due) {
+        if (Date.now() - started > 285_000) { rr.stopped_early = 'time budget'; break; }
+        let mail;
+        try { mail = renderReplyReminder(r); }
+        catch (e) { (rr.blocked as unknown[]).push({ inquiry: r.inquiry_id, reason: String((e as Error).message || e).slice(0, 200) }); continue; }
+        if (dry) { (rr.sent as unknown[]).push({ inquiry: r.inquiry_id, to: r.email, vendor: r.slug, subject: mail.subject, text: mail.text }); continue; }
+        let marked = false;
+        try { marked = Boolean(await rpc<boolean>('ceg_cron_reply_reminder_mark', { p_secret: secret, p_id: r.inquiry_id })); }
+        catch (e) { (rr.failed as unknown[]).push({ inquiry: r.inquiry_id, error: 'mark failed, not sent: ' + String(e).slice(0, 200) }); continue; }
+        if (!marked) continue;
+        const res = await sendMailResult(r.email, mail.subject, mail.text, mail.html);
+        if (res.ok) (rr.sent as unknown[]).push({ inquiry: r.inquiry_id, vendor: r.slug, id: res.id });
+        else {
+          (rr.failed as unknown[]).push({ inquiry: r.inquiry_id, vendor: r.slug, status: res.status, error: res.error });
+          try { await rpc('ceg_cron_reply_reminder_mark', { p_secret: secret, p_id: r.inquiry_id, p_clear: true }); } catch { /* noop */ }
+        }
+        await sleep(300);
+      }
+    } catch (e) { rr.fatal = String(e).slice(0, 300); summary.ok = false; }
+    summary.reply_reminders = rr;
+  }
+
+  // 6. Photo nudge (?only=photo_nudges, drip step 40): claimed vendors with no uploaded photos, once per vendor ever,
+  //    spaced 3 days from any other drip by ceg_cron_photo_nudge_due. The drip row is written before the send.
+  if (run('photo_nudges')) {
+    const pn: Record<string, unknown> = { due: 0, sent: [] as unknown[], failed: [] as unknown[], blocked: [] as unknown[] };
+    try {
+      const due = await rpc<PhotoNudge[]>('ceg_cron_photo_nudge_due', { p_secret: secret });
+      pn.due = due.length;
+      for (const u of due) {
+        if (Date.now() - started > 290_000) { pn.stopped_early = 'time budget'; break; }
+        let mail;
+        try { mail = renderPhotoNudge(u); }
+        catch (e) { (pn.blocked as unknown[]).push({ user: u.user_id, reason: String((e as Error).message || e).slice(0, 200) }); continue; }
+        if (dry) { (pn.sent as unknown[]).push({ user: u.user_id, to: u.email, vendor: u.slug, subject: mail.subject, text: mail.text }); continue; }
+        try { await rpc('ceg_cron_drip_mark', { p_secret: secret, p_user_id: u.user_id, p_step: 40 }); }
+        catch (e) { (pn.failed as unknown[]).push({ user: u.user_id, error: 'mark failed, not sent: ' + String(e).slice(0, 200) }); continue; }
+        const res = await sendMailResult(u.email, mail.subject, mail.text, mail.html);
+        if (res.ok) (pn.sent as unknown[]).push({ user: u.user_id, vendor: u.slug, id: res.id });
+        else {
+          (pn.failed as unknown[]).push({ user: u.user_id, vendor: u.slug, status: res.status, error: res.error });
+          try { await rpc('ceg_cron_drip_unmark', { p_secret: secret, p_user_id: u.user_id, p_step: 40 }); } catch { /* noop */ }
+        }
+        await sleep(300);
+      }
+    } catch (e) { pn.fatal = String(e).slice(0, 300); summary.ok = false; }
+    summary.photo_nudges = pn;
   }
 
   summary.ms = Date.now() - started;

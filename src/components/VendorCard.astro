@@ -1,8 +1,10 @@
 ---
 import { CATEGORIES, REGIONS } from '../lib/taxonomy';
 import { regionImg, gimg, opt, optSet } from '../lib/assets';
+import { replyBadge } from '../lib/vendors';
 const { v } = Astro.props;
 const featured = v.status === 'featured';
+const replyLine = replyBadge(v);
 const fallback = opt(regionImg(v.sub_region), 640);
 const src = gimg(v.image_url, 800, 500);
 ---
@@ -19,5 +21,6 @@ const src = gimg(v.image_url, 800, 500);
     <p class="eyebrow text-clay-600 mb-1.5">{CATEGORIES[v.category]?.singular}</p>
     <h3 class="display text-lg leading-snug text-ink group-hover:text-clay-700 transition-colors">{v.name}</h3>
     <p class="text-xs text-ink/50 mt-1">{REGIONS[v.sub_region]?.name}{Number.isFinite(v.starting_price) && <span class="text-ink/70"> · From ${Number(v.starting_price).toLocaleString('en-US')}</span>}</p>
+    {replyLine && <p class="text-xs text-spruce-800 mt-1.5">{replyLine}</p>}
   </div>
 </a>

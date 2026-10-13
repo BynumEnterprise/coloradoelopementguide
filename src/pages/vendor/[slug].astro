@@ -3,7 +3,7 @@ import Base from '../../layouts/Base.astro';
 import Tracker from '../../components/Tracker.astro';
 import VendorCard from '../../components/VendorCard.astro';
 import AlsoAsk from '../../components/AlsoAsk.astro';
-import { allVendors, money, servedRegions } from '../../lib/vendors';
+import { allVendors, money, servedRegions, replyBadge, checkedLabel } from '../../lib/vendors';
 import { CATEGORIES, REGIONS } from '../../lib/taxonomy';
 import { regionImg, gimg, opt, optSet } from '../../lib/assets';
 import { slotLine, FEATURED_CAP } from '../../lib/outreach';
@@ -30,6 +30,8 @@ const SITE = 'https://coloradoelopementguide.com';
 const pageUrl = `${SITE}/vendor/${v.slug}/`;
 const isFeatured = v.status === 'featured';
 const isClaimed = v.status === 'claimed' || isFeatured;
+const replyLine = replyBadge(v);
+const checkedOn = checkedLabel(v);
 // Address string from Google ("123 Main St, Estes Park, CO 80517, United States") to PostalAddress.
 function postal(a: string | null) {
   if (!a) return undefined;
@@ -105,6 +107,7 @@ const metaDesc = v.description.length > 155 ? v.description.slice(0, 152).replac
       <div class="p-6 md:p-9 md:grid md:grid-cols-3 md:gap-10">
         <div class="md:col-span-2">
           {v.rating && v.reviews ? <p class="text-sm font-medium text-ink mb-4">★ {v.rating}<span class="text-ink/45"> · {v.reviews} Google reviews</span></p> : null}
+          {replyLine && <p class="mb-4 inline-flex items-center gap-2 rounded-full bg-parchment border border-hairline px-3 py-1 text-xs font-medium text-spruce-800" title="Median time to reply over the last 90 days, from inquiries the business marked as replied">{replyLine}</p>}
           {price !== null && <p class="mb-4 text-ink"><span class="eyebrow text-clay-600 mr-2">Starting At</span><span class="display text-2xl">{money(price)}</span>{priceNote && <span class="text-sm text-ink/55 ml-2">{priceNote}</span>}</p>}
           <p class="text-ink/80 leading-relaxed">{v.description}</p>
           {hasDetails && <div class="mt-8 space-y-6" id="details">
@@ -127,6 +130,11 @@ const metaDesc = v.description.length > 155 ? v.description.slice(0, 152).replac
           {isClaimed
             ? <p class="mt-8 text-xs text-ink/40">This listing is claimed and kept up to date by {v.name}.{isFeatured && ' Featured placement is paid and always labeled.'}</p>
             : <p class="mt-8 text-xs text-ink/40">Listing compiled from public listings and Google Business Profile data. Details may have changed since. <a href={`/claim/${v.slug}`} data-track="claim_click" class="underline underline-offset-2 hover:text-clay-700">Is this your business? Claim it free</a></p>}
+          <aside id="how-we-check" class="mt-4 rounded-2xl border border-hairline bg-ivory/60 p-4 text-xs text-ink/60 leading-relaxed" aria-label="How we check listings">
+            <p class="eyebrow text-clay-600 mb-1.5">How We Check Listings</p>
+            <p>We build each listing from public business information and the vendor's own website, checked against Google. We remove a listing if it is not a wedding business, has closed, or misrepresents what it offers. Claimed means the business verified that it owns the listing. <a href="/editorial-policy" class="underline underline-offset-2 hover:text-clay-700">Our editorial policy</a></p>
+            {checkedOn && <p class="mt-1.5 text-ink/45">Checked {checkedOn}</p>}
+          </aside>
         </div>
         <div class="mt-8 md:mt-0">
           <div class="rounded-2xl bg-parchment/70 border border-hairline p-5 space-y-3 text-sm">

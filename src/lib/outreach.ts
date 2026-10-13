@@ -289,7 +289,7 @@ export function fmtMonthYear(iso: string | null | undefined): string | null {
 export type InquiryIn = { slug: string; vendorName: string; names: string; email: string; weddingDate: string | null; guests: number | null; message: string; sub_region: string; category: string };
 
 // Full inquiry to a claimed or Featured vendor's account email. Reply To is the couple.
-export function inquiryVendorEmail(q: InquiryIn): { subject: string; text: string; html: string } {
+export function inquiryVendorEmail(q: InquiryIn, repliedLink?: string): { subject: string; text: string; html: string } {
   const business = displayName(q.vendorName);
   const subject = `New inquiry from ${q.names} via Colorado Elopement Guide`;
   const text = `Hello ${business},
@@ -304,7 +304,10 @@ Guests: ${q.guests ?? 'not given'}
 Their message:
 ${q.message}
 
-Every inquiry also stays in your dashboard, where you can manage email from us: ${SITE_URL}/vendor-dashboard
+${repliedLink ? `Once you have written back, one click on this link marks it as replied so we stop reminding you:
+${repliedLink}
+
+` : ''}Every inquiry also stays in your dashboard, where you can manage email from us: ${SITE_URL}/vendor-dashboard
 
 Colorado Elopement Guide
 ${POSTAL_ADDRESS}

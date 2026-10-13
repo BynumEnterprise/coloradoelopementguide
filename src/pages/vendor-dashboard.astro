@@ -253,15 +253,23 @@ const slotTemplates = Object.fromEntries(Object.keys(CATEGORIES).flatMap(c => Ob
       } else if (!inq.items.length) {
         box.innerHTML = '<p>No inquiries yet. When a couple uses Check Availability on your listing, their note shows up here and in your email.</p>';
       } else {
-        box.innerHTML = `<p class="text-xs text-ink/50 mb-3">${num(inq.count)} ${inq.count === 1 ? 'inquiry' : 'inquiries'}. Reply goes straight to the couple.</p><ul>` + inq.items.map(i => {
+        box.innerHTML = `<p class="text-xs text-ink/50 mb-3">${num(inq.count)} ${inq.count === 1 ? 'inquiry' : 'inquiries'}. Reply goes straight to the couple. Mark each one as replied so we can show couples how quickly you answer.</p><ul>` + inq.items.map(i => {
           const subj = encodeURIComponent('Re: your inquiry to ' + v.name);
           const meta = [fmtWhen(i.created_at), i.wedding_date ? 'Wedding ' + fmtWhen(i.wedding_date) : null, i.guests ? num(i.guests) + ' guests' : null].filter(Boolean).join(' · ');
           return `<li class="py-4 border-b border-hairline last:border-0">
-            <div class="flex flex-wrap items-baseline justify-between gap-3"><p class="font-semibold text-ink">${esc(i.names)}</p><a href="mailto:${esc(i.email)}?subject=${subj}" class="rounded-full bg-ink text-ivory px-5 py-2 text-xs font-semibold hover:bg-spruce-800">Reply</a></div>
+            <div class="flex flex-wrap items-baseline justify-between gap-3"><p class="font-semibold text-ink">${esc(i.names)}</p><span class="flex flex-wrap items-center gap-2"><a href="mailto:${esc(i.email)}?subject=${subj}" class="rounded-full bg-ink text-ivory px-5 py-2 text-xs font-semibold hover:bg-spruce-800">Reply</a>${i.replied_at
+              ? `<span class="text-xs text-spruce-800 font-medium">Replied ${esc(fmtWhen(i.replied_at))}</span>`
+              : `<button type="button" data-replied="${Number(i.id)}" class="rounded-full border border-ink/40 px-4 py-2 text-xs font-semibold hover:bg-parchment">Mark As Replied</button>`}</span></div>
             <p class="text-xs text-ink/50 mt-1">${esc(meta)} · ${esc(i.email)}</p>
             <p class="mt-2 text-ink/80 whitespace-pre-line leading-relaxed">${esc(i.message)}</p></li>`;
         }).join('') + '</ul>';
       }
+      box.querySelectorAll('[data-replied]').forEach(b => b.addEventListener('click', async () => {
+        b.disabled = true; b.textContent = 'Saving…';
+        const r = await rpc('ceg_vendor_inquiry_replied', { p_token: vtok(), p_id: Number(b.dataset.replied) });
+        if (r && r.ok) { const s = document.createElement('span'); s.className = 'text-xs text-spruce-800 font-medium'; s.textContent = 'Replied ' + fmtWhen(r.replied_at); b.replaceWith(s); }
+        else { b.disabled = false; b.textContent = 'Mark As Replied'; }
+      }));
       const slot = document.getElementById('vd-slot');
       if (v.status === 'featured') { slot.textContent = 'You are Featured' + (v.featured_until ? ' through ' + fmtWhen(v.featured_until) : '') + '.'; slot.classList.remove('hidden'); document.getElementById('vd-buy').classList.add('hidden'); return; }
       rpc('ceg_public_stats', {}).then(st => {

@@ -2,6 +2,7 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { json, rpc, authSecret } from '../../lib/cron';
 import { sendMailResult, MAIL_FROM, OWNER_EMAIL } from '../../lib/mail';
+import { repliedUrl } from '../../lib/trust-mail';
 import { renderInquiryConfirm } from '../../lib/couple-mail';
 import { inquiryVendorEmail, inquiryNoticeEmail, naturalCheck, type InquiryIn } from '../../lib/outreach';
 
@@ -94,7 +95,7 @@ export const POST: APIRoute = async ({ request }) => {
   let notified = false; let note = '';
   try {
     if (res.mode === 'account' && res.to) {
-      const m = inquiryVendorEmail(q);
+      const m = inquiryVendorEmail(q, repliedUrl(res.id));
       const r = await sendReplyTo(res.to, email, m.subject, m.text, m.html);
       notified = r.ok; note = r.ok ? `full inquiry emailed to account ${res.to}` : `account email failed (${r.error})`;
     } else if (res.mode === 'notice' && res.to) {

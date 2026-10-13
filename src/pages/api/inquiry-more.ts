@@ -1,5 +1,6 @@
 export const prerender = false;
 import type { APIRoute } from 'astro';
+import { repliedUrl } from '../../lib/trust-mail';
 import { json, rpc, authSecret } from '../../lib/cron';
 import { sendMailResult, MAIL_FROM, OWNER_EMAIL } from '../../lib/mail';
 import { inquiryVendorEmail, inquiryNoticeEmail, naturalCheck, type InquiryIn } from '../../lib/outreach';
@@ -59,7 +60,7 @@ export const POST: APIRoute = async ({ request }) => {
     let notified = false; let note = '';
     try {
       if (r.mode === 'account' && r.to) {
-        const m = inquiryVendorEmail(q);
+        const m = inquiryVendorEmail(q, repliedUrl(r.id));
         const s = await sendReplyTo(r.to, res.email, m.subject, m.text, m.html);
         notified = s.ok; note = s.ok ? `full inquiry emailed to account ${r.to}` : `account email failed (${s.error})`;
       } else if (r.mode === 'notice' && r.to) {

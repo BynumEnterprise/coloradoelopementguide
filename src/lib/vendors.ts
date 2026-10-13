@@ -29,3 +29,19 @@ export function facet(v: any, i: number) {
   return { s: v.slug, c: v.category, r: v.sub_region, sr: servedRegions(v), p: Number.isFinite(v.starting_price) ? v.starting_price : null,
     st: Array.isArray(v.styles) ? v.styles : [], ph: !!v.image_url, rt: v.rating ? Number(v.rating) : 0, rv: v.reviews || 0, i, f: v.status === 'featured' };
 }
+// Reply time badge from p2_vendors.reply_median_hours (median over the last 90 days, set only when at least
+// two inquiries were marked replied). Returns null when the data does not support a claim.
+export function replyBadge(v: any): string | null {
+  const n = Number(v.reply_sample), h = Number(v.reply_median_hours);
+  if (!(n >= 2) || !Number.isFinite(h) || h < 0) return null;
+  if (h <= 4) return 'Usually replies within a few hours';
+  if (h <= 24) return 'Usually replies within a day';
+  if (h <= 72) return 'Usually replies within 3 days';
+  return null;
+}
+// "October 2026" from p2_vendors.checked_at, or null to hide the line.
+export function checkedLabel(v: any): string | null {
+  const s = typeof v.checked_at === 'string' ? v.checked_at.slice(0, 10) : '';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return null;
+  return new Date(s + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+}
