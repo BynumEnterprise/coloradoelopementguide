@@ -117,3 +117,5 @@ Fall evenings cool quickly once the sun drops, so bring layers for guests. Our [
 ## Putting it together
 
 Use the [Estes Park guide](/guides/estes-park) for ceremony sites and seasons around the park, browse [Estes Park vendors](/region/estes-park), and save your permit date, license window and return deadline in the [free planner](/account) so nothing slips between month twelve and the week after.
+
+Related reading: our [best time to elope in Colorado, month by month](/resources/best-time-to-elope-in-colorado).

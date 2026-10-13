@@ -145,3 +145,5 @@ Start with your guest count. Two to ten people can go almost anywhere on this li
 Then check the season. The high passes and Alta Lakes are summer and early fall only; our [fall](/resources/colorado-fall-elopement) and [winter](/resources/winter-elopement-colorado) guides cover the shoulder months, and [Crested Butte](/resources/crested-butte-elopement) and [Ouray](/resources/ouray-elopement) have their own pages. Garden of the Gods, Red Rocks, Chautauqua and the Front Range sites work most of the year.
 
 Finally, line up the paperwork. The license comes from any county clerk; see [how to get married in Colorado](/resources/how-to-get-married-in-colorado) for the order of steps, and [what a Colorado elopement costs](/resources/colorado-elopement-cost) for the budget. When you know the spot, find a [photographer who knows it](/category/photographers).
+
+Related reading: our [Steamboat Springs elopement guide](/resources/steamboat-springs-elopement) and our [Salida and Buena Vista elopement guide](/resources/salida-and-buena-vista-elopement).

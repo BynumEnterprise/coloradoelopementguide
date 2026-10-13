@@ -127,3 +127,5 @@ Witnesses are optional in Colorado. A child can stand with you and sign the opti
 ## Vendors and next steps
 
 Compare sites in [the best places to elope in Colorado](/resources/best-places-to-elope-in-colorado), then find [photographers](/category/photographers) used to kids and pets, an [officiant](/category/officiants) who keeps it short, or a [planner](/category/planners) to handle sitters and timing.
+
+Related reading: our [guide to vow renewals in Colorado](/resources/vow-renewal-colorado).

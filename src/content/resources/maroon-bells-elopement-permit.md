@@ -92,3 +92,5 @@ Pitkin County issues licenses by appointment at 530 E Main Street, Suite 104 in 
 ## Vendors who know the Bells
 
 Photographers based in the Roaring Fork Valley know the shuttle schedule and where the light hits first. See the [Vail and Aspen region](/region/vail-aspen), our [Vail and Aspen planning guide](/guides/vail-aspen), and the [planners](/category/planners) who handle amphitheater bookings as part of their fee. For questions the Forest Service answers directly, the Aspen Sopris Ranger District is at 970-963-2266 and maroonbells@usda.gov.
+
+Related reading: our [Aspen elopement guide](/resources/aspen-elopement).

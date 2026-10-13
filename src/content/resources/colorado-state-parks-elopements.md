@@ -86,3 +86,5 @@ Group picnic areas at most parks serve as reception sites, typically with a shad
 5. Bring your signed agreement, your marriage license and a pen.
 
 The license is a separate matter from the park: any Colorado county clerk issues it for $30, no witnesses or officiant required. Our [marriage license page](/resources/colorado-marriage-license) has the details. If you are deciding between a state park and a national forest site, the [national forest page](/resources/national-forest-and-blm-elopements) lays out the tradeoffs.
+
+Related reading: our [Steamboat Springs elopement guide](/resources/steamboat-springs-elopement).

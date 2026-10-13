@@ -96,3 +96,5 @@ Two regional guides apply these rules in practice: [Crested Butte](/resources/cr
 ## Before you go
 
 Confirm the ranger district, check fire restrictions the week of, and read the [marriage license page](/resources/colorado-marriage-license) so the legal side is done before you drive up. For someone who already knows the lot, the light and the ranger, start with the [photographers](/category/photographers) and [officiants](/category/officiants) in your region.
+
+Related reading: our [Vail elopement guide](/resources/vail-elopement) and our [Durango and Pagosa Springs elopement guide](/resources/durango-and-pagosa-springs-elopement).

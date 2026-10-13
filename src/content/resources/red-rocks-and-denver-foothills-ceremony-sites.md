@@ -76,3 +76,5 @@ Roxborough, Golden Gate Canyon and Staunton state parks are all within an hour o
 ## Licenses and next steps
 
 The nearest licensing offices are the [Jefferson County clerk in Golden](/resources/jefferson-county-marriage-license), which takes drop ins Monday through Thursday, and the [Denver clerk](/resources/denver-marriage-license), by appointment. The [Denver and foothills guide](/guides/denver-foothills) adds Guanella Pass and a sample day, and the [Denver wedding venues page](/venues/denver-wedding-venues) lists private venues if a permit feels like too much. For more ideas statewide, see the [best places to elope in Colorado](/resources/best-places-to-elope-in-colorado).
+
+Related reading: our [Evergreen and Golden elopement guide](/resources/evergreen-and-golden-elopement).

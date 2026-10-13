@@ -106,3 +106,5 @@ Our [Colorado elopement timeline](/resources/colorado-elopement-timeline) has sa
 ## Plan it
 
 Pick the location first, then confirm it is reachable in your month. Book the permit, then the photographer, then lodging. Browse [Colorado photographers](/category/photographers) who shoot in snow, or [Summit County vendors](/region/summit-county) if you are basing near Breckenridge, and keep your dates and permits together in the [free planner](/account).
+
+Related reading: our [Vail elopement guide](/resources/vail-elopement).

@@ -94,3 +94,5 @@ Days are still long enough for a relaxed schedule. Our [Colorado elopement timel
 ## Plan it
 
 Book permits and reservations first, then a photographer who knows where the color is that week. Heading to Kebler Pass? Our [Crested Butte elopement guide](/resources/crested-butte-elopement) lists local vendors, and [Crested Butte wedding venues](/venues/crested-butte-wedding-venues) covers the places to hold dinner. Browse [Vail and Aspen vendors](/region/vail-aspen), read the [Vail and Aspen guide](/guides/vail-aspen), and keep your dates and reservations together in the [free planner](/account).
+
+Related reading: our [Aspen elopement guide](/resources/aspen-elopement) and our [best time to elope in Colorado, month by month](/resources/best-time-to-elope-in-colorado).

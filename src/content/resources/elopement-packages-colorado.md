@@ -91,3 +91,5 @@ Some costs belong to you, whatever you book:
 ## Building your own package
 
 Plenty of couples skip packages entirely: a photographer, the two of them, a license and a sunrise. That is the cheapest good elopement in Colorado and it is completely legal, since you can [solemnize the marriage yourselves](/resources/self-solemnization-colorado). Our [elopement cost guide](/resources/colorado-elopement-cost) has three sample budgets, and the [best places to elope](/resources/best-places-to-elope-in-colorado) list shows which spots need a permit. Heart vendors as you browse and compare their packages side by side in your [free planner](/account).
+
+Related reading: our [elopement photography and video pricing explained](/resources/elopement-photography-pricing-colorado).

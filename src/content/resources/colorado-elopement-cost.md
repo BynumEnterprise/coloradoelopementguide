@@ -87,3 +87,5 @@ Attire and rings are personal and we will not pretend to range them. Travel is e
 ## Keep the numbers in one place
 
 Your free [planner](/account) tracks every vendor you shortlist along with quotes, notes and bookings, so the estimates above turn into real numbers as you hear back from vendors. Start by hearting vendors as you browse, then open the planner to see your budget take shape. For the order to book things in, the [planning checklist](/checklist) is the companion to this page, and our [elopement timeline](/resources/colorado-elopement-timeline) shows how the day itself runs hour by hour.
+
+Related reading: our [elopement photography and video pricing explained](/resources/elopement-photography-pricing-colorado).

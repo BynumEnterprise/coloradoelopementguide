@@ -81,3 +81,5 @@ Summit County issues civil union licenses by the same process and at the same co
 The most popular Summit County ceremony site is [Sapphire Point Overlook](/resources/sapphire-point-overlook-elopement), reserved on Recreation.gov in three hour blocks for up to 30 people. A workable plan for an out of state couple: book the Sapphire Point block, then book a 9 a.m. or 11 a.m. clerk appointment for a weekday within 35 days before it. If no slot is open, pick up your license in Golden on the drive up from Denver; it is the same license.
 
 The [Summit County planning guide](/guides/summit-county) covers Loveland Pass, the resort decks, the seasons and a sample day, and the [statewide license guide](/resources/colorado-marriage-license) compares the other mountain clerks in Eagle, Pitkin and San Miguel counties. When the date is set, browse [Summit County vendors](/region/summit-county).
+
+Related reading: our [Breckenridge elopement guide](/resources/breckenridge-elopement).

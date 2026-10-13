@@ -100,3 +100,5 @@ Jefferson County's advice is practical: the license must be returned and recorde
 ## Where Golden fits in your trip
 
 Golden is twenty minutes from downtown Denver and right at the start of Interstate 70, so a Tuesday morning license on the way to Breckenridge or Vail costs you almost nothing. If Golden does not fit, compare the [Denver clerk](/resources/denver-marriage-license), the [Summit County clerk in Breckenridge](/resources/summit-county-marriage-license) and the [statewide office table](/resources/colorado-marriage-license). For ceremony ideas nearby, read the [Denver and foothills guide](/guides/denver-foothills) and our page on [Red Rocks and the foothills ceremony sites](/resources/red-rocks-and-denver-foothills-ceremony-sites).
+
+Related reading: our [Evergreen and Golden elopement guide](/resources/evergreen-and-golden-elopement).

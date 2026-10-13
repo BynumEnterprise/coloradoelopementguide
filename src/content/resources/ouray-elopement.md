@@ -95,3 +95,5 @@ Ask whether they drive Yankee Boy themselves or work with a jeep guide, how they
 ## Vendors and next steps
 
 Browse [photographers](/category/photographers) and other vendors in the [Telluride and San Juans region](/region/telluride-san-juans), compare [Telluride wedding venues](/venues/telluride-wedding-venues) over the ridge, and read the [Telluride and San Juans guide](/guides/telluride-san-juans). Keep your dates and shortlist in the free [planner](/account).
+
+Related reading: our [Durango and Pagosa Springs elopement guide](/resources/durango-and-pagosa-springs-elopement).

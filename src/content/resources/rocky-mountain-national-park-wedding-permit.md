@@ -97,3 +97,5 @@ The permit has nothing to do with your license. Colorado issues marriage license
 ## Contact
 
 The Commercial Services Office handles wedding permits at 970-586-1210. If something on this page and the park page ever disagree, the park page wins, and we would appreciate a note through our [contact page](/contact) so we can fix it.
+
+Related reading: our [guide to vow renewals in Colorado](/resources/vow-renewal-colorado).
