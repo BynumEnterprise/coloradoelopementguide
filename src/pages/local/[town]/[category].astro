@@ -1,0 +1,82 @@
+---
+// Town by category pages (GAP 5.2). Built only for combos in TOWN_INTROS that reach MIN_TOWN_VENDORS at build time.
+import Base from '../../../layouts/Base.astro';
+import VendorCard from '../../../components/VendorCard.astro';
+import EmailCapture from '../../../components/EmailCapture.astro';
+import { allVendors } from '../../../lib/vendors';
+import { CATEGORIES, REGIONS } from '../../../lib/taxonomy';
+import { regionImg, opt, optSet } from '../../../lib/assets';
+import { TOWNS, TOWN_INTROS, TOWN_HEADINGS, liveTownPages } from '../../../data/town-pages';
+import { getCollection } from 'astro:content';
+export async function getStaticPaths() {
+  const all = await allVendors();
+  return liveTownPages(all).map(p => ({ params: { town: p.town, category: p.category }, props: { vendors: p.vendors } }));
+}
+const { town, category } = Astro.params as { town: string; category: string };
+const { vendors } = Astro.props as { vendors: any[] };
+const t = TOWNS[town]; const cat = CATEGORIES[category]; const reg = REGIONS[t.region];
+const heading = TOWN_HEADINGS[category];
+const intro = TOWN_INTROS[`${town}/${category}`];
+const resources = await getCollection('resources');
+const resLinks = t.resources.map(s => resources.find(r => r.id === s)).filter(Boolean).map(r => ({ href: `/resources/${r!.id}`, title: r!.data.title }));
+const guide = (await getCollection('guides')).find(g => g.data.region === t.region);
+const SITE = 'https://coloradoelopementguide.com';
+const url = `${SITE}/local/${town}/${category}/`;
+const n = vendors.length;
+const plural = cat.name.toLowerCase();
+const faqs = [
+  { q: `How many ${heading.toLowerCase()} serve ${t.name}?`, a: `We list ${n} live ${plural} who are based in ${t.name}${t.region !== 'other-colorado' ? ` or work across ${reg.name}` : ''}. Featured listings are shown first and labeled; the rest are ranked by Google rating and review count.` },
+  ...(guide ? [
+    { q: `Do we need a permit to elope near ${t.name}?`, a: `It depends on the site. In ${reg.name}: ${guide.data.facts.permit}. Ask your vendors which sites they know well and who files the permit.` },
+    { q: `Where do we get a marriage license for ${t.name}?`, a: `${guide.data.facts.license}. A Colorado license from any county clerk is valid anywhere in the state.` },
+    { q: `When is the best time to elope in ${t.name}?`, a: `${guide.data.facts.season}.` }
+  ] : []),
+  { q: `How do we contact several ${plural} at once?`, a: `Open any listing and use the Check Availability form. After it sends, you can tick up to four similar vendors and we will pass the same note to them, so you do not have to type it again.` }
+];
+const crumbs = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+  { '@type': 'ListItem', position: 1, name: 'Home', item: SITE + '/' },
+  { '@type': 'ListItem', position: 2, name: reg.name, item: `${SITE}/region/${t.region}/` },
+  { '@type': 'ListItem', position: 3, name: `${t.name} ${heading}`, item: url }
+] };
+const itemList = { '@context': 'https://schema.org', '@type': 'ItemList', name: `${t.name} ${heading}`, numberOfItems: n,
+  itemListElement: vendors.map((v, i) => ({ '@type': 'ListItem', position: i + 1, url: `${SITE}/vendor/${v.slug}/`, name: v.name })) };
+const faqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) };
+const title = `${t.name} ${heading} (${n} Listed) | Colorado Elopement Guide`;
+const description = `${n} ${plural} for elopements and small weddings in ${t.name}, Colorado, with permit, license and timing notes for ${t.name}.`;
+---
+<Base hero={regionImg(t.region)} dark={true} title={title} description={description}>
+  <script is:inline type="application/ld+json" slot="head" set:html={JSON.stringify(crumbs)} />
+  <script is:inline type="application/ld+json" slot="head" set:html={JSON.stringify(itemList)} />
+  <script is:inline type="application/ld+json" slot="head" set:html={JSON.stringify(faqLd)} />
+  <section class="relative min-h-[42vh] flex items-end">
+    <img src={opt(regionImg(t.region), 1600)} srcset={optSet(regionImg(t.region), [960, 1280, 1600, 2048])} sizes="100vw" width="1600" height="900" decoding="async" alt={`${t.name}, Colorado`} class="absolute inset-0 w-full h-full object-cover" fetchpriority="high" />
+    <div class="absolute inset-0 bg-gradient-to-t from-ink/75 via-ink/20 to-black/25"></div>
+    <div class="relative z-10 max-w-7xl mx-auto px-5 md:px-8 pb-12 w-full">
+      <p class="eyebrow text-gold mb-3">{n} listed · {reg.name}</p>
+      <h1 class="display text-white text-4xl md:text-5xl leading-tight">{t.name} <span class="serif-i">{heading}</span></h1>
+    </div>
+  </section>
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <section class="pt-12 md:grid md:grid-cols-12 md:gap-10">
+      <div class="md:col-span-7 space-y-4 text-ink/80 leading-relaxed">{intro.map(p => <p>{p}</p>)}</div>
+      <aside class="md:col-span-5 mt-8 md:mt-0 rounded-2xl border border-hairline bg-white p-6 text-sm">
+        <p class="eyebrow text-clay-600 mb-4">Plan {t.name}</p>
+        <ul class="space-y-3">
+          {resLinks.map(l => <li><a href={l.href} class="underline underline-offset-4 hover:text-clay-700">{l.title}</a></li>)}
+          {guide && <li><a href={`/guides/${t.region}`} class="underline underline-offset-4 hover:text-clay-700">{reg.name} planning guide</a></li>}
+          <li><a href={`/region/${t.region}`} class="underline underline-offset-4 hover:text-clay-700">All vendors in {reg.name}</a></li>
+          <li><a href={`/category/${category}`} class="underline underline-offset-4 hover:text-clay-700">All Colorado {plural}</a></li>
+        </ul>
+      </aside>
+    </section>
+    <section class="pt-14">
+      <h2 class="display text-2xl mb-6">{heading} for {t.name} <span class="text-ink/40 text-base">({n})</span></h2>
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{vendors.map(v => <VendorCard v={v} />)}</div>
+    </section>
+    <section class="pt-14 max-w-3xl">
+      <h2 class="display text-2xl mb-6">Common questions</h2>
+      <div class="space-y-5">{faqs.map(f => <div><h3 class="font-medium text-ink">{f.q}</h3><p class="text-sm text-ink/70 mt-1.5 leading-relaxed">{f.a}</p></div>)}</div>
+    </section>
+    <div class="pt-16"><EmailCapture /></div>
+  </div>
+</Base>

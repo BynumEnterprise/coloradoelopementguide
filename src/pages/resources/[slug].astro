@@ -6,6 +6,7 @@ import { allVendors } from '../../lib/vendors';
 import { getCollection, render } from 'astro:content';
 import { CATEGORIES, REGIONS } from '../../lib/taxonomy';
 import { regionImg, opt, optSet } from '../../lib/assets';
+import { TOWNS, TOWN_HEADINGS, liveTownPages } from '../../data/town-pages';
 
 export async function getStaticPaths() {
   const resources = await getCollection('resources');
@@ -33,6 +34,7 @@ const distKm = (a: number, b: number, c: number, d: number) => {
   const r = Math.PI / 180, x = (d - b) * r * Math.cos(((a + c) / 2) * r), y = (c - a) * r;
   return Math.sqrt(x * x + y * y) * 6371;
 };
+const townLinks = liveTownPages(await allVendors()).filter(p => TOWNS[p.town].resources.includes(slug!));
 const nearbyVendors = data.nearby
   ? (await allVendors())
       .filter((v: any) => ['seeded', 'claimed', 'featured'].includes(v.status) && v.lat != null && v.lng != null && distKm(data.nearby!.lat, data.nearby!.lng, Number(v.lat), Number(v.lng)) <= data.nearby!.km)
@@ -101,6 +103,7 @@ const published = new Date(data.datePublished + 'T12:00:00Z').toLocaleDateString
   <article class="guide-body max-w-3xl mx-auto px-5 md:px-8 pt-10">
     <Content />
   </article>
+  {townLinks.length > 0 && <p class="max-w-3xl mx-auto px-5 md:px-8 pt-6 text-sm text-ink/75"><span class="eyebrow text-clay-600 mr-3">Local Vendors</span>{townLinks.map((p, i) => <>{i > 0 && ' · '}<a href={`/local/${p.town}/${p.category}`} class="underline underline-offset-4 hover:text-clay-700">{TOWNS[p.town].name} {TOWN_HEADINGS[p.category].toLowerCase()} ({p.vendors.length})</a></>)}</p>}
   <EmailCapture variant="inline" moveIntoArticle={true} />
 
   {nearbyVendors.length > 0 && (

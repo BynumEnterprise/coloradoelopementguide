@@ -1,0 +1,62 @@
+---
+// "Ask similar vendors too" (GAP 1.5). Rendered inside the inquiry success box on a vendor page and shown by
+// its own script once the success box appears. Lists up to four live vendors in the same category that are
+// based in or serve the same region (featured first, then the site ranking from allVendors), limited to
+// vendors we can actually deliver to. Posts to /api/inquiry-more, which reuses the stored first inquiry.
+import { CATEGORIES } from '../lib/taxonomy';
+const { v, all } = Astro.props as { v: any; all: any[] };
+const serves = (x: any, region: string) => x.sub_region === region || (Array.isArray(x.served_regions) && x.served_regions.includes(region));
+const deliverable = (x: any) => x.status === 'claimed' || x.status === 'featured' ||
+  (!!x.contact_email && !['unsubscribed', 'removed_requested'].includes(x.outreach_status || ''));
+const pool = all.filter(x => x.slug !== v.slug && x.category === v.category && serves(x, v.sub_region) && deliverable(x));
+const picks = [...pool.filter(x => x.status === 'featured'), ...pool.filter(x => x.status !== 'featured')].slice(0, 4);
+const label = CATEGORIES[v.category]?.name.toLowerCase() || 'vendors';
+---
+{picks.length > 0 && (
+  <div id="also-ask" class="hidden mt-6 pt-6 border-t border-hairline" data-slug={v.slug}>
+    <p class="eyebrow text-clay-600 mb-2">Ask Similar Vendors Too</p>
+    <p class="text-sm text-ink/70 leading-relaxed">Most couples hear back faster when they ask a few {label} at once. Tick the ones you want and we will send them the same note.</p>
+    <ul class="mt-4 space-y-2">
+      {picks.map(p => (
+        <li><label class="flex items-start gap-3 rounded-xl border border-hairline bg-white px-4 py-3 text-sm cursor-pointer">
+          <input type="checkbox" name="also" value={p.slug} checked class="mt-1" />
+          <span><span class="font-medium text-ink">{p.name}</span>{p.status === 'featured' && <span class="ml-2 text-xs text-clay-700">Featured</span>}
+            {p.rating ? <span class="block text-xs text-ink/50">{Number(p.rating).toFixed(1)} on Google{p.reviews ? `, ${p.reviews} reviews` : ''}</span> : null}</span>
+        </label></li>
+      ))}
+    </ul>
+    <button id="also-btn" type="button" class="mt-4 rounded-full bg-ink text-ivory px-6 py-3 text-sm font-semibold hover:bg-spruce-800 transition-colors">Send my note to these too</button>
+    <p id="also-out" class="hidden mt-3 text-sm text-ink/70"></p>
+  </div>
+)}
+<script is:inline>
+(function(){
+  var box = document.getElementById('also-ask'), done = document.getElementById('inq-done');
+  if (!box || !done) return;
+  var slug = box.getAttribute('data-slug'), shown = false;
+  function show(){
+    if (shown || done.classList.contains('hidden')) return;
+    shown = true; box.classList.remove('hidden');
+    if (window.cegTrack) cegTrack('also_ask_shown', slug, 'view_promotion', { promotion_name: 'also_ask', vendor_slug: slug });
+  }
+  new MutationObserver(show).observe(done, { attributes: true, attributeFilter: ['class'] });
+  var btn = document.getElementById('also-btn'), out = document.getElementById('also-out');
+  btn.addEventListener('click', function(){
+    var targets = Array.prototype.slice.call(box.querySelectorAll('input[name=also]:checked')).map(function(i){ return i.value; });
+    if (!targets.length) { out.textContent = 'Tick at least one vendor.'; out.classList.remove('hidden'); return; }
+    var email = (document.getElementById('inq-email') || {}).value || '', message = (document.getElementById('inq-msg') || {}).value || '';
+    btn.disabled = true; btn.textContent = 'Sending…';
+    fetch('/api/inquiry-more', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug: slug, email: email.trim(), message: message, targets: targets }) })
+      .then(function(r){ return r.json().catch(function(){ return { ok: false }; }); })
+      .then(function(res){
+        if (!res || !res.ok) { btn.disabled = false; btn.textContent = 'Send my note to these too'; out.textContent = (res && res.error) || 'Something went wrong. Please try again.'; out.classList.remove('hidden'); return; }
+        (res.sent || []).forEach(function(){ if (window.cegTrack) cegTrack('inquiry_submitted', slug, 'generate_lead', { vendor_slug: slug, via: 'also_ask' }); });
+        var t = res.sent && res.sent.length ? 'Sent to ' + res.sent.join(', ') + '.' : 'Nothing new was sent.';
+        if (res.skipped && res.skipped.length) t += ' ' + res.skipped.length + ' not sent (' + res.skipped.map(function(s){ return s.reason; }).join('; ') + ').';
+        box.querySelector('ul').classList.add('hidden'); btn.classList.add('hidden');
+        out.textContent = t; out.classList.remove('hidden');
+      })
+      .catch(function(){ btn.disabled = false; btn.textContent = 'Send my note to these too'; out.textContent = 'Could not send. Check your connection and try again.'; out.classList.remove('hidden'); });
+  });
+})();
+</script>

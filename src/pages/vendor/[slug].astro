@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import Tracker from '../../components/Tracker.astro';
 import VendorCard from '../../components/VendorCard.astro';
+import AlsoAsk from '../../components/AlsoAsk.astro';
 import { allVendors } from '../../lib/vendors';
 import { CATEGORIES, REGIONS } from '../../lib/taxonomy';
 import { regionImg, gimg, opt, optSet } from '../../lib/assets';
@@ -183,6 +184,7 @@ const metaDesc = v.description.length > 155 ? v.description.slice(0, 152).replac
         <div id="inq-done" class="hidden md:col-span-2 mt-6 md:mt-0 rounded-2xl bg-parchment/70 border border-hairline p-6">
           <p class="display text-xl" id="inq-done-title">Sent.</p>
           <p class="text-sm text-ink/70 mt-2 leading-relaxed" id="inq-done-body"></p>
+          <AlsoAsk v={v} all={all} />
         </div>
       </div>
     </section>
