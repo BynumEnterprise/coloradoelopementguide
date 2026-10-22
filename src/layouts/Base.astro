@@ -76,6 +76,19 @@ const on = (p: string) => path === p || path.startsWith(p + '/');
     })();
   </script>
   <script is:inline>
+    // Pinterest tag (Ads Manager tag id 2612837586339). Same skip rules as the first party tracker: bots, /admin and the owner's own devices.
+    (function(){
+      var own = false; try { own = !!(localStorage.getItem('ceg_owner') || localStorage.getItem('ceg_admin')); } catch(e){}
+      var bot = !!navigator.webdriver || /bot|crawl|spider|slurp|headless|lighthouse|preview|prerender|python|curl|wget|phantom|selenium|puppeteer|playwright/i.test(navigator.userAgent || '');
+      if (own || bot || /^\/admin(\/|$)/.test(location.pathname)) return;
+      !function(e){if(!window.pintrk){window.pintrk=function(){window.pintrk.queue.push(Array.prototype.slice.call(arguments))};var n=window.pintrk;n.queue=[],n.version="3.0";var t=document.createElement("script");t.async=!0,t.src=e;var r=document.getElementsByTagName("script")[0];r.parentNode.insertBefore(t,r)}}("https://s.pinimg.com/ct/core.js");
+      pintrk('load', '2612837586339');
+      pintrk('page');
+      pintrk('track', 'pagevisit');
+    })();
+  </script>
+  <noscript><img height="1" width="1" style="display:none;" alt="" src="https://ct.pinterest.com/v3/?tid=2612837586339&event=init&noscript=1" /></noscript>
+  <script is:inline>
     // First party, cookieless analytics (see /api/track). Skips bots, /admin, and the owner's own devices.
     (function(){
       var W = window, L = location, N = navigator, D = document;
@@ -94,7 +107,10 @@ const on = (p: string) => path === p || path.startsWith(p + '/');
       }
       function ga(name, params){ if (off) return; try { gtag('event', name, params || {}); } catch(e){} }
       // cegTrack(site event, target, GA4 event name, GA4 params). GA4 params never carry personal data.
-      W.cegTrack = function(ev, target, gaName, gaParams){ beacon({ k: 'ev', e: ev, t: target || null }); if (gaName) ga(gaName, gaParams); };
+      // Pinterest conversion events mirror the GA4 event names. No personal data is sent.
+      var pinMap = { sign_up: 'signup', newsletter_signup: 'lead', generate_lead: 'lead', begin_checkout: 'addtocart', claim_start: 'lead' };
+      function pin(name, params){ if (off || !W.pintrk || !pinMap[name]) return; try { var p = {}; if (params && params.value) { p.value = params.value; p.currency = 'USD'; } p.lead_type = name; W.pintrk('track', pinMap[name], p); } catch(e){} }
+      W.cegTrack = function(ev, target, gaName, gaParams){ beacon({ k: 'ev', e: ev, t: target || null }); if (gaName) { ga(gaName, gaParams); pin(gaName, gaParams); } };
       var q = new URLSearchParams(L.search);
       beacon({ k: 'pv', r: D.referrer || '', u: { s: q.get('utm_source') || '', m: q.get('utm_medium') || '', c: q.get('utm_campaign') || '' } });
       function vslug(){ var m = L.pathname.match(/^\/vendor\/([^\/?#]+)/); return m ? decodeURIComponent(m[1]) : ''; }
