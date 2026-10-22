@@ -1,4 +1,4 @@
-// Editorial copy for the six vendor category pages (/category/{slug}) and the
+// Editorial copy for the seven vendor category pages (/category/{slug}) and the
 // per region photographer pages (/photographers/{region}). Hand written.
 // Search volumes are from CONTENT-MAP.md and a DataForSEO pull on 2026-10-12.
 // Rules: second person, no dashes as punctuation, no exclamation marks, no invented prices.
@@ -240,6 +240,43 @@ export const CATEGORY_COPY: Record<string, CategoryCopy> = {
       { href: '/resources/how-to-get-married-in-colorado', label: 'How to get married in Colorado', note: 'The legal steps in order' },
       { href: '/resources/colorado-elopement-cost', label: 'What an elopement costs', note: 'Planning fees as typical estimates' },
       { href: '/checklist', label: 'Planning checklist', note: 'Everything in the order to book it' }
+    ]
+  },
+
+  packages: {
+    term: 'colorado elopement packages',
+    h1: ['Colorado Elopement Packages', 'all inclusive and bundled'],
+    crumb: 'Elopement Packages',
+    title: 'Colorado Elopement Packages: {n} All Inclusive and Bundled Options by Region | Colorado Elopement Guide',
+    description: 'Colorado elopement packages that bundle officiant, photography, planning, flowers and more from one team, with what each type includes and the questions to ask.',
+    intro: [
+      'A Colorado elopement package puts the whole day under one roof. Instead of booking a photographer, an officiant, a planner and a florist separately, you hire one team that brings them together, sets the timeline and shows up with everything. For couples flying in from out of state, or anyone who would rather spend their energy on the vows than on vendor emails, that is the whole appeal.',
+      'The word package gets used loosely, so read what is actually inside. The businesses on this page sell bundles that combine at least three parts of the day. Most include an officiant and photography, many add planning and permit help, and the fuller ones bring flowers, a small cake, hair and makeup, a ceremony arch or chairs, and a coordinator who runs the hour so you do not have to. A photographer who adds planning support, or a planner who sells planning only, is listed with the <a href="/category/photographers">photographers</a> and <a href="/category/planners">planners</a> instead.',
+      'Packages come in a few shapes. Officiant led packages start with the ceremony and add photography and florals around it. Photographer led packages start with the pictures and add an officiant, planning and sometimes video. Planner led packages assemble a hand picked team under one contract. Venue packages pair a private ceremony site with the vendors. Our <a href="/resources/elopement-packages-colorado">elopement packages guide</a> breaks each type down, with typical price ranges marked as estimates.',
+      'The two things a package rarely includes are the marriage license and the land. The $30 license comes from any county clerk, and ceremony permits for places like <a href="/resources/rocky-mountain-national-park-wedding-permit">Rocky Mountain National Park</a> are issued to you rather than your vendor, though a good package team will tell you exactly which one you need and when to apply. Ask who books the permit, who holds it on the day, and what happens if the site is full.',
+      'Finally, compare guest counts and hours rather than headline prices. A package built for the two of you and a package built for twenty guests with chairs and cake are different products. Check the maximum guest count, how many hours of photography are included, whether travel to your region is covered, and what the weather plan looks like. Every package below is grouped by where the team is based, so start with your region and tap the heart to save the ones you like to your planner.'
+    ],
+    questions: [
+      'Exactly which vendors are included, and which are add ons or referrals we book ourselves?',
+      'What is the maximum guest count, and how many hours of photography and coordination does the package cover?',
+      'Who applies for the ceremony permit, who holds it on the day, and is the fee included?',
+      'Is travel to our location included, and does the price change by region or season?',
+      'What is the weather plan if we need to move the time or the site?',
+      'Can we see a full gallery and a sample timeline from a package at a similar spot and guest count?'
+    ],
+    faqs: [
+      { q: 'How much does a Colorado elopement package cost?', a: 'It depends on what is bundled. Based on packages Colorado teams publish, a photographer led package with planning typically runs about $2,500 to $7,000, a planner led package about $1,500 to $6,000 plus the vendors it coordinates, and a venue package about $1,500 to $8,000. These are typical estimates, not quotes. All inclusive bundles that add florals, cake, hair and makeup and a coordinator sit toward the top of those ranges.' },
+      { q: 'What does an all inclusive elopement package usually include?', a: 'Most include an officiant, photography, planning help and a ceremony location recommendation. Fuller packages add florals, a small cake or a toast, hair and makeup, an arch or chairs, music and a coordinator for the day. The $30 marriage license and public land permits are almost always separate, so ask who handles them.' },
+      { q: 'Do we still need a permit with a package?', a: 'Usually yes. Ceremony permits in Rocky Mountain National Park, Denver Mountain Parks and most state parks are issued to the couple rather than the vendor. A good package team tells you which permit your spot needs, when to apply and what the group limit is, and some will file it for you. A private venue included in a package needs no public permit.' },
+      { q: 'Is a package cheaper than booking vendors separately?', a: 'Often, but not always. A bundle saves the time of coordinating four or five contracts and usually prices the parts below what they cost one by one. Compare it against the sum of the individual vendors you would actually choose, and check that the included photographer or florist is someone whose work you like, since you are hiring the whole team.' }
+    ],
+    links: [
+      { href: '/resources/elopement-packages-colorado', label: 'Elopement packages compared', note: 'Photographer, planner, venue and all inclusive packages' },
+      { href: '/resources/colorado-elopement-cost', label: 'What an elopement costs', note: 'Typical ranges for every line of the budget' },
+      { href: '/resources/best-places-to-elope-in-colorado', label: 'Best places to elope', note: 'Twenty ceremony spots by region, with permit status' },
+      { href: '/resources/rocky-mountain-national-park-wedding-permit', label: 'RMNP wedding permit', note: 'Fee, sites, group limits and what the permit covers' },
+      { href: '/resources/colorado-marriage-license', label: 'Colorado marriage license', note: 'Fees, deadlines and clerk offices' },
+      { href: '/guides', label: 'Region planning guides', note: 'Ceremony spots, timing and sample days in eight regions' }
     ]
   }
 };

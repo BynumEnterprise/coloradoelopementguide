@@ -67,7 +67,7 @@ const sel = 'w-full rounded-xl border border-hairline bg-white px-3 py-2.5 text-
   }
   function match(v, s, skip){
     if (skip !== 'region' && s.region && v.r !== s.region && v.sr.indexOf(s.region) < 0) return false;
-    if (skip !== 'cat' && s.cat && v.c !== s.cat) return false;
+    if (skip !== 'cat' && s.cat && v.c !== s.cat && (v.ac || []).indexOf(s.cat) < 0) return false;
     if (skip !== 'price' && s.price){ var b = bucket(s.price); if (b){ if (b.id === 'none' ? v.p !== null : (v.p === null || v.p < b.min || v.p > b.max)) return false; } }
     if (skip !== 'photos' && s.photos && !v.ph) return false;
     if (skip !== 'style' && s.style.length){ for (var i = 0; i < s.style.length; i++) if (v.st.indexOf(s.style[i]) < 0) return false; }
@@ -91,7 +91,7 @@ const sel = 'w-full rounded-xl border border-hairline bg-white px-3 py-2.5 text-
     $('vf-count').textContent = String(list.length);
     // Live counts for every option given the other active filters.
     label('vf-region', function(r){ return V.filter(function(v){ return match(v, s, 'region') && (v.r === r || v.sr.indexOf(r) >= 0); }).length; });
-    if (!fixedCat) label('vf-cat', function(c){ return V.filter(function(v){ return match(v, s, 'cat') && v.c === c; }).length; });
+    if (!fixedCat) label('vf-cat', function(c){ return V.filter(function(v){ return match(v, s, 'cat') && (v.c === c || (v.ac || []).indexOf(c) >= 0); }).length; });
     label('vf-price', function(id){ var t = Object.assign({}, s, { price: id }); return V.filter(function(v){ return match(v, t); }).length; });
     $('vf-photos-n').textContent = '(' + V.filter(function(v){ return match(v, s, 'photos') && v.ph; }).length + ')';
     var anyStyle = false;

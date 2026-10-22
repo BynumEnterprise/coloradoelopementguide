@@ -15,7 +15,8 @@ const vendors = defineCollection({
   schema: z.object({
     slug: z.string().min(1),
     name: z.string().min(1),
-    category: z.enum(['photographers','venues','florists','hair-makeup','officiants','planners']),
+    category: z.enum(['photographers','venues','florists','hair-makeup','officiants','planners','packages']),
+    also_categories: z.array(z.enum(['photographers','venues','florists','hair-makeup','officiants','planners','packages'])).nullable().default([]),
     sub_region: z.string().min(1),
     description: z.string().min(40),
     status: z.enum(['seeded','claimed','featured','removed']),

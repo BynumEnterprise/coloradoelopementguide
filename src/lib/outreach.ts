@@ -267,7 +267,7 @@ const REGION_SHORT: Record<string, string> = {
 };
 const CATEGORY_SHORT: Record<string, string> = {
   photographers: 'photographers', venues: 'venues', florists: 'florists', 'hair-makeup': 'hair and makeup artists',
-  officiants: 'officiants', planners: 'planners'
+  officiants: 'officiants', planners: 'planners', packages: 'elopement package providers'
 };
 
 export function slotLine(open: number, category: string, sub_region: string): string {

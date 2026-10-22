@@ -4,7 +4,7 @@ import VendorCard from '../../components/VendorCard.astro';
 import EmailCapture from '../../components/EmailCapture.astro';
 import VendorFilter from '../../components/VendorFilter.astro';
 import { allVendors } from '../../lib/vendors';
-import { CATEGORIES, REGIONS } from '../../lib/taxonomy';
+import { CATEGORIES, REGIONS, inCategory } from '../../lib/taxonomy';
 import { CATEGORY_COPY, livePhotographerPages, photographersIn } from '../../data/category-copy';
 export async function getStaticPaths() {
   return Object.keys(CATEGORIES).map(cat => ({ params: { cat } }));
@@ -13,7 +13,8 @@ const { cat } = Astro.params;
 const meta = CATEGORIES[cat];
 const copy = CATEGORY_COPY[cat];
 const all = await allVendors();
-const vendors = all.filter(v => v.category === cat);
+// Primary members plus secondary members (p2_vendors.also_categories), so a vendor can sit in two categories.
+const vendors = all.filter(v => inCategory(v, cat));
 const n = vendors.length;
 const fill = (s: string) => s.replace(/\{n\}/g, String(n));
 

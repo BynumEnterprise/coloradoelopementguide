@@ -126,6 +126,7 @@ Photographers: ${SITE_URL}/category/photographers/
 Venues: ${SITE_URL}/category/venues/
 Officiants: ${SITE_URL}/category/officiants/
 Planners: ${SITE_URL}/category/planners/
+Elopement packages (one team for the whole day): ${SITE_URL}/category/packages/
 Florists: ${SITE_URL}/category/florists/
 Hair and makeup: ${SITE_URL}/category/hair-makeup/
 

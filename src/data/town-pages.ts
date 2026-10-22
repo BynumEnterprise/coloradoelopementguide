@@ -26,7 +26,8 @@ export const TOWNS: Record<string, Town> = {
 
 export const TOWN_HEADINGS: Record<string, string> = {
   photographers: 'Elopement Photographers', planners: 'Elopement Planners', florists: 'Elopement Florists',
-  'hair-makeup': 'Elopement Hair and Makeup Artists', officiants: 'Elopement Officiants', venues: 'Small Wedding Venues'
+  'hair-makeup': 'Elopement Hair and Makeup Artists', officiants: 'Elopement Officiants', venues: 'Small Wedding Venues',
+  packages: 'Elopement Packages'
 };
 
 // Intros: 150 to 250 words, written for the town and the category. Key is `${town}/${category}`.

@@ -3,7 +3,7 @@ import Base from '../layouts/Base.astro';
 import VendorCard from '../components/VendorCard.astro';
 import EmailCapture from '../components/EmailCapture.astro';
 import { allVendors } from '../lib/vendors';
-import { CATEGORIES, REGIONS } from '../lib/taxonomy';
+import { CATEGORIES, REGIONS, inCategory } from '../lib/taxonomy';
 import { IMG, regionImg, gimg, opt, optSet } from '../lib/assets';
 import { getCollection } from 'astro:content';
 const vendors = await allVendors();
@@ -28,7 +28,7 @@ const permitCards = PERMIT_PICKS.map(p => {
   return { href: `/resources/${p.slug}`, name: p.name, label: f.label, value: f.value, hero: r.data.hero };
 }).filter(Boolean) as { href: string; name: string; label: string; value: string; hero: string }[];
 const top = vendors.filter(v => v.image_url).slice(0, 6);
-const counts = Object.fromEntries(Object.keys(CATEGORIES).map(c => [c, vendors.filter(v => v.category===c).length]));
+const counts = Object.fromEntries(Object.keys(CATEGORIES).map(c => [c, vendors.filter(v => inCategory(v, c)).length]));
 const heroRegions = ['estes-park','summit-county','vail-aspen','telluride-san-juans','colorado-springs','boulder','denver-foothills','northern-colorado','other-colorado'];
 ---
 <Base hero={`${IMG}/hero.jpg`} dark={true} title="Colorado Elopement Guide — plan your Colorado elopement, find every vendor"
@@ -89,13 +89,17 @@ const heroRegions = ['estes-park','summit-county','vail-aspen','telluride-san-ju
       <h2 class="display text-3xl md:text-4xl leading-tight">Every kind of vendor a<br class="hidden md:block" /> small wedding needs</h2>
       <a href="/vendors" class="hidden md:inline-block text-sm font-medium underline underline-offset-4 hover:text-clay-700 shrink-0">Browse All {vendors.length} →</a>
     </div>
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-px bg-hairline border border-hairline rounded-2xl overflow-hidden">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-px bg-hairline border border-hairline rounded-2xl overflow-hidden">
       {Object.entries(CATEGORIES).map(([slug, c]) => (
         <a href={`/category/${slug}`} class="group bg-ivory hover:bg-parchment transition-colors p-6 md:p-8">
           <p class="display text-xl md:text-[1.35rem] leading-snug group-hover:text-clay-700 transition-colors">{c.name}</p>
           <p class="text-xs text-ink/50 mt-2">{counts[slug]} listed</p>
         </a>
       ))}
+      <a href="/vendors" class="group bg-parchment/60 hover:bg-parchment transition-colors p-6 md:p-8">
+        <p class="display text-xl md:text-[1.35rem] leading-snug group-hover:text-clay-700 transition-colors">All Vendors</p>
+        <p class="text-xs text-ink/50 mt-2">{vendors.length} listed, filter by region and price</p>
+      </a>
     </div>
   </section>
 

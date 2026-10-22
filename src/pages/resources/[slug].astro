@@ -29,7 +29,7 @@ const others = (await getCollection('resources'))
   .sort((a, b) => a.data.title.localeCompare(b.data.title));
 
 // Optional local vendor grid (frontmatter `nearby`): live vendors within km of a point, grouped by category order.
-const CAT_ORDER = ['venues', 'photographers', 'planners', 'florists', 'hair-makeup', 'officiants'];
+const CAT_ORDER = ['packages', 'venues', 'photographers', 'planners', 'florists', 'hair-makeup', 'officiants'];
 const distKm = (a: number, b: number, c: number, d: number) => {
   const r = Math.PI / 180, x = (d - b) * r * Math.cos(((a + c) / 2) * r), y = (c - a) * r;
   return Math.sqrt(x * x + y * y) * 6371;

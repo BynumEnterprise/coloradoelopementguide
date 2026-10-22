@@ -4,8 +4,14 @@ export const CATEGORIES: Record<string,{name:string, singular:string, blurb:stri
   'florists': { name:'Florists', singular:'florist', blurb:'Florists offering bouquets and small-ceremony florals for elopements and intimate weddings.' },
   'hair-makeup': { name:'Hair & Makeup', singular:'hair & makeup artist', blurb:'Bridal hair and makeup artists, including on-location services for mountain ceremonies.' },
   'officiants': { name:'Officiants', singular:'officiant', blurb:'Officiants and celebrants for elopements — many offer permit guidance and short-notice bookings.' },
-  'planners': { name:'Elopement Planners', singular:'planner', blurb:'Planners and coordinators who specialize in small weddings, elopement logistics and permits.' }
+  'planners': { name:'Elopement Planners', singular:'planner', blurb:'Planners and coordinators who specialize in small weddings, elopement logistics and permits.' },
+  'packages': { name:'Elopement Packages', singular:'elopement package provider', blurb:'All inclusive and bundled elopement packages: one team that brings the officiant, photography, planning, flowers and more together.' }
 };
+// A vendor belongs to its primary category and to any secondary categories in p2_vendors.also_categories
+// (for example an officiant who also sells an all inclusive elopement package). Use this wherever a page
+// asks "is this vendor in category X"; v.category alone is the primary label shown on cards.
+export const inCategory = (v: any, cat: string): boolean =>
+  v?.category === cat || (Array.isArray(v?.also_categories) && v.also_categories.includes(cat));
 export const REGIONS: Record<string,{name:string, blurb:string}> = {
   'estes-park': { name:'Estes Park & RMNP', blurb:'Rocky Mountain National Park, Estes Park and the Peak-to-Peak highway.' },
   'summit-county': { name:'Summit County', blurb:'Breckenridge, Frisco, Dillon, Keystone and Sapphire Point.' },

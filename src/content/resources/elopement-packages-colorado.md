@@ -7,7 +7,7 @@ datePublished: "2026-10-10"
 kind: budget
 hero: telluride-san-juans
 regions: [estes-park, summit-county, vail-aspen, telluride-san-juans, colorado-springs, boulder, denver-foothills, northern-colorado]
-categories: [photographers, planners, venues, officiants]
+categories: [packages, photographers, planners, venues, officiants]
 facts:
   - label: "Photographer Led"
     value: "Roughly $2,500 to $7,000 (estimate)"

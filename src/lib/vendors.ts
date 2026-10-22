@@ -13,7 +13,8 @@ export const STYLE_OPTIONS: Record<string, string[]> = {
   'florists': ['wildflower','garden','modern','minimalist','dried','romantic'],
   'hair-makeup': ['natural','glam','editorial','airbrush','on location','bridal party'],
   'officiants': ['nonreligious','religious','spiritual','personalized','bilingual','adventure'],
-  'planners': ['full planning','elopement packages','day of coordination','adventure','luxury','destination']
+  'planners': ['full planning','elopement packages','day of coordination','adventure','luxury','destination'],
+  'packages': ['all inclusive','officiant included','photography included','florals included','hair and makeup included','video included']
 };
 export const PRICE_BUCKETS: { id: string; label: string; min: number; max: number }[] = [
   { id: 'u1500', label: 'Under $1,500', min: 0, max: 1499 },
@@ -26,7 +27,7 @@ export const money = (n: number) => '$' + Number(n).toLocaleString('en-US');
 export const servedRegions = (v: any): string[] => (Array.isArray(v.served_regions) ? v.served_regions : []).filter((r: string) => r && r !== v.sub_region && r !== 'other-colorado');
 // Compact facet record embedded on listing pages for the client side filter.
 export function facet(v: any, i: number) {
-  return { s: v.slug, c: v.category, r: v.sub_region, sr: servedRegions(v), p: Number.isFinite(v.starting_price) ? v.starting_price : null,
+  return { s: v.slug, c: v.category, ac: Array.isArray(v.also_categories) ? v.also_categories : [], r: v.sub_region, sr: servedRegions(v), p: Number.isFinite(v.starting_price) ? v.starting_price : null,
     st: Array.isArray(v.styles) ? v.styles : [], ph: !!v.image_url, rt: v.rating ? Number(v.rating) : 0, rv: v.reviews || 0, i, f: v.status === 'featured' };
 }
 // Reply time badge from p2_vendors.reply_median_hours (median over the last 90 days, set only when at least

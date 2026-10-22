@@ -16,7 +16,7 @@ const slots: Slot[] = grid.slots || [];
 const foundingLeft = typeof grid.founding_left === 'number' ? grid.founding_left : FOUNDING_CAP;
 const cats = Object.keys(CATEGORIES);
 const regs = Object.keys(REGIONS);
-const catShort: Record<string, string> = { photographers: 'Photographers', venues: 'Venues', florists: 'Florists', 'hair-makeup': 'Hair and Makeup', officiants: 'Officiants', planners: 'Planners' };
+const catShort: Record<string, string> = { photographers: 'Photographers', venues: 'Venues', florists: 'Florists', 'hair-makeup': 'Hair and Makeup', officiants: 'Officiants', planners: 'Planners', packages: 'Elopement Packages' };
 const cell = (c: string, r: string) => slots.find(s => s.category === c && s.sub_region === r);
 const openTotal = slots.reduce((a, s) => a + (s.open || 0), 0);
 const allTotal = cats.length * regs.length * FEATURED_CAP;
