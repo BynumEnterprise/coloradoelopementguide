@@ -2,9 +2,9 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { json, rpc, sleep, authSecret, cronAuthorized, fetchWithTimeout, mapLimit, fireDeployHook } from '../../../lib/cron';
 import { sendMailResult } from '../../../lib/mail';
-import { renderV4, renderDrip, renderFollowup, renderActivation, type OutreachVendor, type DripUser, type FollowupVendor, type ActivationUser } from '../../../lib/outreach';
+import { renderV4, renderDrip, renderFollowup, renderActivation, FEATURED_PITCHES_PAUSED, type OutreachVendor, type DripUser, type FollowupVendor, type ActivationUser } from '../../../lib/outreach';
 import { renderNurture, sendCoupleMail, type NurtureRecipient } from '../../../lib/couple-mail';
-import { renderReplyReminder, renderPhotoNudge, type ReplyReminder, type PhotoNudge } from '../../../lib/trust-mail';
+import { renderReplyReminder, renderPhotoNudge, releasePendingInquiries, type ReplyReminder, type PhotoNudge } from '../../../lib/trust-mail';
 
 // Daily P2 automation (Vercel cron, 15:00 UTC):
 //   1. contact discovery for up to 12 seeded vendors with a website and no email
@@ -13,10 +13,16 @@ import { renderReplyReminder, renderPhotoNudge, type ReplyReminder, type PhotoNu
 //   4. couple nurture emails (kit, region, permits, vendors, planner nudge), 50 per Denver day
 //   2c. one time activation note (drip step 10) to accounts that existed on 2026-10-12, sent once each
 //       vendor is clear of any email from us for 3 days; it runs before the drips so it takes the slot
-// Query flags for manual runs: ?dry=1 renders and checks but sends nothing; ?only=discovery|outreach|followups|activation|drips|nurture|featured_rotation;
+// Query flags for manual runs: ?dry=1 renders and checks but sends nothing;
+//   ?only=featured_rotation|bounces|analytics|discovery|outreach|followups|activation|pending_inquiries|drips|nurture|reply_reminders|photo_nudges;
 //   ?force=1 lets featured_rotation run on a day other than Tuesday (manual first run).
-//   7. featured_rotation: free Featured trial. Tuesdays (Denver) through p2_config trial_rotation_until, ends the active
-//      cohort and starts a new 7 day one (3 per category) via ceg_cron_trial_rotate, then fires the deploy hook.
+//   0. featured_rotation: free Featured trial. Tuesdays (Denver) through p2_config trial_rotation_until, ends the active
+//      cohort and starts a new 7 day one (3 per category) via ceg_cron_trial_rotate, then fires the deploy hook. Runs
+//      first because it is one cheap RPC that changes what the site shows; on any day it also closes a cohort whose
+//      end date has passed (safety net for a missed Tuesday run after the window closes).
+//   2d. pending_inquiries: inquiries that arrived before the vendor had an account (delivery_mode notice or owner) are
+//      emailed in full to the now verified account and flipped to account mode, once each (src/lib/trust-mail.ts).
+//   Drip step 3 (the Featured note) is held: owner directive 5c, no Featured pitches until traffic is up.
 // Function duration is raised to 300s in astro.config.mjs (adapter maxDuration).
 
 const DISCOVERY_LIMIT = 12;
@@ -115,6 +121,99 @@ export const GET: APIRoute = async ({ request }) => {
   const run = (stage: string) => !only || only === stage;
   const started = Date.now();
   const summary: Record<string, unknown> = { ok: true, ran_at: new Date().toISOString(), dry };
+
+  // 0. Featured trial rotation (?only=featured_rotation, ?force=1 ignores the weekday). Idempotent per Denver date.
+  //    On the last Tuesday of the window (today == until) the active cohort is ended and no new one starts, so vendors
+  //    revert to their previous status with featured_source cleared and no email (ceg_cron_trial_rotate, _ceg_trial_close).
+  //    Any other day: if a cohort is still open past its 7 day end, close it anyway so a missed run cannot leave trial
+  //    vendors Featured for free indefinitely.
+  if (run('featured_rotation')) {
+    const fr: Record<string, unknown> = {};
+    try {
+      const now = new Date();
+      const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Denver', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
+      const weekday = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Denver', weekday: 'short' }).format(now);
+      const force = url.searchParams.get('force') === '1';
+      fr.today = today; fr.weekday = weekday;
+      const until = await rpc<string | null>('ceg_cron_trial_until', { p_secret: secret });
+      fr.until = until;
+      const inWindow = !!until && today <= until;
+      if ((force || weekday === 'Tue') && inWindow) {
+        const end = new Date(today + 'T12:00:00Z'); end.setUTCDate(end.getUTCDate() + 7);
+        const startNew = today < until!;
+        const res = await rpc<any>('ceg_cron_trial_rotate', { p_secret: secret, p_cohort_start: today,
+          p_cohort_end: startNew ? end.toISOString().slice(0, 10) : null, p_per_category: 3, p_dry: dry });
+        fr.result = res;
+        if (!dry && res && ((res.started ?? 0) > 0 || (res.ended ?? 0) > 0)) fr.deploy = await fireDeployHook();
+      } else {
+        fr.skipped = !inWindow ? 'rotation window over' : 'not Tuesday';
+        // Safety net: a dry call lists the open cohort; close it when its end date (start + 7) is today or earlier.
+        const peek = await rpc<any>('ceg_cron_trial_rotate', { p_secret: secret, p_cohort_start: null, p_cohort_end: null, p_per_category: 3, p_dry: true });
+        const open: { cohort_start?: string }[] = Array.isArray(peek?.would_end) ? peek.would_end : [];
+        const overdue = open.filter(t => {
+          if (!t.cohort_start) return false;
+          const e = new Date(String(t.cohort_start).slice(0, 10) + 'T12:00:00Z'); e.setUTCDate(e.getUTCDate() + 7);
+          return e.toISOString().slice(0, 10) <= today;
+        });
+        fr.open_trials = open.length; fr.overdue = overdue.length;
+        if (overdue.length) {
+          if (dry) fr.would_close = overdue.length;
+          else {
+            const res = await rpc<any>('ceg_cron_trial_rotate', { p_secret: secret, p_cohort_start: null, p_cohort_end: null, p_per_category: 3, p_dry: false });
+            fr.closed = res?.ended ?? 0; fr.closed_list = res?.ended_list ?? [];
+            if ((res?.ended ?? 0) > 0) fr.deploy = await fireDeployHook();
+          }
+        }
+      }
+    } catch (e) { fr.fatal = String(e).slice(0, 300); summary.ok = false; }
+    summary.featured_rotation = fr;
+  }
+
+  // 0b. Bounces. Resend answers 2xx on accept and reports the bounce later, so we poll the last two pages of the
+  //     account's send log and hand bounced, complained and failed recipients to ceg_mail_bounced, which marks the
+  //     vendor (outreach_status bounced), the account email (email_bounced_at) and any notice sent in the last 2 days.
+  //     Every due list then skips those addresses. Idempotent: the RPC dedupes on the Resend email id.
+  if (run('bounces')) {
+    const b: Record<string, unknown> = { scanned: 0, bad: 0 };
+    try {
+      const key = process.env.RESEND_API_KEY ?? import.meta.env.RESEND_API_KEY;
+      if (!key) throw new Error('no RESEND_API_KEY');
+      const since = Date.now() - 4 * 86_400_000;
+      const bad: { id: string; to: string; subject: string; last_event: string; created_at: string }[] = [];
+      let after = '';
+      for (let page = 0; page < 4; page++) {
+        const r = await fetchWithTimeout(`https://api.resend.com/emails?limit=100${after ? `&after=${after}` : ''}`, 15_000, { headers: { Authorization: `Bearer ${key}` } });
+        if (!r.ok) throw new Error(`resend list ${r.status}`);
+        const body: any = await r.json();
+        const rows: any[] = Array.isArray(body?.data) ? body.data : [];
+        if (!rows.length) break;
+        b.scanned = (b.scanned as number) + rows.length;
+        for (const m of rows) {
+          if (!String(m.from || '').includes('coloradoelopementguide')) continue;
+          if (!['bounced', 'complained', 'failed'].includes(m.last_event)) continue;
+          const to = Array.isArray(m.to) ? m.to[0] : m.to;
+          if (!to) continue;
+          bad.push({ id: m.id, to, subject: String(m.subject || '').replace(/;/g, ',').slice(0, 200), last_event: m.last_event, created_at: m.created_at });
+        }
+        const last = rows[rows.length - 1];
+        if (!body.has_more || !last || Date.parse(last.created_at) < since) break;
+        after = last.id;
+      }
+      b.bad = bad.length;
+      if (bad.length && !dry) b.result = await rpc('ceg_mail_bounced', { p_secret: secret, p_rows: bad });
+      if (dry) b.would_mark = bad.map(x => ({ to: x.to, event: x.last_event, at: x.created_at }));
+    } catch (e) { b.fatal = String(e).slice(0, 300); summary.ok = false; }
+    summary.bounces = b;
+  }
+
+  // 0c. Analytics hygiene: flag email link scanner hits (one page per session inside the 12 minutes after a send burst)
+  //     as bots so the admin Traffic tab and the digest report people, not mail servers.
+  if (run('analytics')) {
+    const an: Record<string, unknown> = {};
+    try { an.scanner_hits_flagged = dry ? 'skipped (dry)' : await rpc<number>('ceg_cron_flag_scanners', { p_secret: secret, p_days: 3 }); }
+    catch (e) { an.fatal = String(e).slice(0, 300); summary.ok = false; }
+    summary.analytics = an;
+  }
 
   // 1. Contact discovery
   if (run('discovery')) {
@@ -223,6 +322,14 @@ export const GET: APIRoute = async ({ request }) => {
     summary.activation = ac;
   }
 
+  // 2d. Inquiries that arrived before the vendor claimed: full copy to the verified account, once each.
+  if (run('pending_inquiries')) {
+    let pi: Record<string, unknown>;
+    try { pi = await releasePendingInquiries(secret, { limit: 20, dry }); }
+    catch (e) { pi = { fatal: String(e).slice(0, 300) }; summary.ok = false; }
+    summary.pending_inquiries = pi;
+  }
+
   // 3. Onboarding drips
   if (run('drips')) {
     const dr: Record<string, unknown> = { due: 0, sent: [] as unknown[], failed: [] as unknown[], blocked: [] as unknown[] };
@@ -231,6 +338,10 @@ export const GET: APIRoute = async ({ request }) => {
       dr.due = due.length;
       for (const u of due) {
         if (Date.now() - started > 260_000) { dr.stopped_early = 'time budget'; break; }
+        // Owner directive 5c (OPERATING-MANUAL): no Featured pitches to vendors until traffic is up. Step 3 is a Featured
+        // note with the Stripe link, so it is held here rather than sent. Flip FEATURED_PITCHES_PAUSED in outreach.ts
+        // when the owner lifts 5c.
+        if (u.step === 3 && FEATURED_PITCHES_PAUSED) { (dr.blocked as unknown[]).push({ user: u.user_id, step: 3, vendor: u.slug, reason: 'held: Featured pitch paused by owner directive 5c' }); continue; }
         let mail;
         try { mail = renderDrip(u); }
         catch (e) { (dr.blocked as unknown[]).push({ user: u.user_id, step: u.step, reason: String((e as Error).message || e).slice(0, 200) }); continue; }
@@ -335,31 +446,6 @@ export const GET: APIRoute = async ({ request }) => {
       }
     } catch (e) { pn.fatal = String(e).slice(0, 300); summary.ok = false; }
     summary.photo_nudges = pn;
-  }
-
-  // 7. Featured trial rotation (?only=featured_rotation, ?force=1 ignores the weekday). Idempotent per Denver date.
-  if (run('featured_rotation')) {
-    const fr: Record<string, unknown> = {};
-    try {
-      const now = new Date();
-      const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Denver', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
-      const weekday = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Denver', weekday: 'short' }).format(now);
-      const force = url.searchParams.get('force') === '1';
-      fr.today = today; fr.weekday = weekday;
-      const until = await rpc<string | null>('ceg_cron_trial_until', { p_secret: secret });
-      fr.until = until;
-      if (!force && weekday !== 'Tue') fr.skipped = 'not Tuesday';
-      else if (!until || today > until) fr.skipped = 'rotation window over';
-      else {
-        const end = new Date(today + 'T12:00:00Z'); end.setUTCDate(end.getUTCDate() + 7);
-        const startNew = today < until;
-        const res = await rpc<any>('ceg_cron_trial_rotate', { p_secret: secret, p_cohort_start: today,
-          p_cohort_end: startNew ? end.toISOString().slice(0, 10) : null, p_per_category: 3, p_dry: dry });
-        fr.result = res;
-        if (!dry && res && ((res.started ?? 0) > 0 || (res.ended ?? 0) > 0)) fr.deploy = await fireDeployHook();
-      }
-    } catch (e) { fr.fatal = String(e).slice(0, 300); summary.ok = false; }
-    summary.featured_rotation = fr;
   }
 
   summary.ms = Date.now() - started;

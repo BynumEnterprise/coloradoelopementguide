@@ -1,7 +1,7 @@
 // Personal Featured pitch for one claimed vendor, built from their real numbers (ceg_admin_pitch 'prepare').
 // Rendered on the server so the admin preview, the Copy button and the sent email are the same text,
 // and every version passes naturalCheck before anyone sees it.
-import { naturalCheck, displayName, categoryPlural, greetingFor, slotLine, SITE_URL, POSTAL_ADDRESS, FEATURED_LINK, FEATURED_CAP, FOUNDING_CAP } from './outreach';
+import { naturalCheck, displayName, categoryPlural, greetingFor, slotLine, SITE_URL, POSTAL_ADDRESS, featuredLinkFor, FEATURED_CAP, FOUNDING_CAP } from './outreach';
 import { textToHtml, MAIL_REPLY_TO } from './mail';
 
 export const PITCH_FROM = 'Ryan at Colorado Elopement Guide <hello@send.coloradoelopementguide.com>';
@@ -62,7 +62,7 @@ export function renderPitch(p: PitchPrep): Pitch {
     : `It is 40 dollars a month. The first month is 1 dollar with the code FIRSTMONTH1, there is no contract, and you can cancel anytime.`;
 
   const linkPara = open > 0
-    ? `If you want it, check out with the email you use for your dashboard so it switches on by itself:\n${FEATURED_LINK}\n\nThe details are here: ${SITE_URL}/featured`
+    ? `If you want it, check out with the email you use for your dashboard so it switches on by itself:\n${featuredLinkFor(v.slug)}\n\nThe details are here: ${SITE_URL}/featured`
     : `The details are here: ${SITE_URL}/featured`;
 
   const subject = open > 0 ? `A Featured spot for ${business}` : `${business} and the Featured waitlist`;

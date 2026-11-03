@@ -245,6 +245,10 @@ const slotTemplates = Object.fromEntries(Object.keys(CATEGORIES).flatMap(c => Ob
     const fmtWhen = d => d ? new Date(String(d).length <= 10 ? d + 'T12:00:00' : d).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '';
     async function loadExtras(){
       const v = VD.vendor;
+      // Stripe attribution: the payment link carries this listing's slug as client_reference_id, so the webhook
+      // turns on the right listing even when the card email differs from the dashboard email.
+      const buy = document.getElementById('vd-buy');
+      if (buy && v.slug && /^[a-z0-9][a-z0-9_-]{0,190}$/.test(v.slug)) buy.href = buy.getAttribute('href').split('?')[0] + '?client_reference_id=' + encodeURIComponent(v.slug);
       const box = document.getElementById('vd-inq');
       const inq = await rpc('ceg_vendor_inquiries', { p_token: vtok() });
       if (!inq) { box.textContent = 'Could not load inquiries right now.'; }

@@ -108,6 +108,8 @@ function fmtCounts(o: Record<string, number> | null | undefined): string {
 }
 
 const pct = (a: number, b: number) => (b > 0 ? `${a >= b ? 'up' : 'down'} ${Math.round(Math.abs(a - b) / b * 100)} percent` : 'no data for the prior week');
+// Same rule as the stored segment column on p2_pageviews (vendor side pages are not couple traffic).
+const VENDOR_SIDE = /^\/(claim|vendor-dashboard|vd|lt|for-vendors|featured|admin|api|unsub|unsubscribe)(\/|$|\?)/;
 const prettyPath = (p: string) => (p === '/' ? 'home page' : p.replace(/\/$/, '').replace(/^\/(resources|venues|vendor|local|category|guides|region)\//, '').replace(/[\/-]+/g, ' ').trim() || p);
 
 export function buildDigest(d: any, run: Record<string, any>, date: string): string {
@@ -119,15 +121,32 @@ export function buildDigest(d: any, run: Record<string, any>, date: string): str
   L.push(`Colorado Elopement Guide, week ending ${date}`);
   L.push('');
   L.push('TRAFFIC');
-  L.push(`Visitors ${w.visitors ?? 0} (prior ${w.visitors_prev ?? 0}, ${pct(w.visitors ?? 0, w.visitors_prev ?? 0)})`);
-  L.push(`Pageviews ${w.pageviews ?? 0} (prior ${w.pageviews_prev ?? 0})`);
-  const tp = (w.top_pages || []) as { path: string; n: number }[];
-  L.push(`Top pages: ${tp.length ? tp.map(p => `${prettyPath(p.path)} ${p.n}`).join('; ') : 'none yet'}`);
+  // Couple traffic leads (A6, 2026-11-03): no bots or email link scanners, no vendor side pages, and no session that
+  // opened one (a vendor looking at their own listing after the claim page). Until ceg_cron_digest returns the couple
+  // keys, the old all traffic lines are printed as before.
+  const hasCouple = w.couple_visitors_7d != null;
+  if (hasCouple) {
+    const cvp = w.couple_visitors_prev_7d, cpp = w.couple_pageviews_prev_7d;
+    L.push(`Couple visitors ${w.couple_visitors_7d}${cvp != null ? ` (prior ${cvp}, ${pct(w.couple_visitors_7d, cvp)})` : ''}`);
+    L.push(`Couple pageviews ${w.couple_pageviews_7d ?? 0}${cpp != null ? ` (prior ${cpp}, ${pct(w.couple_pageviews_7d ?? 0, cpp)})` : ''}`);
+    L.push(`All traffic: visitors ${w.visitors ?? 0}, pageviews ${w.pageviews ?? 0}. Vendor side visitors ${w.vendor_visitors_7d ?? 0}. Scanner hits filtered ${w.scanner_hits_7d ?? 0}`);
+  } else {
+    L.push(`Visitors ${w.visitors ?? 0} (prior ${w.visitors_prev ?? 0}, ${pct(w.visitors ?? 0, w.visitors_prev ?? 0)})`);
+    L.push(`Pageviews ${w.pageviews ?? 0} (prior ${w.pageviews_prev ?? 0})`);
+  }
+  const allTop = (w.top_pages || []) as { path: string; n: number }[];
+  // Couple pages for the suggestion below, so it never says to promote a claim page or the vendor dashboard.
+  const tp = (Array.isArray(w.couple_top_pages_7d) ? w.couple_top_pages_7d : allTop.filter(p => !VENDOR_SIDE.test(p.path || ''))) as { path: string; n: number }[];
+  const shown = hasCouple ? tp : allTop;
+  L.push(`${hasCouple ? 'Top couple pages' : 'Top pages'}: ${shown.length ? shown.map(p => `${prettyPath(p.path)} ${p.n}`).join('; ') : 'none yet'}`);
   const src = (w.sources || []) as { source: string; n: number }[];
-  L.push(`Sources (visits): ${src.length ? src.map(s => `${s.source} ${s.n}`).join(', ') : 'none yet'}`);
+  L.push(`Sources${hasCouple ? ', all traffic' : ''} (visits): ${src.length ? src.map(s => `${s.source} ${s.n}`).join(', ') : 'none yet'}`);
   L.push('');
   L.push('COUPLES');
-  L.push(`Inquiries ${w.inquiries ?? 0}, delivered ${w.inquiries_delivered ?? 0}, replied ${w.inquiries_replied == null ? 'not tracked yet' : w.inquiries_replied}`);
+  // Vendor inquiries only (vendor_id not null). Contact form rows live in p2_inquiries too, with vendor_id null; once
+  // ceg_cron_digest returns contact_messages they are reported on their own line instead of inflating this count.
+  L.push(`Vendor inquiries ${w.inquiries ?? 0}, delivered ${w.inquiries_delivered ?? 0}, replied ${w.inquiries_replied == null ? 'not tracked yet' : w.inquiries_replied}`);
+  if (w.contact_messages != null) L.push(`Contact form messages ${w.contact_messages}`);
   L.push(`Inquiry form submits ${ev('inquiry_submitted')}. Website clicks ${ev('vendor_website_click')}. Phone clicks ${ev('vendor_phone_click')}`);
   L.push(`Planner signups ${ev('planner_signup')}, new couple accounts ${w.couples ?? 0}, subscribers ${w.subscribers ?? 0}, nurture emails sent ${w.nurture_sent ?? 0}`);
   L.push('');
@@ -154,7 +173,7 @@ export function buildDigest(d: any, run: Record<string, any>, date: string): str
   if ((w.inquiries ?? 0) > 0 && w.inquiries_replied != null && w.inquiries_replied < w.inquiries) todo.push(`${w.inquiries - w.inquiries_replied} inquiries have no vendor reply yet. Nudge those vendors from the admin.`);
   if ((se.featured_checkout_click ?? 0) > (w.featured ?? 0)) todo.push(`${se.featured_checkout_click} Featured checkout clicks did not convert. Send a personal note from the Sales tab.`);
   if ((w.featured ?? 0) === 0 && (w.vendor_accounts_verified_total ?? 0) > 0 && (w.pitches_7d ?? 0) === 0) todo.push(`No Featured customers yet and no pitches this week. Open the Sales tab and send the founding offer to the ${Math.min(5, w.vendor_accounts_verified_total)} claimed vendors with the most views.`);
-  if ((w.pageviews ?? 0) < 500) {
+  if ((hasCouple ? (w.couple_pageviews_7d ?? 0) : (w.pageviews ?? 0)) < 500) {
     const best = tp.find(p => p.path !== '/' && p.path !== '/thanks');
     todo.push(best ? `Traffic is still small. ${prettyPath(best.path)} leads; link to it from two related guides and pitch it to one link prospect.` : 'Traffic is still small. Push the newest guides to link prospects and Pinterest.');
   }

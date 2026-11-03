@@ -40,11 +40,61 @@ function canonicalLinks() {
   };
 }
 
+// Sitemap lastmod and pruning (SEO fix wave 2026-11-03). Google last read the sitemap on Oct 9 and the live
+// file had no lastmod at all, so nothing told Google which URLs were new or changed.
+// Guides and resources: frontmatter dateModified, else datePublished. Hubs: the build date, changefreq weekly.
+// Vendor pages: the built HTML decides. A page that ships a robots noindex (unclaimed listing with no owner
+// photos, see src/pages/vendor/[slug].astro) is dropped from the sitemap; claimed and featured listings
+// (data-listing attribute) get the build date; indexable seeded listings get no lastmod.
+const BUILD_DATE = new Date().toISOString().slice(0, 10);
+function contentDates(rel, keyField) {
+  const dir = fileURLToPath(new URL(rel, import.meta.url));
+  const dates = new Map();
+  if (!existsSync(dir)) return dates;
+  for (const f of readdirSync(dir)) {
+    if (!f.endsWith('.md')) continue;
+    const fm = (readFileSync(join(dir, f), 'utf8').match(/^---\r?\n([\s\S]*?)\r?\n---/) || [])[1] || '';
+    const field = (k) => (fm.match(new RegExp(`^${k}:\\s*["']?([^"'\\r\\n]+?)["']?\\s*$`, 'm')) || [])[1];
+    const key = keyField ? field(keyField) : f.slice(0, -3);
+    const date = field('dateModified') || field('datePublished');
+    if (key && date && /^\d{4}-\d{2}-\d{2}$/.test(date)) dates.set(key, date);
+  }
+  return dates;
+}
+const GUIDE_DATES = contentDates('./src/content/guides/', 'region');
+const RESOURCE_DATES = contentDates('./src/content/resources/');
+const newest = (m) => [...m.values()].sort().pop();
+let builtDir = null;
+// Runs before the sitemap integration's astro:build:done (hooks run in array order), so serialize can read the HTML.
+const captureBuildDir = { name: 'ceg:capture-build-dir', hooks: { 'astro:build:done': ({ dir }) => { builtDir = fileURLToPath(dir); } } };
+function builtHtml(pathname) {
+  for (const root of [builtDir, fileURLToPath(new URL('./.vercel/output/static/', import.meta.url))]) {
+    if (!root) continue;
+    const file = join(root, pathname, 'index.html');
+    if (existsSync(file)) return readFileSync(file, 'utf8');
+  }
+  return null;
+}
+const HUBS = /^\/(?:$|vendors\/$|regions\/$|region\/|category\/|local\/|venues\/|photographers\/)/;
+function serializeSitemap(item) {
+  const path = new URL(item.url).pathname;
+  const html = builtHtml(path);
+  if (html && /<meta name="robots" content="noindex/i.test(html)) return undefined;
+  let m;
+  if ((m = path.match(/^\/guides\/([^/]+)\/$/))) return GUIDE_DATES.has(m[1]) ? { ...item, lastmod: GUIDE_DATES.get(m[1]) } : item;
+  if ((m = path.match(/^\/resources\/([^/]+)\/$/))) return RESOURCE_DATES.has(m[1]) ? { ...item, lastmod: RESOURCE_DATES.get(m[1]) } : item;
+  if (path === '/guides/') return { ...item, lastmod: newest(GUIDE_DATES) || BUILD_DATE, changefreq: 'weekly' };
+  if (path === '/resources/') return { ...item, lastmod: newest(RESOURCE_DATES) || BUILD_DATE, changefreq: 'weekly' };
+  if (path.startsWith('/vendor/')) return html && /data-listing="(?:claimed|featured)"/.test(html) ? { ...item, lastmod: BUILD_DATE } : item;
+  if (HUBS.test(path)) return { ...item, lastmod: BUILD_DATE, changefreq: 'weekly' };
+  return item;
+}
+
 export default defineConfig({
   site: 'https://coloradoelopementguide.com',
   output: 'static',
   security: { checkOrigin: false },
   adapter: vercel({ maxDuration: 300 }),
-  integrations: [sitemap({ filter: (page) => !/\/(admin|account|vendor-dashboard|my-vendors|thanks|claim(\/.*)?|lt\/.*|vd\/.*)\/?$/.test(page) }), canonicalLinks()],
+  integrations: [captureBuildDir, sitemap({ filter: (page) => !/\/(api(\/.*)?|admin|account|vendor-dashboard|my-vendors|thanks|claim(\/.*)?|lt\/.*|vd\/.*)\/?$/.test(page), serialize: serializeSitemap }), canonicalLinks()],
   vite: { plugins: [tailwindcss()] }
 });

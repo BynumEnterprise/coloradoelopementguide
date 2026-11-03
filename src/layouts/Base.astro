@@ -3,7 +3,10 @@ import '../styles/global.css';
 import Disclosure from '../components/Disclosure.astro';
 import { IMG, opt, optSet } from '../lib/assets';
 const { title, description, noindex = false, dark = false, image, imageAlt, hero } = Astro.props;
-const canonical = new URL(Astro.url.pathname, Astro.site);
+// Canonical form is the trailing slash (directory build); vercel.json 308s the no slash form to it.
+// Prerendered pages already arrive with the slash; this guards on demand pages and any future route.
+const canonPath = /\/$|\.[a-z0-9]{2,5}$/i.test(Astro.url.pathname) ? Astro.url.pathname : Astro.url.pathname + '/';
+const canonical = new URL(canonPath, Astro.site);
 // Search results cut titles near 60 to 65 characters. Pages pass their full editorial title; this keeps
 // the brand when it fits, then falls back to the part before a colon or dash, then a word boundary cut.
 const SUFFIX = ' | Colorado Elopement Guide';
@@ -38,7 +41,7 @@ const on = (p: string) => path === p || path.startsWith(p + '/');
   <title>{pageTitle}</title>
   <meta name="description" content={description} />
   <meta name="p:domain_verify" content="8d9c464cf7c6e1b1279e52b9e0178d39" />
-  {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+  {noindex ? <meta name="robots" content={typeof noindex === 'string' ? noindex : 'noindex'} /> : <link rel="canonical" href={canonical} />}
   <meta property="og:title" content={title} />
   <meta property="og:description" content={description} />
   <meta property="og:type" content="website" />
@@ -190,7 +193,7 @@ const on = (p: string) => path === p || path.startsWith(p + '/');
     <div class="max-w-7xl mx-auto px-5 md:px-8 py-14 grid gap-10 md:grid-cols-12 text-sm">
       <div class="md:col-span-5">
         <p class="display text-xl text-ivory mb-3">Colorado <span class="serif-i">Elopement</span> Guide</p>
-        <p class="max-w-sm leading-relaxed">An independent, region-by-region directory of Colorado's elopement and micro-wedding vendors — built for couples who'd rather say their vows on a ridgeline than in a ballroom.</p>
+        <p class="max-w-sm leading-relaxed">An independent, region-by-region directory of Colorado's elopement and micro-wedding vendors, built for couples who'd rather say their vows on a ridgeline than in a ballroom.</p>
       </div>
       <div class="md:col-span-3">
         <p class="eyebrow text-gold mb-4">Plan Your Elopement</p>

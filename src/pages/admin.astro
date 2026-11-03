@@ -187,10 +187,12 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
       const cls = d > 0 ? 'text-spruce-800' : d < 0 ? 'text-clay-700' : 'text-ink/50';
       return `<span class="${cls} font-medium">${d > 0 ? '↑ ' : d < 0 ? '↓ ' : ''}${Math.abs(d)}%</span> <span class="text-ink/45">vs previous ${trDays} days (${num(prev)})</span>`;
     }
-    function sourceLabel(s){ if (s.source === 'Other') return s.host && s.host.startsWith('utm:') ? 'Campaign: ' + esc(s.host.slice(4)) : hostLabel(s.host); if (s.source === 'Direct') return 'Direct (typed, bookmarked or from an app)'; return esc(s.source); }
+    function sourceLabel(s){ if (s.source === 'Other') return s.host === 'utm:email' ? 'Email' : s.host && s.host.startsWith('utm:') ? 'Campaign: ' + esc(s.host.slice(4)) : hostLabel(s.host); if (s.source === 'Direct') return 'Direct (typed, bookmarked or from an app)'; return esc(s.source); }
     function mediaKitText(){
       if (!TR) return '';
-      const m = TR.media_kit, end = new Date(), start = new Date(Date.now() - 30 * 86400000);
+      // Couple audience when ceg_admin_traffic returns media_kit_couple: these numbers go to vendors, so vendors using
+      // their own dashboard, claim page or listing are not counted. Falls back to the all traffic block.
+      const coupleKit = !!TR.media_kit_couple, m = TR.media_kit_couple || TR.media_kit || {}, end = new Date(), start = new Date(Date.now() - 30 * 86400000);
       const f = d => d.toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
       const regs = (m.top_regions || []).map(r => `${regNames[r.region] || r.region} (${num(r.views)})`).join(', ');
       const cats = (m.top_categories || []).map(c => `${catShort(c.category)} (${num(c.views)})`).join(', ');
@@ -204,7 +206,9 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
         `Live vendor listings: ${num(m.live_vendors)}`,
         regs ? `Most viewed regions: ${regs}` : '',
         cats ? `Most viewed categories: ${cats}` : '',
-        `Counted by our own first party analytics, bots and our own visits excluded.`
+        coupleKit
+          ? `Counted by our own first party analytics. Bots, email link scanners, vendors viewing their own dashboard, claim page or listing, and our own visits are excluded. A visitor is counted once per day.`
+          : `Counted by our own first party analytics, bots and our own visits excluded. A visitor is counted once per day.`
       ].filter(Boolean).join('\n');
     }
     function printMediaKit(){
@@ -222,10 +226,41 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
     function paintTraffic(){
       const pane = document.getElementById('pane-traffic');
       if (!TR) { pane.innerHTML = '<p class="text-sm text-ink/50">Could not load traffic. Press Refresh.</p>'; return; }
-      const c = TR.kpi.cur, p = TR.kpi.prev, b = TR.business, fu = TR.funnel;
-      const pps = x => x.sessions ? x.pageviews / x.sessions : 0;
+      const c = (TR.kpi && TR.kpi.cur) || {}, p = (TR.kpi && TR.kpi.prev) || {}, b = TR.business || {}, fu = TR.funnel || {};
+      // Couple split from ceg_admin_traffic (couple, vendor, bots; added 2026-11-03). Couple = not a bot or email scanner,
+      // not a vendor side page, and not in a session that opened one. Until the updated RPC is live the old all traffic
+      // cards stay in the headline, so all traffic is never shown under a couple label.
+      const cp = TR.couple || null, vn = TR.vendor || null, bt = TR.bots || null;
+      const cc = cp ? { visitors: cp.visitors || 0, sessions: cp.sessions || 0, pageviews: cp.pageviews || 0 } : null;
+      const cq = cp ? { visitors: cp.prev_visitors || 0, sessions: cp.prev_sessions || 0, pageviews: cp.prev_pageviews || 0 } : null;
+      const pps = x => x && x.sessions ? x.pageviews / x.sessions : 0;
       const kcard = (label, val, d, fmt) => `<div class="rounded-3xl border border-hairline bg-white p-5"><p class="eyebrow text-ink/50">${label}</p><p class="display text-4xl mt-2">${fmt ? fmt(val) : num(val)}</p><p class="text-xs mt-1.5 leading-relaxed">${d}</p></div>`;
-      const pDelta = (() => { const a = pps(c), z = pps(p); if (!z) return '<span class="text-ink/45">No data in the previous period</span>'; const d = Math.round(100 * (a - z) / z); return `<span class="${d > 0 ? 'text-spruce-800' : d < 0 ? 'text-clay-700' : 'text-ink/50'} font-medium">${d > 0 ? '↑ ' : d < 0 ? '↓ ' : ''}${Math.abs(d)}%</span> <span class="text-ink/45">vs previous ${trDays} days (${z.toFixed(2)})</span>`; })();
+      const scard = (label, val, d) => `<div class="rounded-2xl border border-hairline bg-parchment/60 p-4"><p class="eyebrow text-ink/50">${label}</p><p class="display text-2xl mt-1.5 tabular-nums">${num(val)}</p><p class="text-[11px] mt-1 leading-relaxed">${d}</p></div>`;
+      const pDelta = (() => { const a = pps(cc || c), z = pps(cq || p); if (!z) return '<span class="text-ink/45">No data in the previous period</span>'; const d = Math.round(100 * (a - z) / z); return `<span class="${d > 0 ? 'text-spruce-800' : d < 0 ? 'text-clay-700' : 'text-ink/50'} font-medium">${d > 0 ? '↑ ' : d < 0 ? '↓ ' : ''}${Math.abs(d)}%</span> <span class="text-ink/45">vs previous ${trDays} days (${z.toFixed(2)})</span>`; })();
+      const kpiRow = cc ? `
+          ${kcard('Couple Visitors', cc.visitors, delta(cc.visitors, cq.visitors))}
+          ${kcard('Couple Sessions', cc.sessions, delta(cc.sessions, cq.sessions))}
+          ${kcard('Couple Pageviews', cc.pageviews, delta(cc.pageviews, cq.pageviews))}
+          ${kcard('Couple Pages Per Session', pps(cc), pDelta, v => v.toFixed(2))}` : `
+          ${kcard('Unique Visitors', c.visitors, delta(c.visitors, p.visitors))}
+          ${kcard('Sessions', c.sessions, delta(c.sessions, p.sessions))}
+          ${kcard('Pageviews', c.pageviews, delta(c.pageviews, p.pageviews))}
+          ${kcard('Pages Per Session', pps(c), pDelta, v => v.toFixed(2))}`;
+      const allRow = cc ? `
+        <div class="mt-4 rounded-3xl border border-hairline bg-white p-5">
+          <div class="md:flex items-baseline justify-between gap-4"><p class="eyebrow text-clay-600">All Traffic</p><p class="text-xs text-ink/50 mt-1 md:mt-0 md:text-right">Couple numbers above exclude vendor side pages (claim, dashboard, sign in links, for vendors, featured), any session that opened one, and email link scanner hits.</p></div>
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-4">
+            ${scard('All Visitors', c.visitors, delta(c.visitors || 0, p.visitors || 0))}
+            ${scard('All Sessions', c.sessions, delta(c.sessions || 0, p.sessions || 0))}
+            ${scard('All Pageviews', c.pageviews, delta(c.pageviews || 0, p.pageviews || 0))}
+            ${scard('Vendor Side Visitors', vn ? vn.visitors || 0 : 0, vn ? delta(vn.visitors || 0, vn.prev_visitors || 0) : '<span class="text-ink/45">Not available yet</span>')}
+            ${scard('Scanner Hits Filtered', bt ? bt.pageviews || 0 : (TR.bot_rows_excluded || 0), '<span class="text-ink/45">Bot and email scanner pageviews, never counted above</span>')}
+          </div>
+        </div>` : `
+        <p class="text-xs text-ink/45 mt-3">These cards are all traffic, vendors and their dashboards included. The couple split appears here once the updated ceg_admin_traffic is live.</p>`;
+      const coupleSeries = !!cc && (TR.series || []).some(x => x && x.couple_views != null);
+      const series = coupleSeries ? TR.series.map(x => ({ d: x.d, views: x.couple_views || 0, visitors: x.couple_visitors || 0 })) : (TR.series || []);
+      const coupleSources = !!cc && Array.isArray(TR.sources_couple);
       const range = [7, 30, 90].map(n => `<button data-range="${n}" class="rounded-full px-4 py-2 text-sm font-medium ${n === trDays ? 'bg-ink text-ivory' : 'border border-hairline text-ink/65 hover:bg-parchment'}">${n} Days</button>`).join('');
       const started = TR.tracking_started ? fmtDate(TR.tracking_started) : 'today';
       const strip = [['Live Vendors', b.live_vendors], ['Claimed', b.claimed], ['Featured', b.featured], ['Verified Vendor Accounts', b.vendor_accounts_verified], ['Couple Accounts', b.couples], ['Subscribers', b.subscribers], [`Inquiries, ${trDays} Days`, b.inquiries_period]];
@@ -239,19 +274,15 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
           <div class="flex flex-wrap gap-2">${range}</div>
           <p class="text-xs text-ink/50 mt-3 md:mt-0 md:text-right max-w-xl leading-relaxed">Tracking started on ${esc(started)}. First party and cookieless: bots, the admin and your own signed in devices are excluded. A visitor is counted once per day because the privacy salt rotates daily.${TR.bot_rows_excluded ? ` ${num(TR.bot_rows_excluded)} likely bot views hidden.` : ''}</p>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-          ${kcard('Unique Visitors', c.visitors, delta(c.visitors, p.visitors))}
-          ${kcard('Sessions', c.sessions, delta(c.sessions, p.sessions))}
-          ${kcard('Pageviews', c.pageviews, delta(c.pageviews, p.pageviews))}
-          ${kcard('Pages Per Session', pps(c), pDelta, v => v.toFixed(2))}
-        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">${kpiRow}
+        </div>${allRow}
         <div class="mt-6 rounded-3xl bg-spruce-900 text-ivory p-6">
           <p class="eyebrow text-gold mb-4">Business</p>
           <div class="grid grid-cols-2 md:grid-cols-7 gap-4">${strip.map(([l, v]) => `<div><p class="display text-3xl">${num(v)}</p><p class="text-xs text-ivory/70 mt-1">${l}</p></div>`).join('')}</div>
         </div>
         <div class="mt-6 rounded-3xl border border-hairline bg-white p-6">
           <div class="md:flex items-end justify-between gap-4 mb-5">
-            <div><p class="eyebrow text-clay-600">Last ${trDays} Days</p><p class="display text-2xl mt-1">Pageviews <span class="serif-i">and visitors</span></p></div>
+            <div><p class="eyebrow text-clay-600">Last ${trDays} Days</p><p class="display text-2xl mt-1">${coupleSeries ? 'Couple Pageviews' : 'Pageviews'} <span class="serif-i">and visitors</span></p></div>
             <div class="text-xs text-ink/55 mt-3 md:mt-0 flex flex-wrap gap-4"><span class="inline-flex items-center gap-1.5"><i class="inline-block w-3 h-3 rounded-sm" style="background:#3A4A3C"></i>Pageviews</span><span class="inline-flex items-center gap-1.5"><i class="inline-block w-3 h-0.5" style="background:#A9694A"></i>Visitors</span></div>
           </div>
           <div id="ch-traffic"></div>
@@ -259,11 +290,11 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
         </div>
         <div class="grid md:grid-cols-5 gap-6 mt-6">
           <div class="md:col-span-3 rounded-3xl border border-hairline bg-white p-6">
-            <div class="flex items-start justify-between gap-3"><div><p class="eyebrow text-clay-600">Top Pages</p><p class="text-xs text-ink/50 mt-1 mb-3">Views and unique visitors, last ${trDays} days</p></div><button id="tr-csv" class="rounded-full border border-ink/60 px-4 py-2 text-xs font-medium hover:bg-parchment shrink-0">Export CSV</button></div>
+            <div class="flex items-start justify-between gap-3"><div><p class="eyebrow text-clay-600">Top Pages</p><p class="text-xs text-ink/50 mt-1 mb-3">${cc ? 'All traffic, views and visitors' : 'Views and unique visitors'}, last ${trDays} days</p></div><button id="tr-csv" class="rounded-full border border-ink/60 px-4 py-2 text-xs font-medium hover:bg-parchment shrink-0">Export CSV</button></div>
             <div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-ink/50 text-xs"><th class="text-left font-medium pb-2">#</th><th class="text-left font-medium pb-2">Page</th><th class="text-right font-medium pb-2 pr-3">Views</th><th class="text-right font-medium pb-2">Visitors</th></tr></thead><tbody>${pagesRows || '<tr><td colspan="4" class="py-6 text-center text-ink/50">No pageviews yet.</td></tr>'}</tbody></table></div>
           </div>
           <div class="md:col-span-2 space-y-6">
-            ${listCard('Traffic Sources', 'Sessions by where the visit started', TR.sources || [], sourceLabel, s => s.sessions, 'No sessions yet.')}
+            ${listCard(coupleSources ? 'Couple Traffic Sources' : 'Traffic Sources', coupleSources ? 'Couple sessions by where the visit started' : 'Sessions by where the visit started', coupleSources ? TR.sources_couple : (TR.sources || []), sourceLabel, s => s.sessions, 'No sessions yet.')}
             <div class="rounded-3xl border border-hairline bg-white p-6">
               <p class="eyebrow text-clay-600">Conversion Funnel</p><p class="text-xs text-ink/50 mt-1 mb-3">Last ${trDays} days</p>
               <ul>${steps.map(([l, v, sub]) => `<li class="py-2.5 border-b border-hairline last:border-0"><div class="flex items-center justify-between gap-3 text-sm"><span>${l}<span class="block text-[11px] text-ink/45">${sub}</span></span><span class="text-right"><span class="display text-2xl tabular-nums">${num(v)}</span><span class="block text-[11px] text-ink/45">${pct(v, fu.visitors)}% of visitors</span></span></div><div class="mt-1.5 h-1 rounded-full bg-parchment overflow-hidden"><div class="h-full bg-clay-500" style="width:${Math.min(100, pct(v, fmax))}%"></div></div></li>`).join('')}</ul>
@@ -292,7 +323,7 @@ const regNames = Object.fromEntries(Object.entries(REGIONS).map(([k,r]) => [k, r
           </div>
           <pre id="mk-text" class="mt-4 whitespace-pre-wrap text-sm leading-relaxed bg-white rounded-2xl border border-hairline p-5" style="font-family:inherit">${esc(mediaKitText())}</pre>
         </div>`;
-      chart('ch-traffic', TR.series || [], { h: 260, keys: ['views', 'visitors'], unit: 'pageviews', label: 'Pageviews and unique visitors per day' });
+      chart('ch-traffic', series, { h: 260, keys: ['views', 'visitors'], unit: coupleSeries ? 'couple pageviews' : 'pageviews', label: coupleSeries ? 'Couple pageviews and visitors per day' : 'Pageviews and unique visitors per day' });
     }
 
     // ---------- overview ----------

@@ -3,7 +3,7 @@
 // every email is rendered here and gated by naturalCheck. Sends are tracked in p2_vendor_drip with
 // step 30 + month index (report_step from the RPC), so no account ever gets the same month twice.
 import {
-  SITE_URL, POSTAL_ADDRESS, FOUNDING_CAP, naturalCheck, displayName, greetingFor, categoryPlural, slotLine,
+  SITE_URL, POSTAL_ADDRESS, FOUNDING_CAP, FEATURED_PITCHES_PAUSED, naturalCheck, displayName, greetingFor, categoryPlural, slotLine,
   type RenderedMail
 } from './outreach';
 import { textToHtml, sendMailResult } from './mail';
@@ -89,7 +89,8 @@ export function renderMonthlyReport(r: ReportRow): RenderedMail {
     parts.push(`One thing to try this month: ${fixes(r)[0]}`);
   }
 
-  if (!r.is_featured) {
+  // The Featured paragraph is a pitch, so it is left out while owner directive 5c is in force.
+  if (!r.is_featured && !FEATURED_PITCHES_PAUSED) {
     const open = n0(r.featured_open);
     const left = Math.min(FOUNDING_CAP, n0(r.founding_left));
     const line = slotLine(open, r.category, r.sub_region || 'other-colorado');

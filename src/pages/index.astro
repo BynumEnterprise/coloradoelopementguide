@@ -6,6 +6,7 @@ import { allVendors } from '../lib/vendors';
 import { CATEGORIES, REGIONS, inCategory } from '../lib/taxonomy';
 import { IMG, regionImg, gimg, opt, optSet } from '../lib/assets';
 import { getCollection } from 'astro:content';
+import { VENUE_PAGES, MIN_VENUES, matchVenues } from '../data/venue-pages';
 const vendors = await allVendors();
 // Recently added: the six newest live listings with a photo (released_at is stamped when a listing goes live).
 const relTime = (v: any) => Date.parse(v.released_at || v.created_at || '') || 0;
@@ -27,11 +28,34 @@ const permitCards = PERMIT_PICKS.map(p => {
   const f = r.data.facts.find((x: any) => x.label === p.fact) || r.data.facts[0];
   return { href: `/resources/${p.slug}`, name: p.name, label: f.label, value: f.value, hero: r.data.hero };
 }).filter(Boolean) as { href: string; name: string; label: string; value: string; hero: string }[];
+// Start here: the planning guides with the strongest search intent, so the home page links far more than the
+// 7 resources it did (SEO fix wave 2026-11-03; Google had never seen most of the October content). Permits are
+// covered by the cards above. Resource slugs are checked against the collection, so a removed article drops out.
+const START_HERE: { name: string; slug?: string; venue?: string; href?: string }[] = [
+  { slug: 'best-places-to-elope-in-colorado', name: 'Best Places To Elope In Colorado' },
+  { slug: 'how-to-get-married-in-colorado', name: 'How To Elope In Colorado' },
+  { slug: 'colorado-marriage-license', name: 'Colorado Marriage License' },
+  { slug: 'self-solemnization-colorado', name: 'Self Solemnization In Colorado' },
+  { slug: 'elopement-packages-colorado', name: 'Colorado Elopement Packages' },
+  { slug: 'colorado-elopement-cost', name: 'What A Colorado Elopement Costs' },
+  { slug: 'best-time-to-elope-in-colorado', name: 'Best Time To Elope In Colorado' },
+  { venue: 'micro-wedding-venues-colorado', name: 'Micro Wedding Venues In Colorado' },
+  { slug: 'elopement-photography-pricing-colorado', name: 'Elopement Photography Pricing' },
+  { slug: 'colorado-elopement-timeline', name: 'Colorado Elopement Timeline' },
+  { href: '/checklist/', name: 'Elopement Planning Checklist' },
+  { slug: 'rocky-mountain-national-park-wedding-sites', name: 'Estes Park And RMNP Wedding Sites' }
+];
+// A venue page only builds with MIN_VENUES live venues (src/pages/venues/[slug].astro), so check the same rule.
+const venueLive = (slug: string) => { const pg = VENUE_PAGES.find(x => x.slug === slug); return !!pg && matchVenues(pg, vendors).length >= MIN_VENUES; };
+const startHere = START_HERE.map(p => p.slug
+  ? (resources.some(x => x.id === p.slug) ? { href: `/resources/${p.slug}/`, name: p.name } : null)
+  : p.venue ? (venueLive(p.venue) ? { href: `/venues/${p.venue}/`, name: p.name } : null)
+  : { href: p.href as string, name: p.name }).filter(Boolean) as { href: string; name: string }[];
 const top = vendors.filter(v => v.image_url).slice(0, 6);
 const counts = Object.fromEntries(Object.keys(CATEGORIES).map(c => [c, vendors.filter(v => inCategory(v, c)).length]));
 const heroRegions = ['estes-park','summit-county','vail-aspen','telluride-san-juans','colorado-springs','boulder','denver-foothills','northern-colorado','other-colorado'];
 ---
-<Base hero={`${IMG}/hero.jpg`} dark={true} title="Colorado Elopement Guide — plan your Colorado elopement, find every vendor"
+<Base hero={`${IMG}/hero.jpg`} dark={true} title="Colorado Elopement Guide: plan your elopement, find every vendor"
   description="Plan your Colorado elopement: browse photographers, venues, officiants, florists and more by region, save favorites to your free planner, and book direct.">
 
   <!-- HERO — couple first -->
@@ -140,6 +164,18 @@ const heroRegions = ['estes-park','summit-county','vail-aspen','telluride-san-ju
       ))}
     </div>
     <a href="/resources" class="md:hidden inline-block mt-5 text-sm font-medium underline underline-offset-4">All Permits And Licenses →</a>
+  </section>}
+
+  <!-- START HERE: planning guides -->
+  {startHere.length > 0 && <section class="max-w-7xl mx-auto px-5 md:px-8 pt-16 md:pt-24">
+    <p class="eyebrow text-clay-600 mb-3">Start Here</p>
+    <h2 class="display text-3xl md:text-4xl leading-tight mb-8">The guides couples <span class="serif-i">read first</span></h2>
+    <ul class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+      {startHere.map(l => <li><a href={l.href} class="flex h-full items-center justify-between gap-3 rounded-2xl border border-hairline bg-white px-4 py-3.5 font-medium text-ink hover:bg-parchment/60 transition-colors">
+        <span class="leading-snug">{l.name}</span>
+        <span aria-hidden="true" class="text-clay-600 shrink-0">→</span>
+      </a></li>)}
+    </ul>
   </section>}
 
   <!-- PLANNER PROMO -->

@@ -13,7 +13,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
   if (!slug || !name || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return redirect('/claim?e=invalid', 303);
   let vendorId: number | null = null; let vendorName = '';
   if (slug !== '__not_listed__') {
-    const r = await fetch(`${SB_URL}/rest/v1/p2_vendors?slug=eq.${encodeURIComponent(slug)}&select=id,name`, {
+    const r = await fetch(`${SB_URL}/rest/v1/p2_vendors_public?slug=eq.${encodeURIComponent(slug)}&select=id,name`, {
       headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
     });
     const rows = await r.json();

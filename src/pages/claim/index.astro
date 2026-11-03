@@ -16,7 +16,7 @@ const vendors = await allVendors();
         <select id="vendor" name="vendor_slug" required class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm">
           <option value="">Select your listing…</option>
           {vendors.map(v => <option value={v.slug}>{v.name}</option>)}
-          <option value="__not_listed__">We're not listed yet — add us</option>
+          <option value="__not_listed__">We're not listed yet, add us</option>
         </select>
       </div>
       <div>

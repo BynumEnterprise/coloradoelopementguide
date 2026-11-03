@@ -8,7 +8,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
   const email = String(form.get('email') || '').trim();
   const slugs = String(form.get('slugs') || '').split(',').map(s => s.trim()).filter(s => /^[a-z0-9-]+$/.test(s)).slice(0, 60);
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || slugs.length === 0) return redirect('/my-vendors', 303);
-  const r = await fetch(`${SB_URL}/rest/v1/p2_vendors?slug=in.(${slugs.join(',')})&select=name,slug,category`, {
+  const r = await fetch(`${SB_URL}/rest/v1/p2_vendors_public?slug=in.(${slugs.join(',')})&select=name,slug,category`, {
     headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
   });
   const rows = await r.json();

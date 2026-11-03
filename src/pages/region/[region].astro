@@ -113,7 +113,7 @@ const title = statewide ? 'More Colorado Elopement Vendors: Statewide and Beyond
           <h2 class="display text-2xl">{CATEGORIES[c].name} <span class="serif-i text-ink/60 text-lg">serving all of Colorado</span></h2>
           <a href={`/category/${c}`} class="text-sm font-medium underline underline-offset-4 hover:text-clay-700 shrink-0">All {CATEGORIES[c].name.toLowerCase()} →</a>
         </div>
-        <p class="text-sm text-ink/55 mb-6">These vendors travel — most work {meta.name} regularly.</p>
+        <p class="text-sm text-ink/55 mb-6">These vendors travel, and most work {meta.name} regularly.</p>
         <div class="grid gap-5 md:grid-cols-3">{vs.map(v => <VendorCard v={v} />)}</div>
       </section>
     ))}

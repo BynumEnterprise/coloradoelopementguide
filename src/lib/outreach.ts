@@ -5,6 +5,43 @@ import { textToHtml } from './mail';
 export const SITE_URL = 'https://coloradoelopementguide.com';
 export const POSTAL_ADDRESS = '1905 Sherman Street, Ste 200 1074, Denver, CO 80203';
 export const FEATURED_LINK = 'https://buy.stripe.com/7sYaEZffj1AaaWr93A9oc02';
+// Payment link for a known vendor: Stripe copies client_reference_id onto the Checkout Session, and the webhook
+// matches on it before falling back to the customer email. Only use it where the buyer is that vendor (dashboard,
+// emails to the vendor account), never on public pages where anyone could click it.
+export function featuredLinkFor(slug?: string | null): string {
+  return slug && /^[a-z0-9][a-z0-9_-]{0,190}$/.test(slug) ? `${FEATURED_LINK}?client_reference_id=${slug}` : FEATURED_LINK;
+}
+// Owner directive 5c (OPERATING-MANUAL): no Featured pitches in email to vendors until the owner lifts it.
+// Drip step 3 (daily cron) and the Featured paragraph of the monthly report check this flag.
+export const FEATURED_PITCHES_PAUSED = true;
+
+// ---------- UTM tags on links in our emails (added 2026-11-03, A6 analytics audit) ----------
+// Webmail strips the referrer, so a click from an email used to land in GA4 and in the first party tracker as Direct.
+// Every link into the site now carries utm_source=email, utm_medium=vendor or couple, and utm_campaign=<template>
+// (Base.astro reads the three params into the /api/track beacon, and GA4 reads them from the page URL).
+// Only the href of the HTML part is tagged. The visible link text and the plain text part stay short and human, and
+// naturalCheck runs on the untagged text. Left exactly as built: sign in token links (/vd, /lt), every /api link
+// (signed replied links, unsubscribe), /unsub and /unsubscribe, files such as the kit PDF, and other hosts (Stripe).
+export type UtmMedium = 'vendor' | 'couple';
+const UTM_SKIP_PATH = /^\/(vd|lt|api|unsub|unsubscribe)(\/|$)|\.pdf$/i;
+
+export function withUtm(url: string, campaign: string, medium: UtmMedium): string {
+  const m = /^(https?:\/\/(?:www\.)?coloradoelopementguide\.com)(\/[^?#]*)?(\?[^#]*)?(#.*)?$/i.exec(String(url || ''));
+  if (!m) return url;
+  const path = m[2] || '/';
+  const query = m[3] || '';
+  if (UTM_SKIP_PATH.test(path) || /[?&]utm_(source|medium|campaign)=/i.test(query)) return url;
+  const tag = `utm_source=email&utm_medium=${encodeURIComponent(medium)}&utm_campaign=${encodeURIComponent(campaign)}`;
+  const sep = !query ? '?' : /[?&]$/.test(query) ? '' : '&';
+  return `${m[1]}${path}${query}${sep}${tag}${m[4] || ''}`;
+}
+
+// withUtm on every href of an HTML part made by textToHtml. Those hrefs are HTML escaped, so &amp; is undone first
+// and the ampersands are escaped again afterwards.
+export function tagLinks(html: string, campaign: string, medium: UtmMedium): string {
+  return String(html || '').replace(/href="(https?:\/\/[^"]+)"/g, (_m, href: string) =>
+    `href="${withUtm(href.replace(/&amp;/g, '&'), campaign, medium).replace(/&/g, '&amp;')}"`);
+}
 
 // Phrases that read as machine written. Matched case insensitively as substrings, outside URLs.
 export const AI_TELLS = [
@@ -34,9 +71,11 @@ export function naturalCheck(text: string, label = 'text', allow: string[] = [])
   for (const tell of AI_TELLS) {
     if (norm.includes(tell.toLowerCase())) throw new Error(`naturalCheck ${label}: AI tell "${tell}"`);
   }
-  if ((prose.match(/!/g) || []).length > 1) throw new Error(`naturalCheck ${label}: more than one exclamation mark`);
+  // Owner directive: no exclamation marks at all in our own wording (couple text and business names are in allow).
+  if (prose.includes('!')) throw new Error(`naturalCheck ${label}: exclamation mark`);
   if (EMOJI_RE.test(prose)) throw new Error(`naturalCheck ${label}: emoji`);
   if (prose.includes('**')) throw new Error(`naturalCheck ${label}: markdown bold`);
+  if (/<\s*(b|strong)\b/i.test(prose)) throw new Error(`naturalCheck ${label}: bold tag`);
   return text;
 }
 
@@ -98,11 +137,12 @@ export type OutreachVendor = {
 export type RenderedMail = { subject: string; text: string; html: string };
 
 // Template v4. Every automated claim invite is rendered here and gated by naturalCheck before it is sent.
+// Owner directive 5: copy is personalized per vendor from real research stored in outreach_personal; a vendor without
+// one is not sent a mail merge. The cron reports these as blocked and they stay pending until the note is written.
 export function renderV4(v: OutreachVendor): RenderedMail {
   const business = displayName(v.name);
-  const plural = categoryPlural(v.category);
-  const personal = (v.outreach_personal || '').trim() ||
-    `Couples use the site to compare a few ${plural} in one place before they reach out, so a complete listing with a photo and a current website link matters.`;
+  const personal = (v.outreach_personal || '').trim();
+  if (!personal) throw new Error(`no outreach_personal for ${v.slug}: write the researched paragraph before this vendor is invited (owner directive 5)`);
   const subject = `Your ${business.replace(/^the\s+/i, '')} listing on Colorado Elopement Guide`;
   const text = `${greetingFor(v.contact_email, business)}
 
@@ -125,7 +165,7 @@ You are getting this one note because your business is publicly listed as a Colo
 `;
   naturalCheck(subject, `subject (${v.slug})`, [v.name, business]);
   naturalCheck(text, `body (${v.slug})`, [v.name, business]);
-  return { subject, text, html: textToHtml(text) };
+  return { subject, text, html: tagLinks(textToHtml(text), 'claim_v4', 'vendor') };
 }
 
 export type DripUser = {
@@ -195,7 +235,7 @@ A quick note on the one paid option on the site, now that ${business} has been l
 Featured moves your listing to the top of the ${categoryPlural(u.category)} page, ${regionPage}, and the homepage rotation. It is always labeled Featured, so couples know it is a placement and not a ranking.
 
 It costs 40 dollars a month. The first month is 1 dollar with the code FIRSTMONTH1, and you can cancel any time.
-${FEATURED_LINK}
+${featuredLinkFor(u.slug)}
 
 If the free listing is already bringing you what you need, ignore this. It stays free either way.
 
@@ -203,7 +243,7 @@ ${dripFooter(u.token)}`;
   }
   naturalCheck(subject, `drip ${u.step} subject (${u.slug})`, [u.vendor_name]);
   naturalCheck(text, `drip ${u.step} body (${u.slug})`, [u.vendor_name]);
-  return { subject, text, html: textToHtml(text) };
+  return { subject, text, html: tagLinks(textToHtml(text), `drip_${u.step}`, 'vendor') };
 }
 
 export type FollowupVendor = { id: number; name: string; slug: string; category: string; sub_region: string; contact_email: string; followups: number };
@@ -252,7 +292,7 @@ Reply remove to take the listing down, or unsubscribe to stop emails.
   }
   naturalCheck(subject, `followup subject (${v.slug})`, [v.name, business]);
   naturalCheck(text, `followup body (${v.slug})`, [v.name, business]);
-  return { subject, text, html: textToHtml(text) };
+  return { subject, text, html: tagLinks(textToHtml(text), v.followups === 0 ? 'followup_1' : 'followup_2', 'vendor') };
 }
 
 // ---------- Couple inquiries (vendor lead form) and the Featured slot cap ----------
@@ -286,15 +326,19 @@ export function fmtMonthYear(iso: string | null | undefined): string | null {
   return `${MONTHS[Number(m[2]) - 1]} ${m[1]}`;
 }
 
-export type InquiryIn = { slug: string; vendorName: string; names: string; email: string; weddingDate: string | null; guests: number | null; message: string; sub_region: string; category: string };
+export type InquiryIn = { slug: string; vendorName: string; names: string; email: string; weddingDate: string | null; guests: number | null; message: string; sub_region: string; category: string;
+  // Set only when an older inquiry is released to a newly claimed account (trust-mail releasePendingInquiries).
+  sentAt?: string | null };
 
 // Full inquiry to a claimed or Featured vendor's account email. Reply To is the couple.
 export function inquiryVendorEmail(q: InquiryIn, repliedLink?: string): { subject: string; text: string; html: string } {
   const business = displayName(q.vendorName);
   const subject = `New inquiry from ${q.names} via Colorado Elopement Guide`;
+  const sentOn = q.sentAt ? fmtDateLong(q.sentAt) : null;
+  const earlier = sentOn ? ` They sent it on ${sentOn}, before your account was set up, so this is the first time the full message has reached you.` : '';
   const text = `Hello ${business},
 
-A couple sent this through your listing on Colorado Elopement Guide. Reply to this email and your answer goes straight to them at ${q.email}.
+A couple sent this through your listing on Colorado Elopement Guide.${earlier} Reply to this email and your answer goes straight to them at ${q.email}.
 
 Names: ${q.names}
 Email: ${q.email}
@@ -304,7 +348,7 @@ Guests: ${q.guests ?? 'not given'}
 Their message:
 ${q.message}
 
-${repliedLink ? `Once you have written back, one click on this link marks it as replied so we stop reminding you:
+${repliedLink ? `Once you have written back, open this link and press the button to mark it as replied so we stop reminding you:
 ${repliedLink}
 
 ` : ''}Every inquiry also stays in your dashboard, where you can manage email from us: ${SITE_URL}/vendor-dashboard
@@ -315,7 +359,7 @@ ${POSTAL_ADDRESS}
   const allow = [q.vendorName, business, q.names, q.email, q.message];
   naturalCheck(subject, `inquiry subject (${q.slug})`, allow);
   naturalCheck(text, `inquiry body (${q.slug})`, allow);
-  return { subject, text, html: textToHtml(text) };
+  return { subject, text, html: tagLinks(textToHtml(text), q.sentAt ? 'inquiry_released' : 'inquiry_vendor', 'vendor') };
 }
 
 // Short notice to an unclaimed listing: no couple contact details, the full message waits behind the free claim.
@@ -347,7 +391,7 @@ Reply unsubscribe and we will not email you again.
   const allow = [q.vendorName, business];
   naturalCheck(subject, `inquiry notice subject (${q.slug})`, allow);
   naturalCheck(text, `inquiry notice body (${q.slug})`, allow);
-  return { subject, text, html: textToHtml(text) };
+  return { subject, text, html: tagLinks(textToHtml(text), 'inquiry_notice', 'vendor') };
 }
 
 // ---------- Founding Featured offer and the one time activation note to claimed vendors ----------
@@ -399,5 +443,5 @@ Prefer no more updates? ${SITE_URL}/api/unsub?t=${u.token}
 `;
   naturalCheck(subject, `activation subject (${u.slug})`, [u.vendor_name]);
   naturalCheck(text, `activation body (${u.slug})`, [u.vendor_name]);
-  return { subject, text, html: textToHtml(text) };
+  return { subject, text, html: tagLinks(textToHtml(text), 'activation', 'vendor') };
 }

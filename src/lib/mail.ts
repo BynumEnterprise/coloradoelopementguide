@@ -24,6 +24,24 @@ export async function sendMailResult(to: string, subject: string, text: string, 
   } catch (e) { console.error('MAIL: exception', e); return { ok: false, status: 0, error: String(e) }; }
 }
 
+// Same as sendMailResult with a different Reply To (the couple, for inquiries delivered to a vendor account).
+export async function sendMailReplyTo(to: string, replyTo: string, subject: string, text: string, html?: string): Promise<MailResult> {
+  const key = process.env.RESEND_API_KEY ?? import.meta.env.RESEND_API_KEY;
+  if (!key) return { ok: false, status: 0, error: 'no RESEND_API_KEY' };
+  try {
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: MAIL_FROM, to: [to], reply_to: replyTo, subject, text, ...(html ? { html } : {}) })
+    });
+    const body = await r.text();
+    if (!r.ok) return { ok: false, status: r.status, error: body.slice(0, 300) };
+    let id: string | undefined;
+    try { id = JSON.parse(body)?.id; } catch { /* noop */ }
+    return { ok: true, status: r.status, id };
+  } catch (e) { return { ok: false, status: 0, error: String(e) }; }
+}
+
 // Original signature, kept for every existing caller.
 export async function sendMail(to: string, subject: string, text: string, html?: string) {
   return (await sendMailResult(to, subject, text, html)).ok;

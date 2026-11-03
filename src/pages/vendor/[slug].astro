@@ -8,11 +8,18 @@ import { CATEGORIES, REGIONS } from '../../lib/taxonomy';
 import { regionImg, gimg, opt, optSet } from '../../lib/assets';
 import { slotLine, FEATURED_CAP } from '../../lib/outreach';
 import { vendorPhotos } from '../../lib/photos';
+import { TOWNS, TOWN_HEADINGS, liveTownPages, addressTownOf } from '../../data/town-pages';
+import { getCollection } from 'astro:content';
 export async function getStaticPaths() {
   const vendors = await allVendors();
-  return vendors.map(v => ({ params: { slug: v.slug }, props: { v, all: vendors } }));
+  // Computed once per build for the planning links block, not once per vendor page.
+  const guideRegions = (await getCollection('guides')).map(g => g.data.region).filter(r => r in REGIONS && r !== 'other-colorado');
+  const resources = (await getCollection('resources')).map(r => ({ slug: r.id, label: r.data.title.split(/:\s| \| /)[0].trim() }));
+  const townPages = liveTownPages(vendors).map(p => ({ town: p.town, category: p.category, slugs: p.vendors.map((x: any) => x.slug) }));
+  const plan = { guideRegions, resources, townPages };
+  return vendors.map(v => ({ params: { slug: v.slug }, props: { v, all: vendors, plan } }));
 }
-const { v, all } = Astro.props;
+const { v, all, plan } = Astro.props;
 const cat = CATEGORIES[v.category]; const reg = REGIONS[v.sub_region];
 // Similar vendors nearby: same category and region first (closest first when we have coordinates),
 // then the closest same category listings elsewhere so every page links to four peers.
@@ -26,6 +33,16 @@ const heroSrc = gimg(v.image_url, 1600, 900);
 // Vendor uploaded photos: the cover (if chosen) is already p2_vendors.image_url, so the hero shows it; the rest form the gallery.
 const photos = v.db_id ? ((await vendorPhotos()).get(Number(v.db_id)) || []) : [];
 const gallery = photos.filter(p => !p.is_cover);
+// Thin listing guard (SEO fix wave 2026-11-03). After the August demotion Google reported 199 vendor stub pages
+// as "crawled, currently not indexed". An unclaimed (seeded) listing with no owner uploaded photos is public data
+// only, so it stays live for visitors but asks search engines not to index it (links are still followed), and
+// astro.config.mjs drops it from the sitemap. Claiming the listing or adding photos makes it indexable again.
+// Pages Google already had indexed on 2026-11-03 keep their index status (Search Console check that day); everything
+// else unclaimed and without owner photos is noindexed until it is claimed or gets photos (fleet.decisions 2026-11-03).
+const KEEP_INDEXED = new Set(['new-sheridan-hotel', 'beaumont-hotel-spa', 'addie-knott-photography', 'sunrise-amphitheater',
+  'catherine-norwood-denver-wedding-photographer', 'rachel-levin-photography', 'boulder-theater', 'ashley-ridge-by-wedgewood-weddings',
+  'collective-by-sachs-authentic-wedding-planning-design', 'annette-marie-florals']);
+const thinStub = v.status === 'seeded' && photos.length === 0 && !KEEP_INDEXED.has(v.slug);
 const SITE = 'https://coloradoelopementguide.com';
 const pageUrl = `${SITE}/vendor/${v.slug}/`;
 const isFeatured = v.status === 'featured';
@@ -84,10 +101,36 @@ const vendorTitle = [
   shortName
 ].find(t => t.length <= 65) || shortName;
 const metaDesc = v.description.length > 155 ? v.description.slice(0, 152).replace(/\s+\S*$/, '') + '…' : v.description;
+// Plan your elopement here: region hub, region guide, the local town page and the county license page,
+// so every vendor page routes crawlers and couples into the editorial content.
+const vTown = addressTownOf(v.address);
+const townSlug = Object.keys(TOWNS).find(k => TOWNS[k].addressNames.includes(vTown || ''));
+const townPage = plan.townPages.find((p: any) => p.town === townSlug && p.category === v.category)
+  || plan.townPages.find((p: any) => p.category === v.category && p.slugs.includes(v.slug) && TOWNS[p.town].region === v.sub_region);
+const resLabel = (slug: string) => plan.resources.find((r: any) => r.slug === slug)?.label;
+// Colorado licenses are valid statewide; link the county office page when we have one for the vendor's town or region.
+const LICENSE_BY_TOWN: Record<string, string> = Object.fromEntries([
+  ['larimer-county-marriage-license', ['Fort Collins', 'Loveland', 'Estes Park', 'Wellington', 'Berthoud', 'Timnath', 'Laporte', 'Bellvue', 'Drake', 'Glen Haven', 'Red Feather Lakes']],
+  ['boulder-county-marriage-license', ['Boulder', 'Longmont', 'Lyons', 'Nederland', 'Louisville', 'Lafayette', 'Niwot', 'Superior', 'Allenspark', 'Jamestown', 'Ward']],
+  ['denver-marriage-license', ['Denver']],
+  ['jefferson-county-marriage-license', ['Golden', 'Evergreen', 'Morrison', 'Lakewood', 'Arvada', 'Wheat Ridge', 'Conifer', 'Kittredge', 'Pine', 'Indian Hills']],
+  ['el-paso-county-marriage-license', ['Colorado Springs', 'Manitou Springs', 'Monument', 'Fountain', 'Palmer Lake', 'Peyton', 'Cascade', 'Green Mountain Falls']],
+  ['summit-county-marriage-license', ['Breckenridge', 'Frisco', 'Dillon', 'Silverthorne', 'Keystone', 'Copper Mountain', 'Blue River']]
+].flatMap(([slug, towns]) => (towns as string[]).map(t => [t, slug as string])));
+const LICENSE_BY_REGION: Record<string, string> = { 'estes-park': 'larimer-county-marriage-license', 'boulder': 'boulder-county-marriage-license', 'colorado-springs': 'el-paso-county-marriage-license', 'summit-county': 'summit-county-marriage-license' };
+const licenseSlug = [LICENSE_BY_TOWN[vTown || ''], LICENSE_BY_REGION[v.sub_region], 'colorado-marriage-license'].find(s => s && resLabel(s));
+const townResource = townSlug ? TOWNS[townSlug].resources.find(s => !/marriage-license$/.test(s) && resLabel(s)) : undefined;
+const planLinks = [
+  { kind: 'Region', label: v.sub_region === 'other-colorado' ? 'Vendors Around Colorado' : `Every Vendor In ${reg.name}`, href: `/region/${v.sub_region}/` },
+  plan.guideRegions.includes(v.sub_region) && { kind: 'Region Guide', label: `${reg.name} Elopement Guide`, href: `/guides/${v.sub_region}/` },
+  townPage && { kind: 'Local Vendors', label: `${TOWNS[townPage.town].name} ${TOWN_HEADINGS[townPage.category]}`, href: `/local/${townPage.town}/${townPage.category}/` },
+  townResource && { kind: 'Local Guide', label: resLabel(townResource), href: `/resources/${townResource}/` },
+  licenseSlug && { kind: 'Marriage License', label: resLabel(licenseSlug), href: `/resources/${licenseSlug}/` }
+].filter(Boolean).map((l: any) => ({ ...l, label: l.label.replace(/(^|\s)([a-z])/g, (_m: string, a: string, c: string) => a + c.toUpperCase()) })) as { kind: string; label: string; href: string }[];
 ---
-<Base title={vendorTitle} description={metaDesc} image={v.image_url || undefined} imageAlt={v.name}>
+<Base title={vendorTitle} description={metaDesc} image={v.image_url || undefined} imageAlt={v.name} noindex={thinStub ? 'noindex, follow' : false}>
   <script slot="head" type="application/ld+json" set:html={jsonldText} />
-  <div class="max-w-5xl mx-auto px-5 md:px-8 pt-10">
+  <div class="max-w-5xl mx-auto px-5 md:px-8 pt-10" data-listing={v.status}>
     <nav class="text-xs text-ink/45 mb-6">
       <a href="/" class="hover:underline">Home</a> › <a href={`/category/${v.category}`} class="hover:underline">{cat.name}</a> › <a href={`/region/${v.sub_region}`} class="hover:underline">{reg.name}</a>
     </nav>
@@ -228,6 +271,16 @@ const metaDesc = v.description.length > 155 ? v.description.slice(0, 152).replac
         </div>
       </div>
     </section>
+    {planLinks.length > 0 && <section class="mt-10 rounded-3xl border border-hairline bg-parchment/50 p-6 md:p-9" aria-label={`Plan your elopement in ${place}`}>
+      <p class="eyebrow text-clay-600 mb-2">Plan Your Elopement</p>
+      <h2 class="display text-2xl leading-tight mb-5">Plan your elopement in <span class="serif-i">{place}</span></h2>
+      <ul class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+        {planLinks.map(l => <li><a href={l.href} class="flex h-full items-start justify-between gap-3 rounded-2xl border border-hairline bg-white px-4 py-3.5 hover:bg-ivory transition-colors">
+          <span><span class="eyebrow text-ink/45 block mb-1">{l.kind}</span><span class="font-medium text-ink leading-snug">{l.label}</span></span>
+          <span aria-hidden="true" class="text-clay-600 shrink-0">→</span>
+        </a></li>)}
+      </ul>
+    </section>}
     {related.length > 0 && <section class="pt-14">
       <div class="md:flex items-end justify-between gap-8 mb-6">
         <div>

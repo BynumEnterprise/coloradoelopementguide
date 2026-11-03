@@ -3,7 +3,7 @@
 // day 12 vendor team, plus one planner nudge for couples who saved no vendors after 2 days.
 // Every body passes naturalCheck and carries the Denver address and a one click unsubscribe link.
 import { MAIL_FROM, MAIL_REPLY_TO, textToHtml } from './mail';
-import { naturalCheck, POSTAL_ADDRESS, SITE_URL, displayName, categoryPlural, regionName, fmtDateLong } from './outreach';
+import { naturalCheck, tagLinks, POSTAL_ADDRESS, SITE_URL, displayName, categoryPlural, regionName, fmtDateLong } from './outreach';
 import { REGIONS } from './taxonomy';
 
 export const KIT_URL = `${SITE_URL}/kit/colorado-elopement-planning-kit.pdf`;
@@ -48,7 +48,9 @@ function finish(subject: string, body: string, token: string, label: string): Co
   const text = `${body.trim()}\n${footer(token)}`;
   naturalCheck(subject, `${label} subject`);
   naturalCheck(text, `${label} body`);
-  return { subject, text, html: textToHtml(text), unsubUrl: unsubUrl(token) };
+  // UTM campaign nurture_<step> (nurture_kit, nurture_region, nurture_permits, nurture_vendors, nurture_planner_nudge).
+  // The unsubscribe link (/api) and the kit PDF are left untagged by tagLinks.
+  return { subject, text, html: tagLinks(textToHtml(text), `nurture_${label}`, 'couple'), unsubUrl: unsubUrl(token) };
 }
 
 export function renderKit(r: { token: string; partner_names?: string | null }): CoupleMail {
@@ -249,5 +251,5 @@ You are getting this one email because you sent an inquiry on coloradoelopementg
   const allow = [q.vendor.name, business, q.names, q.email, q.message, q.vendor.website || '', q.vendor.phone || '', ...sims.flatMap(s => [s.name, displayName(s.name)])];
   naturalCheck(subject, `confirm subject (${q.vendor.slug})`, allow);
   naturalCheck(text, `confirm body (${q.vendor.slug})`, allow);
-  return { subject, text, html: textToHtml(text) };
+  return { subject, text, html: tagLinks(textToHtml(text), 'inquiry_confirm', 'couple') };
 }

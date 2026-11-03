@@ -2,10 +2,10 @@
 import Base from '../layouts/Base.astro';
 const err = Astro.url.searchParams.get('e') === 'invalid';
 ---
-<Base title="Thanks | Colorado Elopement Guide" description="Thanks — we've got it.">
+<Base title="Thanks | Colorado Elopement Guide" description="Thanks, we've got it.">
   <div class="max-w-xl mx-auto px-5 md:px-8 py-24 text-center">
-    <h1 class="display text-4xl leading-tight" id="thanks-h">Got it — <span class="serif-i">thank you</span></h1>
-    <p id="thanks-err" class="hidden mt-4 text-sm rounded-xl border border-clay-500 bg-clay-50 text-clay-700 px-4 py-3">That email address didn't look right, so nothing was sent — <a href="/" class="underline">head back</a> and try again.</p>
+    <h1 class="display text-4xl leading-tight" id="thanks-h">Got it, <span class="serif-i">thank you</span></h1>
+    <p id="thanks-err" class="hidden mt-4 text-sm rounded-xl border border-clay-500 bg-clay-50 text-clay-700 px-4 py-3">That email address didn't look right, so nothing was sent. <a href="/" class="underline">Head back</a> and try again.</p>
     <p id="thanks-list" class="hidden mt-4 text-sm rounded-xl border border-hairline bg-parchment/70 px-4 py-3">Your vendor list is on its way. Look for the subject line <strong>"Your saved Colorado elopement vendors"</strong>.</p>
     <p id="thanks-login" class="hidden mt-4 text-sm rounded-xl border border-hairline bg-parchment/70 px-4 py-3">Check your email for the subject line <strong>"Your sign in link for Colorado Elopement Guide"</strong>. The link works once and expires in 30 minutes.</p>
     <p id="thanks-kit" class="hidden mt-4 text-sm rounded-xl border border-hairline bg-parchment/70 px-4 py-3">Your planning kit is on its way. Look for the subject line <strong>"Your Colorado elopement planning kit"</strong>, or <a href="/kit/colorado-elopement-planning-kit.pdf" class="underline underline-offset-4" target="_blank" rel="noopener">download the PDF now</a>.</p>
@@ -16,7 +16,7 @@ const err = Astro.url.searchParams.get('e') === 'invalid';
       if (q.get('list')==='1') document.getElementById('thanks-list').classList.remove('hidden');
       if (q.get('login')==='1') document.getElementById('thanks-login').classList.remove('hidden');
     </script>
-    <p class="text-ink/65 mt-4 leading-relaxed">If you claimed a listing, we'll verify your email against your business domain and reply within two business days. If you signed up for the checklist, it's on the way — you can also <a href="/checklist" class="underline underline-offset-4">read it right now</a>.</p>
+    <p class="text-ink/65 mt-4 leading-relaxed">If you claimed a listing, we'll verify your email against your business domain and reply within two business days. If you signed up for the checklist, it's on the way, and you can also <a href="/checklist" class="underline underline-offset-4">read it right now</a>.</p>
     <a href="/" class="inline-block mt-8 rounded-full bg-ink text-ivory px-7 py-3.5 text-sm font-semibold hover:bg-spruce-800 transition-colors">Back to the guide</a>
   </div>
 </Base>
