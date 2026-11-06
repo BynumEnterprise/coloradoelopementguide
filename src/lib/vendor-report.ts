@@ -3,8 +3,8 @@
 // every email is rendered here and gated by naturalCheck. Sends are tracked in p2_vendor_drip with
 // step 30 + month index (report_step from the RPC), so no account ever gets the same month twice.
 import {
-  SITE_URL, POSTAL_ADDRESS, FOUNDING_CAP, FEATURED_PITCHES_PAUSED, naturalCheck, displayName, greetingFor, categoryPlural, slotLine,
-  type RenderedMail
+  SITE_URL, POSTAL_ADDRESS, FOUNDING_CAP, FEATURED_PITCHES_PAUSED, DEMAND_MIN, naturalCheck, displayName, greetingFor, categoryPlural, slotLine,
+  demandRegionLabel, nextAction, type RenderedMail, type VendorDemand
 } from './outreach';
 import { textToHtml, sendMailResult } from './mail';
 import { rpc, sleep } from './cron';
@@ -24,7 +24,8 @@ export type ReportRow = {
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const DASHBOARD = `${SITE_URL}/vendor-dashboard`;
 const FEATURED_PAGE = `${SITE_URL}/featured`;
-export const REPORT_MAX_WORDS = 220;
+// S7: every vendor email stays under 160 words (URLs not counted).
+export const REPORT_MAX_WORDS = 160;
 export const REPORT_CAP = 100;
 
 const n0 = (x: unknown) => Math.max(0, Math.floor(Number(x) || 0));
@@ -37,20 +38,9 @@ function monthIndex(iso: string): number { const m = /^\d{4}\D(\d{2})/.exec(iso 
 // Words a reader sees, URLs excluded.
 export const wordCount = (s: string) => s.split(/\s+/).filter(w => w && !/^https?:\/\//.test(w)).length;
 
-// Fixes in the order they matter most to a couple deciding whether to click; the generic ones close the list.
-function fixes(r: ReportRow): string[] {
-  const out: string[] = [];
-  if (!r.has_photo) out.push('Add a cover photo in your dashboard. Listings without one are easy to scroll past.');
-  if (n0(r.description_chars) < 300) out.push('Write a fuller description covering who you work with, where you shoot or host, and what a small wedding with you looks like.');
-  if (n0(r.gallery_count) < 3) out.push('Add a few gallery photos from real Colorado elopements so couples can see your style.');
-  if (!r.has_website) out.push('Add your website so couples can see more of your work.');
-  if (!r.has_phone) out.push('Add a phone number. Some couples would rather call than write.');
-  out.push('Put the listing badge from your dashboard on your website. It links straight to your page here.');
-  out.push(`Share your listing link with recent couples and on your social profiles: ${SITE_URL}/vendor/${r.slug}/`);
-  return out;
-}
-
-export function renderMonthlyReport(r: ReportRow): RenderedMail {
+// S7: the first paragraph is the regional couple demand (ceg_vendor_demand for the vendor, 30 days, fetched by the cron
+// stage and passed in) and the vendor's own share of it; the month's stats follow. Null demand skips the paragraph.
+export function renderMonthlyReport(r: ReportRow, demand: VendorDemand | null = null): RenderedMail {
   const business = displayName(r.name);
   const greeting = greetingFor(r.email, business);
   const mi = monthIndex(r.month_start);
@@ -59,18 +49,27 @@ export function renderMonthlyReport(r: ReportRow): RenderedMail {
   const views = n0(r.views), prev = n0(r.views_prev);
   const firstMonth = !!r.live_since && r.live_since >= r.month_start;
   const parts: string[] = [];
+  const where = demandRegionLabel(r.sub_region);
 
+  const cv = n0(demand?.couple_visitors);
+  if (demand && cv >= DEMAND_MIN) {
+    const own = n0(demand.profile_views), days = n0(demand.days) || 30, rinq = n0(demand.region_inquiries);
+    const share = own > 0 ? `${own} of those visits were to your ${business} page` : `none of them opened your ${business} page yet`;
+    const inq = rinq > 0 ? ` ${rinq} ${rinq === 1 ? 'inquiry' : 'inquiries'} went to ${where} vendors in that time.` : '';
+    parts.push(`In the last ${days} days, ${cv} couples looked at ${where} vendors on Colorado Elopement Guide, and ${share}.${inq}`);
+  }
+
+  const action = nextAction({ has_photo: r.has_photo, has_price: null, description_len: r.description_chars, slug: r.slug });
   if (views === 0) {
-    const f = fixes(r).slice(0, 2);
     const extras: string[] = [];
     const clicks = n0(r.website_clicks) + n0(r.phone_clicks);
     if (clicks) extras.push(plural(clicks, 'click', 'clicks'));
     if (n0(r.inquiries)) extras.push(plural(n0(r.inquiries), 'inquiry', 'inquiries'));
     const before = prev > 0 && r.prev_complete && !firstMonth ? ` In ${prevMonth} it had ${prev}.` : '';
-    parts.push(`Your ${business} listing had no profile views in ${month}${extras.length ? `, though it did get ${extras.join(' and ')}` : ''}.${before} The two changes that would help most:`);
-    parts.push(`1. ${f[0]}\n2. ${f[1]}`);
+    parts.push(`Your listing had no profile views in ${month}${extras.length ? `, though it did get ${extras.join(' and ')}` : ''}.${before}`);
+    parts.push(`The one change that would help most: ${action}`);
   } else {
-    parts.push(`Here is how your ${business} listing did in ${month}.`);
+    parts.push(`Here is how your listing did in ${month}.`);
     parts.push([
       `Profile views: ${views}`,
       `Website clicks: ${n0(r.website_clicks)}`,
@@ -83,10 +82,9 @@ export function renderMonthlyReport(r: ReportRow): RenderedMail {
     else if (views > prev) mom = `That is up from ${prev} in ${prevMonth}.`;
     else if (views < prev) mom = `That is down from ${prev} in ${prevMonth}.`;
     else mom = `That matches ${prevMonth}.`;
-    const avg = (Number(r.category_avg_views) || 0).toFixed(1).replace(/\.0$/, '');
-    const rank = `Among ${n0(r.category_count)} ${categoryPlural(r.category)} on the site you ranked ${ordinal(Math.max(1, n0(r.category_rank)))} by views, and the average was ${avg}.`;
+    const rank = `Among ${n0(r.category_count)} ${categoryPlural(r.category)} on the site you ranked ${ordinal(Math.max(1, n0(r.category_rank)))} by views.`;
     parts.push(`${mom} ${rank}`);
-    parts.push(`One thing to try this month: ${fixes(r)[0]}`);
+    parts.push(`One thing to try this month: ${action}`);
   }
 
   // The Featured paragraph is a pitch, so it is left out while owner directive 5c is in force.
@@ -137,10 +135,16 @@ export async function runMonthlyReports(secret: string, dry: boolean, deadline: 
   Object.assign(s, { sent: 0, would_send: 0, skipped_already: 0, skipped_recent: 0, render_errors: 0, send_errors: 0, stopped_for_time: 0 });
   const detail: Record<string, any>[] = []; const errors: string[] = [];
   let samples = 0;
+  // Couple demand for the first paragraph (30 days), one RPC per account that is actually rendered. A failed fetch
+  // renders the report without the paragraph rather than skipping the account.
+  const demandFor = async (r: ReportRow): Promise<VendorDemand | null> => {
+    try { return await rpc<VendorDemand | null>('ceg_vendor_demand', { p_secret: secret, p_vendor_id: r.vendor_id, p_days: 30 }); }
+    catch (e) { errors.push(`demand ${r.slug}: ${String(e).slice(0, 120)}`); return null; }
+  };
   for (const r of rows) {
     // Render first so a dry run proves every account's email passes naturalCheck, skipped or not.
     let m: RenderedMail;
-    try { m = renderMonthlyReport(r); } catch (e) { s.render_errors++; errors.push(String(e).slice(0, 200)); continue; }
+    try { m = renderMonthlyReport(r, r.already_sent || r.mailed_recently ? null : await demandFor(r)); } catch (e) { s.render_errors++; errors.push(String(e).slice(0, 200)); continue; }
     const words = wordCount(m.text);
     if (r.already_sent) { s.skipped_already++; detail.push({ slug: r.slug, words, skip: 'already sent' }); continue; }
     if (r.mailed_recently) { s.skipped_recent++; detail.push({ slug: r.slug, words, skip: 'emailed in last 3 days' }); continue; }

@@ -2,7 +2,8 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { SB_URL, SB_KEY } from '../../lib/supabase';
 import { sendMail } from '../../lib/mail';
-import { naturalCheck, displayName, POSTAL_ADDRESS } from '../../lib/outreach';
+import { naturalCheck, displayName, POSTAL_ADDRESS, DEMAND_MIN, demandRegionLabel, type RegionDemand } from '../../lib/outreach';
+import { rpc } from '../../lib/cron';
 import { releasePendingInquiries } from '../../lib/trust-mail';
 
 const j = (o: unknown, s = 200) =>
@@ -41,25 +42,36 @@ export const POST: APIRoute = async ({ request }) => {
   const to: string = prov.email;
   const link = `https://coloradoelopementguide.com/vd/${prov.token}`;
 
+  // S7: lead with the couples near this vendor. Region from the public view, counts from ceg_region_demand (30 days);
+  // below DEMAND_MIN, or on any fetch error, the sentence has no number.
+  let subRegion: string | null = null; let demand: RegionDemand | null = null;
+  try {
+    const vr = await fetch(`${SB_URL}/rest/v1/p2_vendors_public?slug=eq.${encodeURIComponent(String(prov.slug || ''))}&select=sub_region`, { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } });
+    const vrows = vr.ok ? await vr.json() : [];
+    subRegion = vrows?.[0]?.sub_region ?? null;
+    demand = await rpc<RegionDemand>('ceg_region_demand', { p_region: subRegion || 'colorado', p_days: 30 });
+  } catch { demand = null; }
+  const where = demandRegionLabel(subRegion);
+  const cv = Math.max(0, Math.floor(Number(demand?.couple_visitors) || 0));
+  const coupleLine = cv >= DEMAND_MIN
+    ? `In the last 30 days, ${cv} couples looked at ${where} vendors on Colorado Elopement Guide. Your ${name} listing is now one they can send an inquiry through, and the inquiry comes straight to this address.`
+    : `Couples planning a ${where} elopement browse vendors on Colorado Elopement Guide, and your ${name} listing is now one they can send an inquiry through. The inquiry comes straight to this address.`;
+
   const subject = `Your ${name} dashboard is ready`;
 
   const text =
 `Hi ${name},
 
-Good news. Your listing on Colorado Elopement Guide is claimed and live, and your free vendor dashboard is ready.
+Your listing is claimed and live, and your free vendor dashboard is ready.
 
-Here is what you can do inside it:
+${coupleLine}
 
-See your real numbers. How many couples viewed your page, clicked through to your website, and tapped your phone number. Every count is bot filtered, so you only see real people, never inflated totals.
+Your dashboard shows how many couples viewed your page, clicked through to your website and tapped your phone number, with bots filtered out. You can also fix your description, phone and website, add photos and a starting price, and invite a vendor you work with.
 
-Keep your listing accurate. Update your description, phone, and website any time. Your changes go live on the site within a few minutes.
-
-Open your dashboard here. This link signs you straight in:
+This link signs you straight in:
 ${link}
 
-Once you are in, set a password so you can sign in from any device later.
-
-Questions? Just reply to this email.
+Once you are in, set a password so you can sign in from any device later. Questions? Just reply to this email.
 
 Ryan
 Colorado Elopement Guide
@@ -70,7 +82,8 @@ ${POSTAL_ADDRESS}`;
   <div style="max-width:560px;margin:0 auto;padding:32px 22px;">
     <p style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#9a6a4f;margin:0 0 14px;">Colorado Elopement Guide</p>
     <h1 style="font-size:26px;line-height:1.25;margin:0 0 16px;font-weight:400;">Your listing is claimed. <span style="font-style:italic;color:#2f4a3f;">Your dashboard is ready.</span></h1>
-    <p style="font-size:16px;line-height:1.6;margin:0 0 22px;color:#3a3733;">Hi ${esc(name)}, your listing is live and your free vendor dashboard is waiting. Here is what it does for you.</p>
+    <p style="font-size:16px;line-height:1.6;margin:0 0 14px;color:#3a3733;">Hi ${esc(name)}, your listing is live and your free vendor dashboard is waiting.</p>
+    <p style="font-size:16px;line-height:1.6;margin:0 0 22px;color:#3a3733;">${esc(coupleLine)}</p>
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
       <tr><td style="padding:14px 0;border-top:1px solid #e2d9c8;">

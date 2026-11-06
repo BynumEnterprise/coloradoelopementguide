@@ -10,7 +10,14 @@ export const POST: APIRoute = async ({ request, redirect }) => {
   const name = String(form.get('name') || '').slice(0, 200);
   const email = String(form.get('email') || '').slice(0, 200);
   const message = String(form.get('message') || '').slice(0, 2000);
+  const ref = String(form.get('ref') || '').trim();
   if (!slug || !name || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return redirect('/claim?e=invalid', 303);
+  // M4: a claim that arrived through a referral link ties the listing to the referral (and releases it if still queued).
+  if (slug !== '__not_listed__' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ref)) {
+    try {
+      await fetch(`${SB_URL}/rest/v1/rpc/ceg_referral_attach`, { method: 'POST', headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_ref: ref, p_slug: slug }) });
+    } catch { /* the claim still goes through */ }
+  }
   let vendorId: number | null = null; let vendorName = '';
   if (slug !== '__not_listed__') {
     const r = await fetch(`${SB_URL}/rest/v1/p2_vendors_public?slug=eq.${encodeURIComponent(slug)}&select=id,name`, {
@@ -38,7 +45,7 @@ Nothing to do right now. Questions? Just reply.
 Ryan
 Colorado Elopement Guide`);
   await sendMail('bynumenterprisesbe@gmail.com', `[CEG] New claim: ${vendorName || 'unlisted business'} by ${name}`,
-`Claim received.\nVendor: ${vendorName || '(not listed)'} (id ${vendorId})\nClaimant: ${name} <${email}>\nMessage: ${message || '(none)'}\n\nDaily reply-review task will verify domain match, or handle manually.`);
+`Claim received.\nVendor: ${vendorName || '(not listed)'} (id ${vendorId})\nClaimant: ${name} <${email}>\nMessage: ${message || '(none)'}\nReferral: ${ref || '(none)'}\n\nDaily reply-review task will verify domain match, or handle manually.`);
   return redirect('/thanks?claim=1', 303);
 };
 export const GET: APIRoute = () => new Response('Method not allowed', { status: 405 });
