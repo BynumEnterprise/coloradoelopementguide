@@ -172,7 +172,39 @@ export type DripUser = {
   user_id: string; email: string; token: string; vendor_name: string; slug: string; category: string;
   sub_region: string | null; has_password: boolean; last_login_at: string | null; created_at: string;
   views_30d: number; description_len: number; vendor_status?: string; step: number;
+  vendor_id?: number; has_photo?: boolean; has_price?: boolean;
 };
+
+// ---------- Couples near you (M5): regional couple demand passed into the vendor emails ----------
+// ceg_region_demand(p_region, p_days) is public and returns counts only; ceg_vendor_demand(p_secret, p_vendor_id, p_days)
+// adds the vendor's own share. Both count couple side visitors (segment couple, not is_bot), never raw pageviews.
+export type RegionDemand = { region?: string; days: number; couple_visitors: number; couple_pageviews: number };
+export type VendorDemand = RegionDemand & {
+  profile_views: number; saved_count: number; saved_total?: number; inquiries: number; region_inquiries: number; match_requests: number;
+  prior_couple_visitors?: number; prior_profile_views?: number; prior_inquiries?: number; prior_region_inquiries?: number;
+};
+// Smallest regional count worth quoting. Below it the copy says couples are browsing without a number.
+export const DEMAND_MIN = 5;
+// "Boulder" for a known region, "Colorado" for other-colorado or unknown.
+export function demandRegionLabel(sub_region: string | null | undefined): string {
+  return regionName(sub_region) || 'Colorado';
+}
+const n0 = (x: unknown) => Math.max(0, Math.floor(Number(x) || 0));
+// "39 couples looked at Boulder vendors on Colorado Elopement Guide in the last 14 days" or null below DEMAND_MIN.
+export function demandSentence(d: RegionDemand | null | undefined, sub_region: string | null | undefined): string | null {
+  const n = n0(d?.couple_visitors);
+  if (!d || n < DEMAND_MIN) return null;
+  const days = n0(d.days) || 14;
+  return `${n} couples looked at ${demandRegionLabel(sub_region)} vendors on Colorado Elopement Guide in the last ${days} days`;
+}
+// The one thing to do next, chosen from the listing's state. Shared by the drips, the monthly report and the dashboard copy.
+export type ListingState = { has_photo?: boolean | null; has_price?: boolean | null; description_len?: number | null; slug: string };
+export function nextAction(st: ListingState): string {
+  if (st.has_photo === false) return 'Add 3 photos. Listings with photos get the inquiries.';
+  if (st.has_price === false) return 'Add a starting price. Couples filter by it.';
+  if (n0(st.description_len) < 300) return 'Replace the placeholder description with your own words.';
+  return `Share your listing link with recent couples and on your profiles: ${SITE_URL}/vendor/${st.slug}/`;
+}
 
 const dripFooter = (token: string) => `Thanks,
 Ryan
@@ -184,44 +216,52 @@ ${SITE_URL}/api/unsub?t=${token}
 `;
 
 // Onboarding drips. Each one is plain, short, signed Ryan, and carries the unsubscribe link.
-export function renderDrip(u: DripUser): RenderedMail {
+// S7: steps 1 and 2 are written around couples. Step 1 leads with the regional couple count (ceg_region_demand, 14 days)
+// when it is DEMAND_MIN or more, and asks for one thing: sign in. Step 2 gives the vendor's own numbers from
+// ceg_vendor_demand and one action. The cron stage fetches both and passes them in; null means no number is quoted.
+export function renderDrip(u: DripUser, demand: RegionDemand | VendorDemand | null = null): RenderedMail {
   const business = displayName(u.vendor_name);
   const greeting = greetingFor(u.email, business);
   const login = `${SITE_URL}/vd/${u.token}`;
+  const where = demandRegionLabel(u.sub_region);
   let subject: string; let text: string;
 
   if (u.step === 1) {
-    subject = 'Your Colorado Elopement Guide login';
-    const descLine = u.description_len < 300
-      ? 'Replace the description with your own words. The current one is a short placeholder.'
-      : 'Read the description once more and make sure it still says what you want couples to read first.';
+    const lead = demandSentence(demand, u.sub_region);
+    subject = lead ? `${n0(demand?.couple_visitors)} couples looked at ${where} vendors in the last ${n0(demand?.days) || 14} days` : `Couples are looking at ${where} vendors`;
+    const opener = lead
+      ? `${lead}. Your ${business} listing is one of the pages they can open, and nobody has signed in to it yet.`
+      : `Couples planning a ${where} elopement are browsing vendors on Colorado Elopement Guide, and your ${business} listing is one of the pages they can open. Nobody has signed in to it yet.`;
     text = `${greeting}
 
-Your ${business} dashboard on Colorado Elopement Guide is set up, but nobody has signed in yet. This link signs you straight in:
+${opener}
+
+This link signs you straight in. Check that your phone number and website are right, since couples tap both from your page:
 ${login}
-
-Three things worth five minutes once you are in:
-
-1. Check that your phone number and website are right. Couples tap both from your page.
-2. ${descLine}
-3. Look at your numbers. The dashboard shows real views and clicks, with bots filtered out.
-
-Reply to this email if anything looks off and I will fix it.
 
 ${dripFooter(u.token)}`;
   } else if (u.step === 2) {
-    subject = 'What couples see first on your listing';
-    const views = Number(u.views_30d) > 0
-      ? `Your page had ${Number(u.views_30d)} ${Number(u.views_30d) === 1 ? 'view' : 'views'} in the last 30 days.\n\n`
-      : '';
+    const d = (demand || null) as VendorDemand | null;
+    const days = n0(d?.days) || 7;
+    const views = n0(d?.profile_views), saved = n0(d?.saved_count), rinq = n0(d?.region_inquiries), cv = n0(d?.couple_visitors);
+    subject = `What couples did with your ${business} listing`;
+    const parts: string[] = [];
+    const lead = cv >= DEMAND_MIN;
+    if (lead) parts.push(`${cv} couples looked at ${where} vendors on Colorado Elopement Guide in the last ${days} days.`);
+    const savedTail = saved > 0 ? `, and ${saved} ${saved === 1 ? 'couple' : 'couples'} saved your listing to their planner` : '';
+    parts.push(views > 0
+      ? (lead ? `${views} of those visits were to your ${business} page${savedTail}.` : `Your ${business} page had ${views} couple ${views === 1 ? 'visit' : 'visits'} in the last ${days} days${savedTail}.`)
+      : `Your ${business} page had no couple visits in the last ${days} days${saved > 0 ? `, though ${saved} ${saved === 1 ? 'couple has' : 'couples have'} it saved in their planner` : ''}.`);
+    if (rinq > 0) parts.push(`${rinq} ${rinq === 1 ? 'inquiry' : 'inquiries'} went to ${where} vendors in that time.`);
+    const own = parts.join(' ');
     text = `${greeting}
 
-When a couple lands on your ${business} page, two things get judged in about a second: the photo and the first sentence of your description.
+${own}
 
-${views}If that first sentence is a town name or a list of services, swap it for the one thing you want a couple to know about working with you. The editor is here and this link signs you in:
+One thing to do this week: ${nextAction({ has_photo: u.has_photo, has_price: u.has_price, description_len: u.description_len, slug: u.slug })}
+
+This link signs you in:
 ${login}
-
-Your photo comes from your Google listing. If you would rather use a different one, reply with it attached and I will swap it in.
 
 ${dripFooter(u.token)}`;
   } else {

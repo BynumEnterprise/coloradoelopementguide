@@ -2,7 +2,7 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { json, rpc, sleep, authSecret, cronAuthorized, fetchWithTimeout, mapLimit, fireDeployHook } from '../../../lib/cron';
 import { sendMailResult } from '../../../lib/mail';
-import { renderV4, renderDrip, renderFollowup, renderActivation, FEATURED_PITCHES_PAUSED, type OutreachVendor, type DripUser, type FollowupVendor, type ActivationUser } from '../../../lib/outreach';
+import { renderV4, renderDrip, renderFollowup, renderActivation, FEATURED_PITCHES_PAUSED, type OutreachVendor, type DripUser, type FollowupVendor, type ActivationUser, type RegionDemand, type VendorDemand } from '../../../lib/outreach';
 import { renderNurture, sendCoupleMail, type NurtureRecipient } from '../../../lib/couple-mail';
 import { renderReplyReminder, renderPhotoNudge, releasePendingInquiries, type ReplyReminder, type PhotoNudge } from '../../../lib/trust-mail';
 
@@ -336,6 +336,21 @@ export const GET: APIRoute = async ({ request }) => {
     try {
       const due = await rpc<DripUser[]>('ceg_cron_drip_due', { p_secret: secret });
       dr.due = due.length;
+      // S7: step 1 quotes the regional couple count (ceg_region_demand, 14 days, cached per region for this run) and
+      // step 2 the vendor's own numbers (ceg_vendor_demand, 7 days). A failed fetch renders the copy without numbers.
+      const regionCache = new Map<string, RegionDemand | null>();
+      const regionDemand = async (sub_region: string | null): Promise<RegionDemand | null> => {
+        const key = sub_region || 'colorado';
+        if (!regionCache.has(key)) {
+          try { regionCache.set(key, await rpc<RegionDemand>('ceg_region_demand', { p_region: key, p_days: 14 })); }
+          catch { regionCache.set(key, null); }
+        }
+        return regionCache.get(key) ?? null;
+      };
+      const vendorDemand = async (vendor_id: number | undefined): Promise<VendorDemand | null> => {
+        if (!vendor_id) return null;
+        try { return await rpc<VendorDemand | null>('ceg_vendor_demand', { p_secret: secret, p_vendor_id: vendor_id, p_days: 7 }); } catch { return null; }
+      };
       for (const u of due) {
         if (Date.now() - started > 260_000) { dr.stopped_early = 'time budget'; break; }
         // Owner directive 5c (OPERATING-MANUAL): no Featured pitches to vendors until traffic is up. Step 3 is a Featured
@@ -343,7 +358,7 @@ export const GET: APIRoute = async ({ request }) => {
         // when the owner lifts 5c.
         if (u.step === 3 && FEATURED_PITCHES_PAUSED) { (dr.blocked as unknown[]).push({ user: u.user_id, step: 3, vendor: u.slug, reason: 'held: Featured pitch paused by owner directive 5c' }); continue; }
         let mail;
-        try { mail = renderDrip(u); }
+        try { mail = renderDrip(u, u.step === 1 ? await regionDemand(u.sub_region) : u.step === 2 ? await vendorDemand(u.vendor_id) : null); }
         catch (e) { (dr.blocked as unknown[]).push({ user: u.user_id, step: u.step, reason: String((e as Error).message || e).slice(0, 200) }); continue; }
         if (dry) { (dr.sent as unknown[]).push({ user: u.user_id, step: u.step, to: u.email, subject: mail.subject, text: mail.text }); continue; }
         const res = await sendMailResult(u.email, mail.subject, mail.text, mail.html);

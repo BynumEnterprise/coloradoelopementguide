@@ -63,6 +63,17 @@ const slotTemplates = Object.fromEntries(Object.keys(CATEGORIES).flatMap(c => Ob
         </div>
       </div>
 
+      <!-- COUPLES NEAR YOU (M5): regional couple demand from ceg_vendor_demand_me, verified accounts only -->
+      <div id="vd-near" class="hidden mt-10">
+        <p class="eyebrow text-clay-600 mb-4">Couples Near You</p>
+        <div class="rounded-3xl border border-spruce-800/25 bg-parchment/60 p-6 md:p-7">
+          <p id="vd-near-lead" class="display text-2xl leading-snug"></p>
+          <p id="vd-near-detail" class="text-sm text-ink/70 mt-3 leading-relaxed"></p>
+          <p id="vd-near-action" class="mt-4 text-sm font-medium text-spruce-800"></p>
+          <p class="text-xs text-ink/40 mt-3">Couple visits only. Vendors, bots and email scanners are filtered out before counting.</p>
+        </div>
+      </div>
+
       <!-- TRAFFIC -->
       <p class="eyebrow text-clay-600 mt-10 mb-4">Your Traffic</p>
       <div id="vd-traffic"></div>
@@ -179,6 +190,27 @@ const slotTemplates = Object.fromEntries(Object.keys(CATEGORIES).flatMap(c => Ob
               <p class="mt-3 text-xs text-ink/45">Works in Squarespace, Wix, WordPress and Showit code blocks. Footers and About pages are the usual spots.</p>
             </div>
           </div>
+
+          <!-- INVITE (M4): a verified account invites a vendor it works with; /api/vendor-refer emails them a claim link -->
+          <div id="vd-refer" class="hidden mt-8">
+            <p class="eyebrow text-clay-600 mb-4">Invite A Vendor You Work With</p>
+            <div class="rounded-3xl border border-hairline bg-white p-6">
+              <p class="text-sm text-ink/70 leading-relaxed">A planner, florist or venue you like working with gets a free listing and a note that you suggested them. Couples who find you can find them too.</p>
+              <div class="mt-4 space-y-3">
+                <div><label for="rf-name" class="eyebrow text-ink/60 block mb-2">Business Name</label>
+                  <input id="rf-name" maxlength="120" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" placeholder="Aspen Grove Florals" /></div>
+                <div><label for="rf-email" class="eyebrow text-ink/60 block mb-2">Their Email</label>
+                  <input id="rf-email" type="email" maxlength="200" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" placeholder="hello@theirbusiness.com" /></div>
+                <div><label for="rf-web" class="eyebrow text-ink/60 block mb-2">Their Website <span class="normal-case tracking-normal text-ink/40">(optional)</span></label>
+                  <input id="rf-web" maxlength="200" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" placeholder="https://theirbusiness.com" /></div>
+              </div>
+              <div class="flex flex-wrap items-center gap-3 mt-4">
+                <button id="rf-send" type="button" class="rounded-full bg-ink text-ivory px-6 py-2.5 text-sm font-semibold hover:bg-spruce-800">Send Invitation</button>
+                <span id="rf-msg" class="text-sm text-ink/60" aria-live="polite"></span>
+              </div>
+              <p class="mt-3 text-xs text-ink/45">Up to five invitations a day. We send one email and never follow up unless they ask.</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -212,6 +244,8 @@ const slotTemplates = Object.fromEntries(Object.keys(CATEGORIES).flatMap(c => Ob
   <script is:inline define:vars={{ vlist, catNames, regNames, slotTemplates }}>
     const SB = 'https://yucgsuzveabsgntlmste.supabase.co/rest/v1/rpc/';
     const SBK = 'sb_publishable_acsHsb9mrZ756aT12EgAPQ_GugWXmjM';
+    // Referral token from an invitation link: ?ref= on this page wins, else the one /for-vendors or /claim stored.
+    const refToken = () => { const q = new URLSearchParams(location.search).get('ref') || ''; const ok = s => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s); if (ok(q)) { try { localStorage.setItem('ceg_ref', q); } catch (_) {} return q; } const st = localStorage.getItem('ceg_ref') || ''; return ok(st) ? st : ''; };
     const rpc = (fn, args) => fetch(SB + fn, { method:'POST', headers:{ apikey:SBK, Authorization:'Bearer '+SBK, 'Content-Type':'application/json' }, body: JSON.stringify(args) }).then(r => r.ok ? r.json() : null).catch(()=>null);
     const vtok = () => localStorage.getItem('ceg_vtoken');
     const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -238,7 +272,43 @@ const slotTemplates = Object.fromEntries(Object.keys(CATEGORIES).flatMap(c => Ob
       if (!vtok()) { show('auth'); paintMode(); return; }
       VD = await rpc('ceg_vendor_get', { p_token: vtok() });
       if (!VD) { localStorage.removeItem('ceg_vtoken'); show('auth'); paintMode(); return; }
-      paint(); show('app'); drawChart(); loadExtras(); loadPhotos();
+      paint(); show('app'); drawChart(); loadExtras(); loadPhotos(); loadNear();
+    }
+
+    // ---------- couples near you (M5) ----------
+    // One number a vendor can act on: couples who looked at vendors in their region this week, the week before, how many
+    // saved this listing, inquiries to the region this month, then one action chosen from the listing's state.
+    async function loadNear(){
+      try { await loadNearInner(); } catch (_) { /* the panel stays hidden when the numbers cannot be read */ }
+    }
+    async function loadNearInner(){
+      if (!VD || !VD.verified) return;
+      const v = VD.vendor;
+      const [wk, mo] = await Promise.all([rpc('ceg_vendor_demand_me', { p_token: vtok(), p_days: 7 }), rpc('ceg_vendor_demand_me', { p_token: vtok(), p_days: 30 })]);
+      if (!wk || typeof wk !== 'object') return;
+      const region = v.sub_region && v.sub_region !== 'other-colorado' ? (regNames[v.sub_region] || '').replace(/&/g, 'and') : 'Colorado';
+      const n = Number(wk.couple_visitors || 0), prev = Number(wk.prior_couple_visitors || 0);
+      const saved = Number((mo || wk).saved_count || 0), rinq = Number((mo || wk).region_inquiries || 0), own = Number((mo || wk).profile_views || 0);
+      document.getElementById('vd-near-lead').innerHTML = n > 0
+        ? `<span class="text-ink">${num(n)}</span> ${n === 1 ? 'couple' : 'couples'} looked at ${esc(region)} vendors in the last 7 days <span class="text-ink/50 text-lg">(${num(prev)} the week before)</span>.`
+        : `No couple visits to ${esc(region)} vendors in the last 7 days yet <span class="text-ink/50 text-lg">(${num(prev)} the week before)</span>.`;
+      const bits = [];
+      bits.push(own > 0 ? `${num(own)} of the last 30 days' couple visits were to your page.` : 'None of them opened your page in the last 30 days.');
+      bits.push(saved > 0 ? `${num(saved)} ${saved === 1 ? 'couple' : 'couples'} saved your listing to their planner.` : 'No couple has saved your listing yet.');
+      bits.push(`${num(rinq)} ${rinq === 1 ? 'inquiry' : 'inquiries'} went to ${esc(region)} vendors this month.`);
+      document.getElementById('vd-near-detail').textContent = bits.join(' ');
+      const c = Object.assign({ has_photo: !!v.image_url, has_price: v.starting_price != null, description_chars: (v.description || '').length }, VD.completeness || {});
+      const hasPhoto = !!c.has_photo || (Array.isArray(PHOTOS) && PHOTOS.length > 0);
+      let action;
+      if (!hasPhoto) action = ['Add 3 photos. Listings with photos get the inquiries.', 'vd-photos', 'Add Photos'];
+      else if (!c.has_price) action = ['Add a starting price. Couples filter by it.', 've-price', 'Add Price'];
+      else if (Number(c.description_chars || 0) < 300) action = ['Replace the placeholder description with your own words.', 've-desc', 'Edit Description'];
+      else action = ['Share your listing link with recent couples and on your profiles.', null, 'Copy Link'];
+      const a = document.getElementById('vd-near-action');
+      a.innerHTML = `${esc(action[0])} ` + (action[1]
+        ? `<a href="#${action[1]}" data-focus="${action[1]}" class="text-clay-700 underline underline-offset-4">${action[2]} →</a>`
+        : `<button type="button" id="vd-near-copy" class="text-clay-700 underline underline-offset-4">${action[2]}</button>`);
+      document.getElementById('vd-near').classList.remove('hidden');
     }
 
     // ---------- inquiries and Featured slots ----------
@@ -539,6 +609,7 @@ const slotTemplates = Object.fromEntries(Object.keys(CATEGORIES).flatMap(c => Ob
       ['ve-desc','ve-phone','ve-web','ve-save'].forEach(id=>{ document.getElementById(id).disabled = !editable; });
       document.querySelectorAll('#ve-profile input, #ve-profile textarea').forEach(el => { if (!el.closest('#ve-regions')) el.disabled = !editable; });
       document.getElementById('vd-badge').classList.toggle('hidden', !VD.verified);
+      document.getElementById('vd-refer').classList.toggle('hidden', !VD.verified);
       document.getElementById('vd-badge-code').value = '<a href="https://coloradoelopementguide.com/vendor/' + v.slug + '?ref=badge"><img src="https://coloradoelopementguide.com/badge/listed.svg" alt="Listed on Colorado Elopement Guide" width="180"></a>';
     }
     document.addEventListener('input', e => { if (e.target.id === 've-desc') document.getElementById('ve-desc-count').textContent = num(e.target.value.length); });
@@ -552,7 +623,11 @@ const slotTemplates = Object.fromEntries(Object.keys(CATEGORIES).flatMap(c => Ob
         let res;
         if(mode==='signup'){
           const slug=document.getElementById('va-vendor').value;
+          // M4: a signup that started from a referral link (?ref= on /for-vendors, /claim or here) ties the listing to the
+          // referral first, so the verified signup that follows closes the referral as claimed.
+          if(slug && refToken()){ try{ await rpc('ceg_referral_attach',{p_ref:refToken(),p_slug:slug}); }catch(_){} }
           res=await rpc('ceg_vendor_signup',{p_email:email,p_password:pass,p_slug:slug});
+          if(res && res.token){ try{ localStorage.removeItem('ceg_ref'); }catch(_){} }
           if(res && res.token){ try{ fetch('/api/vendor-signup-notify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,vendor:res.vendor,verified:res.verified})}); }catch(_){} }
         } else {
           res=await rpc('ceg_vendor_login',{p_email:email,p_password:pass});
@@ -572,6 +647,26 @@ const slotTemplates = Object.fromEntries(Object.keys(CATEGORIES).flatMap(c => Ob
         try{ await navigator.clipboard.writeText(ta.value); msg.textContent='Copied ✓'; }
         catch(_){ ta.focus(); ta.select(); msg.textContent='Select the code and copy it'; }
         setTimeout(()=>{ msg.textContent=''; }, 2500);
+        return;
+      }
+      if(e.target.closest('#vd-near-copy')){
+        const link='https://coloradoelopementguide.com/vendor/'+VD.vendor.slug+'/', b=e.target.closest('#vd-near-copy');
+        try{ await navigator.clipboard.writeText(link); b.textContent='Copied ✓'; }catch(_){ b.textContent=link; }
+        return;
+      }
+      if(e.target.closest('#rf-send')){
+        const btn=document.getElementById('rf-send'), msg=document.getElementById('rf-msg');
+        const name=document.getElementById('rf-name').value.trim(), email=document.getElementById('rf-email').value.trim(), website=document.getElementById('rf-web').value.trim();
+        if(!name){ msg.textContent='Add the vendor name.'; return; }
+        if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ msg.textContent='Enter a valid email address.'; return; }
+        btn.disabled=true; msg.textContent='Sending…';
+        try{
+          const r=await fetch('/api/vendor-refer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:vtok(),name,email,website})});
+          const res=await r.json().catch(()=>null);
+          if(res&&res.ok){ msg.textContent=res.listed ? `Sent. ${res.vendor||name} already has a listing here, and the invitation links straight to their claim page.` : `Sent. ${name} will get a note from Ryan with a link to set up their free listing.`; ['rf-name','rf-email','rf-web'].forEach(id=>{ document.getElementById(id).value=''; }); }
+          else msg.textContent=(res&&res.error)||'Could not send. Try again.';
+        }catch(_){ msg.textContent='Could not send. Try again.'; }
+        btn.disabled=false;
         return;
       }
       if(e.target.closest('#sp-save')){
