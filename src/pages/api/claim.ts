@@ -1,6 +1,6 @@
 export const prerender = false;
 import type { APIRoute } from 'astro';
-import { SB_URL, SB_KEY } from '../../lib/supabase';
+import { rpc, authSecret } from '../../lib/cron';
 import { sendMail } from '../../lib/mail';
 
 export const POST: APIRoute = async ({ request, redirect }) => {
@@ -11,19 +11,14 @@ export const POST: APIRoute = async ({ request, redirect }) => {
   const email = String(form.get('email') || '').slice(0, 200);
   const message = String(form.get('message') || '').slice(0, 2000);
   if (!slug || !name || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return redirect('/claim?e=invalid', 303);
+  // ceg_claim_submit (secret gated, S9 2026-11-05) looks the vendor up, throttles per email and inserts the claim row.
   let vendorId: number | null = null; let vendorName = '';
-  if (slug !== '__not_listed__') {
-    const r = await fetch(`${SB_URL}/rest/v1/p2_vendors_public?slug=eq.${encodeURIComponent(slug)}&select=id,name`, {
-      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
-    });
-    const rows = await r.json();
-    vendorId = rows?.[0]?.id ?? null; vendorName = rows?.[0]?.name ?? '';
-  }
-  await fetch(`${SB_URL}/rest/v1/p2_claims`, {
-    method: 'POST',
-    headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-    body: JSON.stringify({ vendor_id: vendorId, claimant_name: name, claimant_email: email, message: slug === '__not_listed__' ? `[NEW LISTING REQUEST] ${message}` : message })
-  });
+  try {
+    const r = await rpc<{ ok: boolean; error?: string; vendor_id?: number | null; vendor_name?: string }>('ceg_claim_submit',
+      { p_secret: authSecret(), p_slug: slug, p_name: name, p_email: email, p_message: message });
+    if (!r?.ok) return redirect(r?.error === 'rate' ? '/thanks?claim=1' : '/claim?e=invalid', 303);
+    vendorId = r.vendor_id ?? null; vendorName = r.vendor_name ?? '';
+  } catch (e) { console.error('claim submit failed', e); return redirect('/claim?e=invalid', 303); }
   await sendMail(email, `We got your claim${vendorName ? ` for ${vendorName}` : ''} | Colorado Elopement Guide`,
 `Hi ${name},
 

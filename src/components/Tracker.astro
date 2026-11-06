@@ -7,10 +7,12 @@ const { vendorId, eventType = 'profile_view' } = Astro.props;
     if (navigator.webdriver || /bot|crawl|spider|slurp|bingpreview|lighthouse|headless|prerender|facebookexternal|whatsapp|telegram|python-requests|curl/i.test(ua)) return;
     var send = function(type){
       try {
-        fetch('https://yucgsuzveabsgntlmste.supabase.co/rest/v1/p2_events', {
+        // Token-less RPC (validates the event type and vendor, throttles per vendor and overall). Direct inserts
+        // into p2_events are closed for anon since 2026-11-05.
+        fetch('https://yucgsuzveabsgntlmste.supabase.co/rest/v1/rpc/ceg_event_log', {
           method:'POST',
-          headers:{'apikey':'sb_publishable_acsHsb9mrZ756aT12EgAPQ_GugWXmjM','Authorization':'Bearer sb_publishable_acsHsb9mrZ756aT12EgAPQ_GugWXmjM','Content-Type':'application/json','Prefer':'return=minimal'},
-          body: JSON.stringify({vendor_id:vendorId, event_type:type, path:location.pathname, referrer:document.referrer||null}),
+          headers:{'apikey':'sb_publishable_acsHsb9mrZ756aT12EgAPQ_GugWXmjM','Authorization':'Bearer sb_publishable_acsHsb9mrZ756aT12EgAPQ_GugWXmjM','Content-Type':'application/json'},
+          body: JSON.stringify({p_vendor_id:vendorId, p_event_type:type, p_path:location.pathname, p_referrer:document.referrer||null}),
           keepalive:true
         });
       } catch(e){}

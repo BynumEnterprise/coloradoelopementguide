@@ -1,6 +1,6 @@
 export const prerender = false;
 import type { APIRoute } from 'astro';
-import { SB_URL, SB_KEY } from '../../lib/supabase';
+import { rpc, authSecret } from '../../lib/cron';
 import { sendMail } from '../../lib/mail';
 
 export const POST: APIRoute = async ({ request, redirect }) => {
@@ -10,13 +10,10 @@ export const POST: APIRoute = async ({ request, redirect }) => {
   const email = String(form.get('email') || '').slice(0, 200);
   const message = String(form.get('message') || '').slice(0, 3000);
   if (!name || !message || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return redirect('/contact?e=invalid', 303);
+  // ceg_contact_submit (secret gated, S9 2026-11-05) stores the row with vendor_id null and the [CONTACT] prefix.
   try {
-    await fetch(`${SB_URL}/rest/v1/p2_inquiries`, {
-      method: 'POST',
-      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-      body: JSON.stringify({ vendor_id: null, name, email, message: `[CONTACT] ${message}` })
-    });
-  } catch { /* noop */ }
+    await rpc('ceg_contact_submit', { p_secret: authSecret(), p_name: name, p_email: email, p_message: message });
+  } catch (e) { console.error('contact submit failed', e); }
   await sendMail('bynumenterprisesbe@gmail.com', `[CEG] Contact form: ${name}`, `From: ${name} <${email}>\n\n${message}`);
   return redirect('/thanks?contact=1', 303);
 };

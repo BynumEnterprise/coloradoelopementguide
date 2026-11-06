@@ -448,6 +448,7 @@ export const GET: APIRoute = async ({ request }) => {
     summary.photo_nudges = pn;
   }
 
+  if (!dry && !only) { try { await rpc('ceg_cron_config_set', { p_secret: secret, p_key: 'cron_daily_last_ran', p_value: String(summary.ran_at) }); } catch { /* noop */ } } // read by the Sunday self audit
   summary.ms = Date.now() - started;
   console.log('CRON daily', JSON.stringify(summary));
   return json(summary);
