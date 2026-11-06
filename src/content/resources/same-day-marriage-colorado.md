@@ -60,20 +60,20 @@ The question is not whether a county issues same day licenses, since every in pe
 
 | County (office) | Walk in or appointment | Fee and payment | Same day notes |
 | --- | --- | --- | --- |
-| Jefferson (Golden, 100 Jefferson County Pkwy) | Walk in Monday to Thursday 7:30 a.m. to 5 p.m.; appointments 8 a.m. to 3 p.m. | $30 | Fill out the online application first. Mondays have a line all day. Closed Fridays. |
-| El Paso (Colorado Springs, main office) | Walk in Monday to Friday 8 a.m. to 4:30 p.m.; Fridays end at 4 p.m. | $30, cash or card only | Online application required before you arrive. North office at 2447 N. Union Blvd. issues Saturdays 8 a.m. to 1 p.m. |
+| Jefferson (Golden, 100 Jefferson County Pkwy, Suite 2560) | Walk in Monday to Thursday 7:30 a.m. to 5 p.m.; appointments 8 a.m. to 3 p.m. | $30, cash or check | Fill out the online application first. Mondays have a line all day. Closed Fridays. |
+| El Paso (Colorado Springs, Citizens Service Center, 1675 W. Garden of the Gods Rd.) | Walk in Monday to Friday 8 a.m. to 4:30 p.m.; Fridays end at 4 p.m. | $30, cash or card only | Online application required before you arrive. The North Branch at 8830 N. Union Blvd. issues licenses Saturdays 8 a.m. to 1 p.m. |
 | Larimer (Fort Collins, 200 W. Oak St.) | Walk ins welcome, appointments encouraged; 8 a.m. to 5 p.m. | $30 | Loveland and Estes Park offices are appointment only and share a vehicle licensing counter. |
 | San Miguel (Telluride, 305 W. Colorado Ave.) | Walk in Monday to Thursday 7:30 a.m. to 5 p.m. | $30, cash or check only | Closed Fridays. Certified copies $1.25. |
 | Summit (Breckenridge, 208 E. Lincoln Ave.) | Non residents need one of four daily appointment slots (9, 11, 2 and 3), bookable four weeks out; county residents walk in | $39 including three certified copies | Issued the same day in about 20 minutes once you have the slot. |
 | Pitkin (Aspen, 530 E. Main St., Suite 104) | Appointment only, after the online application | $30, cash, check or card | Only the two of you in the office. License issued at the appointment. |
 | Denver (200 W. 14th Ave.) | Appointment only, booked up to seven days ahead | $30; 2.5% card fee | An in person appointment hands you the license that day. Virtual appointments mail it, so Denver tells couples marrying within two weeks to book in person. |
-| Boulder (1750 33rd St.) | Online only: application, then a video appointment | $30 | The license is mailed to a Colorado address. Not a same day county. |
+| Boulder (1750 33rd St., Suite 201) | Online only: application, then a video appointment | $30, e check or card | The license is mailed to a Colorado address; out of state applicants must collect it the same day in person, so the video route can still be a same day route for visitors. |
 
-The practical pattern: if you are flying into Denver, Golden is 20 minutes from downtown and sits on the way to every mountain region. If you land in Colorado Springs, the El Paso County counter is the only one in the state open on Saturday mornings. In Summit County, a county resident can walk in, so if a friend who lives there is marrying you, the rule is different from the one that applies to visitors.
+The practical pattern: the El Paso County North Branch is the only counter we found open on a Saturday morning. Summit County residents walk in while visitors need one of four daily slots. Boulder works the same day only for out of state couples who collect the license in person. Our full county guides cover [Jefferson](/resources/jefferson-county-marriage-license), [El Paso](/resources/el-paso-county-marriage-license), [Denver](/resources/denver-marriage-license), [Boulder](/resources/boulder-county-marriage-license), [Summit](/resources/summit-county-marriage-license) and [Larimer](/resources/larimer-county-marriage-license).
 
 ## What to bring
 
-Each of you needs a current photo ID, which every county reads as a driver's license, state ID, passport or military ID. Birth certificates alone do not count. Bring your Social Security number (there is an affidavit if you do not have one), your parents' names and birthplaces and your mother's maiden name, and, if either of you was married before, the exact date and place the divorce was final or the former spouse died. Denver and El Paso want a certified copy of the divorce decree if the divorce was final within the last 30 days. Most counties ask you to complete the online application before you walk in, and Jefferson, El Paso and Larimer say it speeds the counter. Pay attention to payment: El Paso takes no checks, San Miguel takes no cards.
+Each of you needs ID. Every county accepts a driver's license, passport or military ID; Larimer and Summit want photo ID and reject birth certificates, while El Paso and Boulder list a certified birth certificate as acceptable. Bring your Social Security number (there is an affidavit if you do not have one), your parents' names and birthplaces and your mother's maiden name, and, if either of you was married before, the exact date and place the divorce was final or the former spouse died. Denver wants a certified copy of the divorce decree if the divorce was final within the last 30 days; El Paso says no decree is needed. Most counties ask you to complete the online application before you walk in, and Jefferson, El Paso and Larimer say it speeds the counter. Pay attention to payment: El Paso takes no checks, San Miguel takes no cards, and Jefferson takes cash or check.
 
 If one of you cannot be there, the absent partner signs a notarized absentee affidavit and the other appears alone. That still produces a license the same day, but the ceremony itself needs both of you present unless the narrow military proxy rule in 14-2-109(2) applies.
 
@@ -81,7 +81,7 @@ If one of you cannot be there, the absent partner signs a notarized absentee aff
 
 Once the clerk hands you the license, the ceremony can be anywhere in Colorado. Three kinds of places work on no notice.
 
-**A trailhead or forest overlook.** On national forest land a group under 75 people with no structures needs no permit; the Forest Service's special use rules kick in at 75 participants or spectators. Loveland Pass, Sapphire Point and the Guanella Pass pullouts are all within two hours of Golden. Our [national forest elopement guide](/resources/national-forest-and-blm-elopements) has the site notes.
+**A trailhead or forest overlook.** On national forest land a group under 75 people with no structures needs no permit; the Forest Service's special use rules kick in at 75 participants or spectators. Loveland Pass and the Guanella Pass pullouts are within two hours of Golden; Sapphire Point needs a Recreation.gov reservation for a ceremony, so it is not a no notice site. Our [national forest elopement guide](/resources/national-forest-and-blm-elopements) has the site notes.
 
 **A courthouse lawn or a judge's noon slot.** In Golden, judicial officers perform ceremonies Monday through Friday at noon with no appointment: arrive at the Magistrate Clerk's lobby on the second floor by 11:30 a.m. with the license and $60 in cash. Pick up the license downstairs at 7:30 a.m. and you are married by 12:15 p.m. Our [courthouse wedding guide](/resources/colorado-courthouse-wedding) covers the other courts.
 
@@ -109,7 +109,7 @@ Neither. C.R.S. 14-2-109 lets the parties solemnize their own marriage, and no c
 
 ### Can out of state couples do this?
 
-Yes. No county has a residency requirement for an in person license. The one catch is Boulder and Denver's virtual process, which mails the license only to a Colorado address, so visitors should use an in person counter.
+Yes. No county has a residency requirement for an in person license. The catch is the virtual process in Denver and Boulder, which mails the license only to a Colorado address; Boulder has out of state applicants collect it in person the same day, and Denver tells couples marrying within two weeks to book an in person appointment.
 
 ## After the paperwork
 

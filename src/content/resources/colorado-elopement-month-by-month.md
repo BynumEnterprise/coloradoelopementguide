@@ -1,8 +1,8 @@
 ---
 title: "Colorado Elopement Weather by Month | Colorado Elopement Guide"
 headline: "Colorado elopement weather and crowds, *month by month*"
-dek: "Thirty year NOAA temperature and snow normals for Estes Park, Breckenridge, Aspen, Telluride and Colorado Springs, next to the dates the high roads open, when permits get tight, and when the flowers and aspens turn. One table to pick your month from."
-description: "Month by month Colorado elopement data: NOAA highs, lows, snow and rain odds for five mountain towns, plus road openings, crowds, permits and aspens."
+dek: "Thirty year NOAA temperature, rain and snow normals for Estes Park, Breckenridge, Aspen, Telluride and Colorado Springs, next to the road and permit dates that decide whether a month works. One table to pick your month from."
+description: "Month by month Colorado elopement data: NOAA highs, lows, snow and rain odds for five mountain towns, plus the road and permit dates that decide a month."
 datePublished: "2026-11-05"
 kind: planning
 hero: estes-park
@@ -14,9 +14,9 @@ facts:
   - label: "Wettest Days"
     value: "July and August, when 4 of 10 days see rain in every mountain town"
   - label: "High Roads"
-    value: "Trail Ridge, Independence Pass and Mount Blue Sky open around Memorial Day"
+    value: "Trail Ridge Road and Independence Pass reopen around Memorial Day and close by mid November"
   - label: "Snowiest"
-    value: "Aspen and Breckenridge average about 28 inches a month December to April"
+    value: "Aspen and Breckenridge average 27 to 28 inches a month from January through March"
 sources:
   - label: "NOAA NCEI: 1991 to 2020 U.S. Climate Normals, monthly, Estes Park 3 SSE (USC00052761)"
     url: "https://www.ncei.noaa.gov/access/services/data/v1?dataset=normals-monthly-1991-2020&stations=USC00052761&dataTypes=MLY-TMAX-NORMAL,MLY-TMIN-NORMAL,MLY-PRCP-NORMAL,MLY-SNOW-NORMAL,MLY-PRCP-AVGNDS-GE001HI&format=json&includeStationName=true"
@@ -28,8 +28,8 @@ sources:
     url: "https://www.ncei.noaa.gov/access/services/data/v1?dataset=normals-monthly-1991-2020&stations=USC00058204&dataTypes=MLY-TMAX-NORMAL,MLY-TMIN-NORMAL,MLY-PRCP-NORMAL,MLY-SNOW-NORMAL,MLY-PRCP-AVGNDS-GE001HI&format=json&includeStationName=true"
   - label: "NOAA NCEI: 1991 to 2020 normals, Colorado Springs Municipal Airport (USW00093037)"
     url: "https://www.ncei.noaa.gov/access/services/data/v1?dataset=normals-monthly-1991-2020&stations=USW00093037&dataTypes=MLY-TMAX-NORMAL,MLY-TMIN-NORMAL,MLY-PRCP-NORMAL,MLY-SNOW-NORMAL,MLY-PRCP-AVGNDS-GE001HI&format=json&includeStationName=true"
-  - label: "CDOT: Seasonal Closures (Independence Pass, Mount Blue Sky, Kebler, Cottonwood, Trail Ridge)"
-    url: "https://www.codot.gov/travel/winter-driving/seasonalclosures"
+  - label: "CDOT, Nov. 3, 2026: CO 82 at Independence Pass closes for the winter season (closure history, typical reopening)"
+    url: "https://www.codot.gov/news/2026/october-2026-news/co82-independencepass-close-for-winter"
   - label: "Rocky Mountain National Park: Trail Ridge Road closed for the winter 2025/2026 season"
     url: "https://www.nps.gov/romo/learn/news/trail-ridge-road-is-closed-to-through-travel-for-the-winter-2025-2026-season.htm"
   - label: "Rocky Mountain National Park: Timed Entry Permit System (2026 dates)"
@@ -50,7 +50,7 @@ Our [best time to elope in Colorado](/resources/best-time-to-elope-in-colorado) 
 
 ## How to read the weather table
 
-Each cell shows the normal daily high and low in degrees Fahrenheit, then the odds that any given day sees measurable rain or snow (average days with 0.01 inch or more, divided by days in the month), then the average snowfall in inches when it is an inch or more. The stations are Estes Park 3 SSE at 7,812 feet, Dillon 1 E at 9,065 feet for Breckenridge temperatures and wet days (the Breckenridge station reports snow but not temperature, so its snow totals from 9,598 feet are used), Aspen 1 SW at 8,175 feet, Telluride 4 WNW at 8,645 feet and Colorado Springs Municipal Airport at 6,181 feet. Ceremony sites above these towns run colder: the Park Service says Trail Ridge Road is normally 20 to 30 degrees colder than Estes Park.
+Each cell shows the normal daily high and low in degrees Fahrenheit, then the odds that any given day sees measurable rain or snow (average days with 0.01 inch or more, divided by days in the month), then the average snowfall in inches when it is an inch or more. The stations are Estes Park 3 SSE at 7,812 feet, Aspen 1 SW at 8,175 feet, Telluride 4 WNW at 8,645 feet and Colorado Springs Municipal Airport at 6,181 feet. The Breckenridge column uses Dillon 1 E at 9,065 feet for temperatures, because the Breckenridge station at 9,598 feet reports snow and wet days but not temperature; its own snow totals and wet day odds are used. Ceremony sites above these towns run colder: the Park Service says Trail Ridge Road is normally 20 to 30 degrees colder than Estes Park.
 
 | Month | Estes Park | Breckenridge | Aspen | Telluride | Colorado Springs |
 | --- | --- | --- | --- | --- | --- |
@@ -67,36 +67,19 @@ Each cell shows the normal daily high and low in degrees Fahrenheit, then the od
 | November | 44 / 24, 20%, 11 in snow | 41 / 11, 34%, 24 in snow | 42 / 19, 33%, 20 in snow | 45 / 13, 26%, 19 in snow | 53 / 26, 15%, 4 in snow |
 | December | 36 / 16, 22%, 13 in snow | 32 / 3, 36%, 24 in snow | 32 / 10, 39%, 28 in snow | 36 / 2, 30%, 19 in snow | 45 / 19, 12%, 4 in snow |
 
-Three patterns matter more than any single number. First, June is the driest month in the mountains and the warmest month that still has snow on the peaks: Telluride sees rain on fewer than one day in five. Second, July and August are the wettest months everywhere, but the normals count a day as wet if a 20 minute afternoon storm drops a hundredth of an inch, which is exactly how summer rain behaves here. Mornings stay clear. Third, December through March is a snow month in Aspen and Breckenridge nearly every other day, so a winter ceremony needs a flexible photographer and a backup indoors.
+Three patterns matter more than any single number. First, June is the driest month in the mountains and the warmest month that still has snow on the peaks: Telluride sees rain on fewer than one day in five. Second, July and August are the wettest months everywhere, but the normals count a day as wet if a 20 minute afternoon storm drops a hundredth of an inch, which is exactly how summer rain behaves here. Mornings stay clear. Third, December through March brings measurable snow or rain on roughly four days in ten in Aspen and Breckenridge, so a winter ceremony needs a flexible photographer and a backup indoors.
 
-## What is open, who is there, and what we would do
+## What the roads and permits add
 
-| Month | High roads | Crowds and permits | Color | Our call |
-| --- | --- | --- | --- | --- |
-| January | Trail Ridge, Independence Pass, Mount Blue Sky, Maroon Creek Road and Kebler Pass closed | Rocky Mountain National Park caps weddings at 40 a month in winter and the cap rarely fills; ski towns full on holiday weekends | Snow | Quietest permit month; marry at a ski town overlook or an RMNP winter site |
-| February | Same closures | Ski town peak; Presidents Day weekend is the busiest | Snow | A weekday in the first half of the month |
-| March | Same closures; heaviest snow in Aspen and Breckenridge | Spring break crowds in ski towns; roads can close in storms | Snow | Pick a low valley site with an indoor backup |
-| April | Same closures; melt begins below 9,000 feet | Resorts close early in the month; mud season, few visitors, cheapest lodging | Brown and white | Foothills and Colorado Springs; skip the high country |
-| May | Trail Ridge aims for the last week; Independence Pass the Thursday before Memorial Day; Mount Blue Sky the Friday before; Maroon Creek Road reopens around May 15 | RMNP timed entry begins May 22 in 2026; summer wedding caps of 60 a month start | Green valleys, snow above 10,000 feet | Late May if the road matters, with a lower backup |
-| June | All major roads normally open by mid month | RMNP timed entry 9 a.m. to 2 p.m.; Maroon Bells shuttle or parking reservation required | Wildflowers begin low, snow lingers up high | Our favorite month: driest, longest days, flowers starting |
-| July | All open | Peak visitation everywhere; Maroon Bells and RMNP permits fill months ahead | Alpine wildflowers peak | Sunrise ceremonies only; storms build after noon |
-| August | All open | Still peak; smoke in some years | Flowers fading late in the month | Early morning, high lakes |
-| September | All open; first snow on the passes late in the month | Fall color weekends are the heaviest traffic of the year, CDOT asks for midweek travel | Aspens peak above 9,500 feet early to mid month, 8,000 to 9,500 feet mid to late month, San Juans late month | A Tuesday to Thursday in the last two weeks |
-| October | Trail Ridge normally closes mid October (Nov. 14 in 2025); Mount Blue Sky upper road closes the day after Labor Day and the rest around Sept. 30 | RMNP timed entry ends Oct. 12 in 2026; summer caps end the second Monday in October | Foothills and Front Range aspens late September to early October | First week for foothill color; cold mornings, quiet trails |
-| November | Independence Pass closes around Nov. 7; Maroon Creek Road closes Nov. 10 in 2026; Kebler and Cottonwood closed | Fewest visitors of the year; winter RMNP caps resume | Bare | Cheapest dates and open permit calendars; expect wind |
-| December | Same closures | Holiday weeks fill ski towns; shortest days | Snow and lights | A weekday before Dec. 18 |
+The weather table says when a month is comfortable; the roads and permit calendars say whether it is possible. Trail Ridge Road normally opens to through travel in the last week of May and closes in mid October, weather permitting; in 2025 it opened May 30 and closed Nov. 14 at the Many Parks Curve gate. Independence Pass closed for the 2026 to 2027 winter on Nov. 3, and CDOT says it typically closes in late October or early November and reopens around Memorial Day weekend. Maroon Creek Road closes Nov. 10, 2026 and typically reopens May 15, and Mount Blue Sky closed to vehicles for 2026 on Oct. 5 and needs a timed ticket from Recreation.gov while it is open. In Rocky Mountain National Park, timed entry ran from May 22 to Oct. 12, 2026 (through Oct. 18 for the Bear Lake Road corridor), and the wedding permit cap drops from 60 a month in summer to 40 from November through April. All of these dates move with the weather, so check the road the week of your ceremony and keep a lower site in reserve from October through May.
 
-The dates in this table are the published normal or scheduled dates. CDOT says plainly that opening and closing dates change with the weather, and the Park Service posts the actual Trail Ridge status on its recorded line at (970) 586-1222. Check the road the week of your ceremony and have a lower site in your back pocket from October through May.
-
-## Wildflowers and aspens
-
-The high meadows bloom from early July into early August, with the valley floors a few weeks earlier. For aspens, the Colorado State Forest Service estimate CDOT published on Sept. 8, 2026 is the most useful single source: early to mid September above 9,500 feet, mid to late September between 8,000 and 9,500 feet, late September in the San Juans around Telluride, and late September into early October in the foothills and Front Range. CDOT added that drought stress can turn some stands earlier than usual. If color is the point of your day, book a weekday in the last ten days of September and keep a two day window rather than one fixed date.
+For aspens, the Colorado State Forest Service estimate CDOT published on Sept. 8, 2026 put the high passes above 9,500 feet in early to mid September, the central mountains in mid to late September, the San Juans in late September and the foothills in late September to early October, with drought turning some stands earlier. Crowds, wildflowers and the month by month call are in our [best time to elope in Colorado](/resources/best-time-to-elope-in-colorado) guide, aspen timing is in the [fall elopement guide](/resources/colorado-fall-elopement), and the closed road months are in the [winter elopement guide](/resources/winter-elopement-colorado).
 
 ## Common questions
 
 ### What is the coldest month to elope in the Colorado mountains?
 
-January. The normal low is 0 F in Telluride, 2 F at Dillon near Breckenridge and 10 F in Aspen, with daytime highs in the low 30s. Estes Park and Colorado Springs run 10 to 15 degrees warmer. Plan a short outdoor ceremony and an indoor dinner.
+January. The normal low is 0 F in Telluride, 2 F at Dillon near Breckenridge and 10 F in Aspen, with daytime highs in the low 30s. Estes Park and Colorado Springs are warmer, with normal lows of 16 F and 18 F. Plan a short outdoor ceremony and an indoor dinner.
 
 ### Which month has the least rain?
 
@@ -104,11 +87,11 @@ June in every mountain town. Telluride averages about 5 wet days in June and Asp
 
 ### When do Trail Ridge Road and Independence Pass open?
 
-Trail Ridge Road normally opens to through travel in the last week of May and closes in mid October, weather permitting; in 2025 it opened May 30 and closed Nov. 14. Independence Pass typically opens the Thursday before Memorial Day and closes around Nov. 7, per CDOT.
+Trail Ridge Road normally opens to through travel in the last week of May and closes in mid October, weather permitting; in 2025 it opened May 30 and closed Nov. 14. CDOT says Independence Pass typically reopens around Memorial Day weekend and closes in late October or early November; it closed Nov. 3 in 2026 and Nov. 17 in 2025.
 
 ### Do we need a reservation just to drive in?
 
-In Rocky Mountain National Park, yes, from 9 a.m. to 2 p.m. between May 22 and Oct. 12, 2026 (5 a.m. to 6 p.m. for the Bear Lake Road corridor). The Maroon Bells require a shuttle or parking reservation from about May 15 through October, and Mount Blue Sky requires a timed vehicle ticket from Recreation.gov while the road is open.
+In Rocky Mountain National Park, yes, from 9 a.m. to 2 p.m. between May 22 and Oct. 12, 2026, and from 5 a.m. to 6 p.m. through Oct. 18 for the Bear Lake Road corridor. The Maroon Bells require a parking reservation from May 15 to Oct. 31 or a shuttle reservation from May 22 to Oct. 18, and Mount Blue Sky requires a timed vehicle ticket from Recreation.gov while the road is open.
 
 ## Pick the month, then the people
 
