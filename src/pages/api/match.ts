@@ -101,7 +101,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   // Submit until three have gone out. Pass one takes one vendor per requested category (by rank); pass two
   // fills any open slots from the remaining candidates. A per vendor miss (already asked today) moves on
-  // to the next candidate; a per couple or site limit stops the whole batch.
+  // to the next candidate; a per couple or site limit, or a database error, stops the whole batch.
   type Sent = { id: number; mode: string; to: string | null; vendor: any; status: string; req: string };
   const sent: Sent[] = []; const skipped: { slug: string; reason: string }[] = []; const state = { stop: null as string | null };
   const tried = new Set<string>();
@@ -111,7 +111,7 @@ export const POST: APIRoute = async ({ request }) => {
     try {
       res = await rpc<any>('ceg_inquiry_submit', { p_secret: secret, p_slug: c.slug, p_names: names, p_email: email,
         p_wedding_date: weddingDate, p_guests: guests, p_message: message, p_spam: spam });
-    } catch (e) { console.error('match submit failed', c.slug, e); skipped.push({ slug: c.slug, reason: 'not sent' }); return; }
+    } catch (e) { console.error('match submit failed', c.slug, e); state.stop = 'rpc_error'; return; }
     if (!res?.ok) {
       if (res?.error === 'email_daily' || res?.error === 'site_hourly') { state.stop = res.error; return; }
       skipped.push({ slug: c.slug, reason: res?.error === 'dup_vendor' ? 'already has your note today' : 'not available' });
@@ -132,6 +132,7 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   if (!sent.length) {
+    if (state.stop === 'rpc_error') return json({ ok: false, error: 'Something went wrong on our side. Please try again in a minute.' }, 500);
     if (state.stop) return json({ ok: false, error: SUBMIT_ERRORS[state.stop] }, 429);
     return json({ ok: false, error: skipped.every(s => s.reason === 'already has your note today') ? 'You already asked these vendors today. Give them a day or two to reply.' : 'Something went wrong. Please try again.' }, 429);
   }

@@ -15,8 +15,8 @@ const href = `/match/${params.toString() ? `?${params}` : ''}`;
 const where = r ? REGIONS[r].name.replace(/&/g, 'and') : 'Colorado';
 const who = c ? CATEGORIES[c].name.toLowerCase().replace(/&/g, 'and').replace(/^(elopement |micro-wedding )/, '') : 'vendors';
 const line = c
-  ? `One short note reaches a ${CATEGORIES[c].singular.replace(/&/g, 'and')} in ${where} plus two other vendors you pick, and they reply to you directly.`
-  : `One short note reaches three ${where} vendors who can actually take your date, and they reply to you directly.`;
+  ? `One short note reaches a ${CATEGORIES[c].singular.replace(/&/g, 'and')} in ${where} and up to two other kinds of vendor you tick, and they reply to you directly.`
+  : `One short note reaches three ${where} vendors we can contact by email, and they reply to you directly.`;
 ---
 <aside class={`not-prose rounded-2xl border border-hairline bg-spruce-900 text-ivory ${compact ? 'p-5 md:p-6' : 'p-6 md:p-7'} ${className}`} aria-label="Tell three vendors about your day" data-ask-vendors>
   <div class={`${compact ? '' : 'md:flex md:items-center md:justify-between md:gap-8'}`}>

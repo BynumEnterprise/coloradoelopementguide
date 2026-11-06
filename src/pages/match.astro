@@ -97,8 +97,8 @@ const crumbs = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', it
         <div><label for="m-msg" class="eyebrow text-ink/60 block mb-2">Your Note</label>
           <textarea id="m-msg" name="message" required minlength="20" maxlength="1200" rows="6" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm">Hi, we are planning a small elopement in Colorado and would love to know whether you are available around our date, what your starting price is and what a typical day with you looks like. Thanks so much.</textarea>
           <p class="text-xs text-ink/40 mt-1.5"><span id="m-count">0</span> of 1,200 characters. Edit it so it sounds like you; vendors notice.</p></div>
-        <p id="m-err" class="hidden text-sm rounded-xl border border-clay-500 bg-clay-50 text-clay-700 px-4 py-3"></p>
-        <button id="m-btn" class="rounded-full bg-ink text-ivory px-7 py-3.5 text-sm font-semibold hover:bg-spruce-800 transition-colors">Send My Note To Three Vendors</button>
+        <p id="m-err" role="alert" aria-live="polite" class="hidden text-sm rounded-xl border border-clay-500 bg-clay-50 text-clay-700 px-4 py-3"></p>
+        <button id="m-btn" type="submit" class="rounded-full bg-ink text-ivory px-7 py-3.5 text-sm font-semibold hover:bg-spruce-800 transition-colors">Send My Note To Three Vendors</button>
         <p class="text-xs text-ink/40">By sending, you agree we share your note and email with the vendors we pick. <a href="/privacy" class="underline">Privacy</a></p>
       </form>
       <div id="match-done" class="hidden rounded-2xl bg-parchment/70 border border-hairline p-6">
