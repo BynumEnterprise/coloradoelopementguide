@@ -1,0 +1,218 @@
+---
+// Multi vendor matcher (plan S4). One form, up to three vendors. Posts to /api/match, which picks the best
+// deliverable vendor per ticked category for the region (featured, then claimed, then budget fit, then hosted
+// photos, then Google rating) and sends each one the same note through the normal inquiry path.
+// ?region= and ?category= prefill the form (the AskVendors cards on guide pages link here with both).
+import Base from '../layouts/Base.astro';
+import { REGIONS, CATEGORIES } from '../lib/taxonomy';
+import { IMG, opt, optSet } from '../lib/assets';
+import { allVendors } from '../lib/vendors';
+
+const vendors = await allVendors();
+const live = vendors.filter(v => ['seeded', 'claimed', 'featured'].includes(v.status)).length;
+const regionOptions = Object.keys(REGIONS).filter(r => r !== 'other-colorado').map(r => ({ id: r, name: REGIONS[r].name.replace(/&/g, 'and') }));
+const catOptions = [
+  { id: 'photographers', label: 'Photographer', on: true },
+  { id: 'officiants', label: 'Officiant', on: true },
+  { id: 'venues', label: 'Venue', on: false },
+  { id: 'planners', label: 'Planner', on: false },
+  { id: 'florists', label: 'Florist', on: false },
+  { id: 'hair-makeup', label: 'Hair and makeup', on: false }
+];
+const budgetOptions = [
+  { id: 'under-3000', label: 'Under $3,000' },
+  { id: '3000-6000', label: '$3,000 to $6,000' },
+  { id: '6000-10000', label: '$6,000 to $10,000' },
+  { id: '10000-plus', label: '$10,000 plus' },
+  { id: 'not-sure', label: 'Not sure yet' }
+];
+const steps = [
+  ['Tell us about your day', 'Region, rough date, guest count and a budget range. Thirty seconds, no account needed.'],
+  ['We pick three vendors', 'One per kind you tick, from listings we can actually reach. Vendors who manage their listing and have good Google reviews come first.'],
+  ['They reply to you', 'Each vendor gets your note by email and answers you directly. You get one confirmation with all three names and links.']
+];
+const faqs = [
+  { q: 'Who gets my note?', a: `Up to three live listings in your region, one per kind of vendor you tick. We only pick vendors we can reach by email. Vendors who manage their own listing get your full note and reply to your address. Vendors who have not claimed their listing yet get a short notice without your contact details, and your note waits for them in their free dashboard.` },
+  { q: 'Can I choose the vendors myself?', a: 'Yes. Every listing has its own Check Availability form, and after you send one you can tick up to four similar vendors to copy it to. This page is the fast route when you would rather we pick.' },
+  { q: 'What does it cost?', a: 'Nothing. Vendors pay nothing to receive inquiries and we take no commission. Featured listings are paid placements and are shown first here and on the site; they are always labeled on their pages.' },
+  { q: 'Do you add me to a mailing list?', a: 'No. You get one confirmation email listing the vendors we reached. Nothing else unless you ask for the planning kit separately.' }
+];
+const SITE = 'https://coloradoelopementguide.com';
+const faqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) };
+const crumbs = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+  { '@type': 'ListItem', position: 1, name: 'Home', item: SITE + '/' },
+  { '@type': 'ListItem', position: 2, name: 'Get Matched', item: SITE + '/match/' }
+] };
+---
+<Base hero={`${IMG}/hero.jpg`} dark={true} title="Ask Three Colorado Elopement Vendors At Once, Free"
+  description={`Tell us your region, date, guest count and budget. We send one note to three Colorado elopement vendors who can reach you back directly. Free, from ${live} live listings.`}>
+  <script is:inline type="application/ld+json" slot="head" set:html={JSON.stringify(faqLd)} />
+  <script is:inline type="application/ld+json" slot="head" set:html={JSON.stringify(crumbs)} />
+
+  <section class="relative min-h-[46vh] flex items-end">
+    <img src={opt(`${IMG}/hero.jpg`, 1600)} srcset={optSet(`${IMG}/hero.jpg`, [960, 1280, 1600, 2048])} sizes="100vw" width="1600" height="900" decoding="async" alt="Couple eloping on a Colorado mountain ridge at golden hour" class="absolute inset-0 w-full h-full object-cover" fetchpriority="high" />
+    <div class="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/25 to-black/30"></div>
+    <div class="relative z-10 max-w-7xl mx-auto px-5 md:px-8 pb-12 md:pb-16 w-full">
+      <p class="eyebrow text-gold mb-3">Get Matched</p>
+      <h1 class="display text-white text-4xl md:text-6xl leading-[1.05] max-w-3xl">Ask three Colorado elopement vendors <span class="serif-i">at once</span></h1>
+      <p class="mt-5 max-w-xl text-white/85 text-[1.02rem] leading-relaxed">One short form. We pick a photographer, an officiant or whoever else you need for your region, send each of them your note, and they reply to you directly. Free, no account.</p>
+    </div>
+  </section>
+
+  <div class="max-w-7xl mx-auto px-5 md:px-8 pt-12 grid gap-10 md:grid-cols-12">
+    <section class="md:col-span-7 rounded-3xl border border-hairline bg-white p-6 md:p-9" id="match">
+      <form id="match-form" class="space-y-5" novalidate>
+        <div class="hidden" aria-hidden="true"><label>Company website<input type="text" name="company_site" tabindex="-1" autocomplete="off" /></label></div>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div><label for="m-names" class="eyebrow text-ink/60 block mb-2">Your Names</label>
+            <input id="m-names" name="names" required maxlength="120" autocomplete="name" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" placeholder="Sam and Alex" /></div>
+          <div><label for="m-email" class="eyebrow text-ink/60 block mb-2">Email</label>
+            <input id="m-email" name="email" type="email" required maxlength="200" autocomplete="email" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" placeholder="you@example.com" /></div>
+          <div><label for="m-date" class="eyebrow text-ink/60 block mb-2">Wedding Date</label>
+            <input id="m-date" name="wedding_date" type="date" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" />
+            <label class="flex items-center gap-2 mt-2 text-xs text-ink/60"><input type="checkbox" id="m-flexible" /> Our date is flexible</label></div>
+          <div><label for="m-guests" class="eyebrow text-ink/60 block mb-2">Guests <span class="normal-case tracking-normal text-ink/40">(including you two)</span></label>
+            <input id="m-guests" name="guests" type="number" min="1" max="500" inputmode="numeric" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm" placeholder="2" /></div>
+          <div><label for="m-region" class="eyebrow text-ink/60 block mb-2">Region</label>
+            <select id="m-region" name="region" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm">
+              <option value="not-sure">Not sure yet</option>
+              {regionOptions.map(r => <option value={r.id}>{r.name}</option>)}
+            </select></div>
+          <div><label for="m-budget" class="eyebrow text-ink/60 block mb-2">Budget For These Vendors</label>
+            <select id="m-budget" name="budget" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm">
+              {budgetOptions.map(b => <option value={b.id} selected={b.id === 'not-sure'}>{b.label}</option>)}
+            </select></div>
+        </div>
+        <fieldset>
+          <legend class="eyebrow text-ink/60 mb-2">Who Do You Need</legend>
+          <div class="flex flex-wrap gap-2" id="m-cats">
+            {catOptions.map(c => (
+              <label class="inline-flex items-center gap-2 rounded-full border border-hairline bg-ivory px-4 py-2 text-sm cursor-pointer has-[:checked]:border-ink has-[:checked]:bg-parchment">
+                <input type="checkbox" name="categories" value={c.id} checked={c.on} class="accent-ink" /> {c.label}
+              </label>
+            ))}
+          </div>
+          <p class="text-xs text-ink/45 mt-2">We send to three vendors in total, one per kind where we can.</p>
+        </fieldset>
+        <div><label for="m-msg" class="eyebrow text-ink/60 block mb-2">Your Note</label>
+          <textarea id="m-msg" name="message" required minlength="20" maxlength="1200" rows="6" class="w-full rounded-xl border border-hairline bg-ivory px-4 py-3 text-sm">Hi, we are planning a small elopement in Colorado and would love to know whether you are available around our date, what your starting price is and what a typical day with you looks like. Thanks so much.</textarea>
+          <p class="text-xs text-ink/40 mt-1.5"><span id="m-count">0</span> of 1,200 characters. Edit it so it sounds like you; vendors notice.</p></div>
+        <p id="m-err" class="hidden text-sm rounded-xl border border-clay-500 bg-clay-50 text-clay-700 px-4 py-3"></p>
+        <button id="m-btn" class="rounded-full bg-ink text-ivory px-7 py-3.5 text-sm font-semibold hover:bg-spruce-800 transition-colors">Send My Note To Three Vendors</button>
+        <p class="text-xs text-ink/40">By sending, you agree we share your note and email with the vendors we pick. <a href="/privacy" class="underline">Privacy</a></p>
+      </form>
+      <div id="match-done" class="hidden rounded-2xl bg-parchment/70 border border-hairline p-6">
+        <p class="eyebrow text-clay-600 mb-2">Sent</p>
+        <p class="display text-2xl leading-tight" id="match-done-title">Your note is on its way.</p>
+        <ul id="match-list" class="mt-5 space-y-3"></ul>
+        <p class="text-sm text-ink/70 mt-5 leading-relaxed" id="match-done-body"></p>
+        <div class="mt-6 flex flex-wrap gap-3">
+          <a href="/account" class="rounded-full bg-ink text-ivory px-6 py-3 text-sm font-semibold hover:bg-spruce-800 transition-colors">Save Them To My Planner</a>
+          <a href="/checklist" class="rounded-full border border-ink/70 px-6 py-3 text-sm font-medium hover:bg-ink hover:text-ivory transition-colors">Read The Planning Checklist</a>
+        </div>
+      </div>
+    </section>
+
+    <aside class="md:col-span-5">
+      <div class="rounded-3xl bg-parchment/70 border border-hairline p-7 md:sticky md:top-6">
+        <p class="eyebrow text-clay-600 mb-2">How It Works</p>
+        <ol class="space-y-5 mt-4">
+          {steps.map(([h, p], i) => (
+            <li class="flex gap-4">
+              <span class="display text-clay-600 text-xl leading-none w-6 shrink-0 pt-0.5">{i + 1}</span>
+              <div><p class="font-medium text-ink">{h}</p><p class="text-sm text-ink/70 leading-relaxed mt-1">{p}</p></div>
+            </li>
+          ))}
+        </ol>
+        <p class="text-xs text-ink/50 mt-6 leading-relaxed">Prefer to browse first? <a href="/vendors" class="underline underline-offset-4 hover:text-clay-700">See every vendor</a> by region, or start with <a href="/category/photographers" class="underline underline-offset-4 hover:text-clay-700">photographers</a>.</p>
+      </div>
+    </aside>
+  </div>
+
+  <section class="max-w-3xl mx-auto px-5 md:px-8 pt-16">
+    <h2 class="display text-2xl md:text-3xl mb-6">Questions <span class="serif-i">couples ask</span></h2>
+    <div class="divide-y divide-hairline border-y border-hairline">
+      {faqs.map(f => (
+        <details class="group py-5">
+          <summary class="cursor-pointer list-none flex justify-between gap-6 font-medium text-ink">{f.q}<span class="text-clay-600 group-open:rotate-45 transition-transform">+</span></summary>
+          <p class="mt-3 text-ink/70 leading-relaxed">{f.a}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <section class="max-w-7xl mx-auto px-5 md:px-8 pt-16 pb-4">
+    <p class="eyebrow text-clay-600 mb-4">Or Browse By Kind</p>
+    <div class="flex flex-wrap gap-2 text-sm">
+      {Object.keys(CATEGORIES).map(c => <a href={`/category/${c}`} class="rounded-full border border-hairline bg-white px-4 py-2 hover:border-ink/40">{CATEGORIES[c].name.replace(/&/g, 'and')}</a>)}
+    </div>
+  </section>
+
+  <script is:inline>
+  (function(){
+    var t0 = Date.now();
+    var f = document.getElementById('match-form'); if (!f) return;
+    var msg = document.getElementById('m-msg'), cnt = document.getElementById('m-count'), err = document.getElementById('m-err'), btn = document.getElementById('m-btn');
+    var date = document.getElementById('m-date'), flex = document.getElementById('m-flexible');
+    var region = document.getElementById('m-region');
+    cnt.textContent = msg.value.length.toLocaleString('en-US');
+    msg.addEventListener('input', function(){ cnt.textContent = msg.value.length.toLocaleString('en-US'); });
+    flex.addEventListener('change', function(){ date.disabled = flex.checked; if (flex.checked) date.value = ''; });
+    // Prefill from the link that brought the couple here (AskVendors cards pass region and category).
+    try {
+      var q = new URLSearchParams(location.search);
+      var r = q.get('region'); if (r && region.querySelector('option[value="' + r + '"]')) region.value = r;
+      var c = (q.get('category') || '').split(',').filter(Boolean);
+      if (c.length) {
+        var boxes = f.querySelectorAll('input[name=categories]'), any = false;
+        boxes.forEach(function(b){ if (c.indexOf(b.value) > -1) any = true; });
+        if (any) boxes.forEach(function(b){ b.checked = c.indexOf(b.value) > -1; });
+        if (c.length === 1 && c[0] !== 'photographers' && c[0] !== 'officiants' && any) { boxes.forEach(function(b){ if (b.value === 'photographers') b.checked = true; }); }
+      }
+      if (r && region.value === r) {
+        var name = region.options[region.selectedIndex].text;
+        msg.value = msg.value.replace('a small elopement in Colorado', 'a small elopement in ' + name);
+        cnt.textContent = msg.value.length.toLocaleString('en-US');
+      }
+    } catch (e) {}
+    f.addEventListener('submit', function(e){
+      e.preventDefault(); err.classList.add('hidden');
+      var d = Object.fromEntries(new FormData(f).entries());
+      d.categories = Array.prototype.slice.call(f.querySelectorAll('input[name=categories]:checked')).map(function(i){ return i.value; });
+      if (flex.checked || !d.wedding_date) d.wedding_date = 'flexible';
+      d.elapsed_ms = Date.now() - t0;
+      var m = String(d.message || '').trim();
+      if (String(d.names || '').trim().length < 2) return fail('Add your names.');
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(d.email || '').trim())) return fail('Check your email address.');
+      if (!d.categories.length) return fail('Tick at least one kind of vendor.');
+      if (m.length < 20 || m.length > 1200) return fail('Your note should be between 20 and 1,200 characters.');
+      btn.disabled = true; btn.textContent = 'Sending…';
+      fetch('/api/match', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) })
+        .then(function(r){ return r.json().catch(function(){ return { ok: false }; }); })
+        .then(function(res){
+          if (!res || !res.ok) { btn.disabled = false; btn.textContent = 'Send My Note To Three Vendors'; return fail((res && res.error) || 'Something went wrong. Please try again.'); }
+          var sent = res.sent || [];
+          if (window.cegTrack) cegTrack('match_submitted', region.value || 'not-sure', 'generate_lead', { via: 'match', region: region.value, vendors: sent.length, categories: d.categories.join(',') });
+          var list = document.getElementById('match-list'); list.innerHTML = '';
+          sent.forEach(function(v){
+            var li = document.createElement('li'); li.className = 'rounded-xl border border-hairline bg-white px-4 py-3 text-sm';
+            var a = document.createElement('a'); a.href = '/vendor/' + v.slug + '/'; a.className = 'font-medium text-ink underline underline-offset-4 decoration-gold hover:text-clay-700'; a.textContent = v.name;
+            var s = document.createElement('span'); s.className = 'block text-xs text-ink/55 mt-0.5';
+            s.textContent = v.mode === 'account' ? 'Manages their listing. Your full note is in their inbox and they reply to you directly.' : 'Has not claimed their listing yet. We told them a couple asked; your note waits in their free dashboard.';
+            li.appendChild(a); li.appendChild(s); list.appendChild(li);
+          });
+          var em = String(d.email || '').trim();
+          document.getElementById('match-done-title').textContent = !sent.length ? 'Your note is on its way.' : sent.length === 1 ? 'Your note went to one vendor.' : 'Your note went to ' + (sent.length === 2 ? 'two' : 'three') + ' vendors.';
+          var body = res.confirm ? 'A copy with all the names and links is on its way to ' + em + '. ' : '';
+          body += 'Give them a few days to answer. If you want more options, every vendor page has its own Check Availability form.';
+          if (res.skipped && res.skipped.length) body += ' ' + res.skipped.length + ' other ' + (res.skipped.length === 1 ? 'vendor was' : 'vendors were') + ' skipped (' + res.skipped.map(function(s){ return s.reason; }).join('; ') + ').';
+          document.getElementById('match-done-body').textContent = body;
+          f.classList.add('hidden'); document.getElementById('match-done').classList.remove('hidden');
+          document.getElementById('match-done').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        })
+        .catch(function(){ btn.disabled = false; btn.textContent = 'Send My Note To Three Vendors'; fail('Could not send. Check your connection and try again.'); });
+    });
+    function fail(t){ err.textContent = t; err.classList.remove('hidden'); }
+  })();
+  </script>
+</Base>

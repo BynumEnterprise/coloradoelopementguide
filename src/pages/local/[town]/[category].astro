@@ -3,6 +3,7 @@
 import Base from '../../../layouts/Base.astro';
 import VendorCard from '../../../components/VendorCard.astro';
 import EmailCapture from '../../../components/EmailCapture.astro';
+import AskVendors from '../../../components/AskVendors.astro';
 import { allVendors } from '../../../lib/vendors';
 import { CATEGORIES, REGIONS } from '../../../lib/taxonomy';
 import { regionImg, opt, optSet } from '../../../lib/assets';
@@ -73,6 +74,7 @@ const description = `${n} ${plural} for elopements and small weddings in ${t.nam
       <h2 class="display text-2xl mb-6">{heading} for {t.name} <span class="text-ink/40 text-base">({n})</span></h2>
       <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{vendors.map(v => <VendorCard v={v} />)}</div>
     </section>
+    <div class="pt-12 max-w-3xl"><AskVendors region={t.region} category={category} /></div>
     <section class="pt-14 max-w-3xl">
       <h2 class="display text-2xl mb-6">Common questions</h2>
       <div class="space-y-5">{faqs.map(f => <div><h3 class="font-medium text-ink">{f.q}</h3><p class="text-sm text-ink/70 mt-1.5 leading-relaxed">{f.a}</p></div>)}</div>

@@ -4,7 +4,7 @@
 // Every body passes naturalCheck and carries the Denver address and a one click unsubscribe link.
 import { MAIL_FROM, MAIL_REPLY_TO, textToHtml } from './mail';
 import { naturalCheck, tagLinks, POSTAL_ADDRESS, SITE_URL, displayName, categoryPlural, regionName, fmtDateLong } from './outreach';
-import { REGIONS } from './taxonomy';
+import { REGIONS, CATEGORIES } from './taxonomy';
 
 export const KIT_URL = `${SITE_URL}/kit/colorado-elopement-planning-kit.pdf`;
 export type NurtureStep = 'kit' | 'region' | 'permits' | 'vendors' | 'planner_nudge';
@@ -252,4 +252,59 @@ You are getting this one email because you sent an inquiry on coloradoelopementg
   naturalCheck(subject, `confirm subject (${q.vendor.slug})`, allow);
   naturalCheck(text, `confirm body (${q.vendor.slug})`, allow);
   return { subject, text, html: tagLinks(textToHtml(text), 'inquiry_confirm', 'couple') };
+}
+
+// One confirmation for a /match/ submission (plan S4): the same note went to up to three vendors at once, so
+// the couple gets a single email listing every vendor and how each one will reply. Transactional, no list.
+export type MatchVendor = { slug: string; name: string; category: string; mode: string; website?: string | null; phone?: string | null };
+export type MatchConfirmIn = {
+  vendors: MatchVendor[]; names: string; email: string; weddingDate: string | null; guests: number | null;
+  region: string | null; budget: string | null; message: string;
+};
+
+export function renderMatchConfirm(q: MatchConfirmIn): { subject: string; text: string; html: string } {
+  const n = q.vendors.length;
+  const count = n === 1 ? 'one vendor' : n === 2 ? 'two vendors' : 'three vendors';
+  const blocks = q.vendors.map(v => {
+    const business = displayName(v.name);
+    const page = `${SITE_URL}/vendor/${v.slug}/`;
+    const cat = (CATEGORIES[v.category]?.singular || 'vendor').replace(/&/g, 'and');
+    let how: string;
+    if (v.mode === 'account') how = `${business} manages their listing with us, so your note went straight to their inbox and their reply comes to you at ${q.email}.`;
+    else if (v.mode === 'notice') how = `${business} has not set up their free account yet. We let them know a couple asked about their date; your email address stays with us until they claim the listing. The quickest way to reach them in the meantime is the website or phone on their page.`;
+    else how = `We do not have a direct email for ${business} yet, so we are holding your note for them. Their website or phone is on their page.`;
+    const ways = [v.website ? `Website: ${v.website}` : '', v.phone ? `Phone: ${v.phone}` : ''].filter(Boolean).join('\n');
+    return `${business} (${cat})\n${page}\n${how}${ways && v.mode !== 'account' ? `\n${ways}` : ''}`;
+  }).join('\n\n');
+  const where = q.region ? regionName(q.region) : null;
+  const subject = `Your note is on its way to ${count}`;
+  const text = `${greeting(q.names)}
+
+Thanks for using Colorado Elopement Guide. The same note went to ${count}${where ? ` for ${where}` : ''}. Here is who got it and what happens next.
+
+${blocks}
+
+A copy of what you sent:
+
+Wedding date: ${fmtDateLong(q.weddingDate) || 'flexible'}
+Guests: ${q.guests ?? 'not given'}
+Budget: ${q.budget || 'not given'}
+
+${q.message}
+
+Give them a few days. If nobody has answered by then, check your spam folder, then try the website or phone on each vendor's page. Tap the heart on any vendor to save them to your free planner, which keeps your shortlist, quotes and budget in one place:
+${SITE_URL}/account/
+
+If anything here looks wrong, reply to this email. It comes to me.
+
+Ryan
+Colorado Elopement Guide
+${POSTAL_ADDRESS}
+
+You are getting this one email because you sent a note on coloradoelopementguide.com. We did not add you to any list.
+`;
+  const allow = [q.names, q.email, q.message, q.budget || '', ...q.vendors.flatMap(v => [v.name, displayName(v.name), v.website || '', v.phone || ''])];
+  naturalCheck(subject, 'match confirm subject', allow);
+  naturalCheck(text, 'match confirm body', allow);
+  return { subject, text, html: tagLinks(textToHtml(text), 'match_confirm', 'couple') };
 }

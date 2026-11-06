@@ -8,7 +8,8 @@ import { rpc, authSecret } from '../../lib/cron';
 // visitor_hash cannot be linked across days or reversed. Bots are rejected here and again in the client.
 
 const BOT_RE = /bot|crawl|spider|slurp|headless|lighthouse|preview|facebookexternalhit|bingpreview|prerender|pagespeed|gtmetrix|pingdom|uptime|monitor|python|curl|wget|httpclient|java\/|go-http|okhttp|axios|node-fetch|undici|phantom|selenium|puppeteer|playwright|scrapy|whatsapp|telegram|discord|skype|slack|embedly|quora link|vkshare|ahrefs|semrush|mj12|dataforseo|bytespider|gptbot|claude|perplexity|chatgpt|ccbot|yandex|baidu|petal|seznam|archive/i;
-const EVENTS = new Set(['vendor_website_click', 'vendor_phone_click', 'inquiry_submitted', 'planner_signup', 'vendor_signup', 'claim_started', 'featured_checkout_click', 'newsletter_signup']);
+const EVENTS = new Set(['vendor_website_click', 'vendor_phone_click', 'inquiry_submitted', 'planner_signup', 'vendor_signup', 'claim_started', 'featured_checkout_click', 'newsletter_signup',
+  'match_submitted', 'ask_vendors_click', 'guide_cta_click', 'also_ask_shown']);
 const OWN_HOST = /(^|\.)coloradoelopementguide\.com$/;
 
 const ok = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });

@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import EmailCapture from '../../components/EmailCapture.astro';
 import VendorCard from '../../components/VendorCard.astro';
+import AskVendors from '../../components/AskVendors.astro';
 import { allVendors } from '../../lib/vendors';
 import { getCollection, render } from 'astro:content';
 import { CATEGORIES, REGIONS } from '../../lib/taxonomy';
@@ -103,6 +104,7 @@ const published = new Date(data.datePublished + 'T12:00:00Z').toLocaleDateString
   <article class="guide-body max-w-3xl mx-auto px-5 md:px-8 pt-10">
     <Content />
   </article>
+  <div class="max-w-3xl mx-auto px-5 md:px-8 pt-10"><AskVendors region={regions.length === 1 ? regions[0] : (regions.includes(data.hero) ? data.hero : null)} category={categories.length === 1 ? categories[0] : null} /></div>
   {townLinks.length > 0 && <p class="max-w-3xl mx-auto px-5 md:px-8 pt-6 text-sm text-ink/75"><span class="eyebrow text-clay-600 mr-3">Local Vendors</span>{townLinks.map((p, i) => <>{i > 0 && ' · '}<a href={`/local/${p.town}/${p.category}`} class="underline underline-offset-4 hover:text-clay-700">{TOWNS[p.town].name} {TOWN_HEADINGS[p.category].toLowerCase()} ({p.vendors.length})</a></>)}</p>}
   <EmailCapture variant="inline" moveIntoArticle={true} />
 
@@ -157,7 +159,7 @@ const published = new Date(data.datePublished + 'T12:00:00Z').toLocaleDateString
         <h2 class="display text-2xl md:text-3xl leading-tight">Keep the permit, the license dates<br class="hidden md:block" /> and <span class="serif-i">every vendor</span> in one place</h2>
         <p class="text-sm text-ivory/75 mt-3 leading-relaxed max-w-md">Heart the vendors you like as you browse, then track quotes, notes and bookings alongside the Colorado checklist. Free, synced to your email.</p>
       </div>
-      <div class="mt-6 md:mt-0 shrink-0"><a href="/account" class="inline-block rounded-full bg-ivory text-ink px-7 py-3.5 text-sm font-semibold hover:bg-white transition-colors">Start My Planner</a></div>
+      <div class="mt-6 md:mt-0 shrink-0"><a href="/account" data-track="guide_cta" class="inline-block rounded-full bg-ivory text-ink px-7 py-3.5 text-sm font-semibold hover:bg-white transition-colors">Start My Planner</a></div>
     </div>
   </section>
 

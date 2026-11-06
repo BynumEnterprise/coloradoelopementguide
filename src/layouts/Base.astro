@@ -122,6 +122,8 @@ const on = (p: string) => path === p || path.startsWith(p + '/');
         var tr = a.getAttribute('data-track') || '', href = a.getAttribute('href') || '', slug = a.getAttribute('data-slug') || vslug();
         if (tr === 'website_click') cegTrack('vendor_website_click', slug, 'select_content', { content_type: 'vendor_website', item_id: slug });
         else if (tr === 'phone_click') cegTrack('vendor_phone_click', slug, 'select_content', { content_type: 'vendor_phone', item_id: slug });
+        else if (tr === 'ask_vendors') cegTrack('ask_vendors_click', ((a.getAttribute('data-region') || 'not-sure') + '|' + (a.getAttribute('data-category') || '') + '|' + L.pathname).slice(0, 200), 'select_promotion', { promotion_name: 'ask_vendors', region: a.getAttribute('data-region') || 'not-sure', category: a.getAttribute('data-category') || '' });
+        else if (tr === 'guide_cta') cegTrack('guide_cta_click', (href + '|' + L.pathname).slice(0, 200), 'select_content', { content_type: 'guide_cta', item_id: href });
         else if (/^https:\/\/buy\.stripe\.com\//.test(href)) cegTrack('featured_checkout_click', L.pathname, 'begin_checkout', { currency: 'USD', value: 40, items: [{ item_id: 'featured_monthly', item_name: 'Featured Listing', price: 40, quantity: 1 }] });
       }, true);
       D.addEventListener('submit', function(e){

@@ -3,6 +3,7 @@ import Base from '../../layouts/Base.astro';
 import VendorCard from '../../components/VendorCard.astro';
 import EmailCapture from '../../components/EmailCapture.astro';
 import VendorFilter from '../../components/VendorFilter.astro';
+import AskVendors from '../../components/AskVendors.astro';
 import { allVendors } from '../../lib/vendors';
 import { CATEGORIES, REGIONS, inCategory } from '../../lib/taxonomy';
 import { CATEGORY_COPY, livePhotographerPages, photographersIn } from '../../data/category-copy';
@@ -131,6 +132,7 @@ const otherCats = Object.keys(CATEGORIES).filter(c => c !== cat);
     </div>
     <p class="mt-6 text-xs text-ink/50">Ratings come from Google and are refreshed weekly. Tap the heart on any listing to save it to your planner. Are you a {meta.singular}? <a href="/for-vendors" class="underline">Claim or add your free listing</a>.</p>
   </div>
+  {cat !== 'packages' && <div class="max-w-3xl mx-auto px-5 md:px-8 pt-12"><AskVendors category={cat} /></div>}
 
   <section class="max-w-3xl mx-auto px-5 md:px-8 pt-16">
     <h2 class="display text-2xl md:text-3xl mb-6">Questions <span class="serif-i">couples ask</span></h2>

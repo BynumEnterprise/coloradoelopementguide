@@ -1,0 +1,32 @@
+---
+// "Tell three vendors about your day" (plan S3). A compact card on the pages couples read (guides, resources,
+// region, category, town and venue lists) that sends them to /match/ with the region and category prefilled.
+// The button carries data-track="ask_vendors"; the click handler in Base.astro turns that into the site event
+// ask_vendors_click (and data-track="guide_cta" on the planner CTAs of guide and resource pages into guide_cta_click).
+import { REGIONS, CATEGORIES } from '../lib/taxonomy';
+interface Props { region?: string | null; category?: string | null; compact?: boolean; className?: string }
+const { region = null, category = null, compact = false, className = '' } = Astro.props;
+const r = region && region in REGIONS && region !== 'other-colorado' ? region : null;
+const c = category && category in CATEGORIES && category !== 'packages' ? category : null;
+const params = new URLSearchParams();
+if (r) params.set('region', r);
+if (c) params.set('category', c);
+const href = `/match/${params.toString() ? `?${params}` : ''}`;
+const where = r ? REGIONS[r].name.replace(/&/g, 'and') : 'Colorado';
+const who = c ? CATEGORIES[c].name.toLowerCase().replace(/&/g, 'and').replace(/^(elopement |micro-wedding )/, '') : 'vendors';
+const line = c
+  ? `One short note reaches a ${CATEGORIES[c].singular.replace(/&/g, 'and')} in ${where} plus two other vendors you pick, and they reply to you directly.`
+  : `One short note reaches three ${where} vendors who can actually take your date, and they reply to you directly.`;
+---
+<aside class={`not-prose rounded-2xl border border-hairline bg-spruce-900 text-ivory ${compact ? 'p-5 md:p-6' : 'p-6 md:p-7'} ${className}`} aria-label="Tell three vendors about your day" data-ask-vendors>
+  <div class={`${compact ? '' : 'md:flex md:items-center md:justify-between md:gap-8'}`}>
+    <div>
+      <p class="eyebrow text-gold mb-2">Ask {who === 'vendors' ? 'Three Vendors' : 'Three Vendors At Once'}</p>
+      <p class="display text-xl md:text-2xl leading-snug">Tell three vendors <span class="serif-i">about your day</span></p>
+      <p class="text-sm text-ivory/75 mt-2 leading-relaxed max-w-md">{line}</p>
+    </div>
+    <div class={`${compact ? 'mt-4' : 'mt-5 md:mt-0'} shrink-0`}>
+      <a href={href} data-track="ask_vendors" data-region={r || 'not-sure'} data-category={c || ''} class="inline-block rounded-full bg-ivory text-ink px-6 py-3 text-sm font-semibold hover:bg-white transition-colors">Get Matched With Three Vendors</a>
+    </div>
+  </div>
+</aside>

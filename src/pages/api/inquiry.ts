@@ -5,15 +5,12 @@ import { sendMailResult, MAIL_FROM, OWNER_EMAIL } from '../../lib/mail';
 import { repliedUrl } from '../../lib/trust-mail';
 import { renderInquiryConfirm } from '../../lib/couple-mail';
 import { inquiryVendorEmail, inquiryNoticeEmail, naturalCheck, type InquiryIn } from '../../lib/outreach';
+import { EMAIL_RE, clean, looksLikeSpam, SUBMIT_ERRORS } from '../../lib/inquiry-rules';
 
 // Couple inquiry from a vendor page ("Check Availability"). Validates, filters spam, rate limits and stores
 // through ceg_inquiry_submit, then delivers: full inquiry to a claimed or Featured vendor's account email
 // (Reply To the couple), a short claim notice without the couple's details to an unclaimed vendor, or nothing
 // but the owner notice when no deliverable address exists. The owner always gets a one line notice.
-
-const EMAIL_RE = /^[^@\s<>"]+@[^@\s<>"]+\.[A-Za-z]{2,}$/;
-const URL_COUNT_RE = /(https?:\/\/|www\.)[^\s]+/gi;
-const SPAM_RE = /\b(seo|backlinks?|guest posts?|link building|domain authority|crypto|bitcoin|btc|usdt|forex|nft|explainer videos?|promo(tional)? videos?|video ads?|animated videos?|first page (of|on) google|rank(ing)? (higher|on google|your (site|website))|web(site)? traffic|more traffic|increase (your )?traffic|lead generation|marketing services|web design services|virtual assistant|casino|loan offer)\b/i;
 
 // Same as sendMailResult, plus a Reply To of the couple (sendMailResult always replies to the owner inbox).
 async function sendReplyTo(to: string, replyTo: string, subject: string, text: string, html?: string) {
@@ -30,7 +27,6 @@ async function sendReplyTo(to: string, replyTo: string, subject: string, text: s
   } catch (e) { return { ok: false, status: 0, error: String(e) }; }
 }
 
-const clean = (s: unknown, max: number) => String(s ?? '').replace(/\r\n/g, '\n').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '').trim().slice(0, max);
 
 export const POST: APIRoute = async ({ request }) => {
   let body: Record<string, unknown> = {};
@@ -66,8 +62,7 @@ export const POST: APIRoute = async ({ request }) => {
     if (!Number.isInteger(guests) || guests < 1 || guests > 500) return json({ ok: false, error: 'Check the guest count.' }, 400);
   }
 
-  const urlCount = (message.match(URL_COUNT_RE) || []).length + (names.match(URL_COUNT_RE) || []).length;
-  const spam = urlCount > 2 || SPAM_RE.test(message) || SPAM_RE.test(names) || /https?:\/\//i.test(names);
+  const spam = looksLikeSpam(message, names);
 
   const secret = authSecret();
   let res: any;
@@ -79,13 +74,7 @@ export const POST: APIRoute = async ({ request }) => {
     return json({ ok: false, error: 'Something went wrong on our side. Please try again in a minute.' }, 500);
   }
   if (!res?.ok) {
-    const msg: Record<string, string> = {
-      vendor_not_found: 'This listing is no longer available.',
-      dup_vendor: 'You already sent this vendor a note today. Give them a day or two to reply.',
-      email_daily: 'You have sent five inquiries today. Please try again tomorrow.',
-      site_hourly: 'We are getting a lot of messages right now. Please try again in an hour.'
-    };
-    return json({ ok: false, error: msg[res?.error] || 'Something went wrong. Please try again.' }, res?.error === 'vendor_not_found' ? 404 : 429);
+    return json({ ok: false, error: SUBMIT_ERRORS[res?.error] || 'Something went wrong. Please try again.' }, res?.error === 'vendor_not_found' ? 404 : 429);
   }
   // Spam is stored with status spam and nobody is emailed; the couple sees the ordinary confirmation.
   if (res.status === 'spam') return json({ ok: true, mode: 'notice' });
