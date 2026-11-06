@@ -54,9 +54,11 @@ export function renderMonthlyReport(r: ReportRow, demand: VendorDemand | null = 
   const cv = n0(demand?.couple_visitors);
   if (demand && cv >= DEMAND_MIN) {
     const own = n0(demand.profile_views), days = n0(demand.days) || 30, rinq = n0(demand.region_inquiries);
-    const share = own > 0 ? `${own} of those visits were to your ${business} page` : `none of them opened your ${business} page yet`;
+    // The vendor's share comes from p2_pageviews while the month's stats below come from p2_events, so a zero share is
+    // only stated when the month also had no views; otherwise the two numbers would contradict each other.
+    const share = own > 0 ? `, and ${own} of those visits were to your ${business} page` : views === 0 ? `, and none of them opened your ${business} page yet` : '';
     const inq = rinq > 0 ? ` ${rinq} ${rinq === 1 ? 'inquiry' : 'inquiries'} went to ${where} vendors in that time.` : '';
-    parts.push(`In the last ${days} days, ${cv} couples looked at ${where} vendors on Colorado Elopement Guide, and ${share}.${inq}`);
+    parts.push(`In the last ${days} days, ${cv} couples looked at ${where} vendors on Colorado Elopement Guide${share}.${inq}`);
   }
 
   const action = nextAction({ has_photo: r.has_photo, has_price: null, description_len: r.description_chars, slug: r.slug });

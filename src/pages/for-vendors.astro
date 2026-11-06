@@ -128,6 +128,8 @@ const fmt = (n: number) => n.toLocaleString('en-US');
     </section>
   </div>
   <script is:inline define:vars={{ cap: FOUNDING_CAP }}>
+    // M4: an invitee arriving from a referral email (/for-vendors/?ref=<token>) keeps the token for the signup or claim form.
+    try { var ref = new URLSearchParams(location.search).get('ref') || ''; if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ref)) localStorage.setItem('ceg_ref', ref); } catch (_) {}
     fetch('https://yucgsuzveabsgntlmste.supabase.co/rest/v1/rpc/ceg_public_stats', { method: 'POST', headers: { apikey: 'sb_publishable_acsHsb9mrZ756aT12EgAPQ_GugWXmjM', Authorization: 'Bearer sb_publishable_acsHsb9mrZ756aT12EgAPQ_GugWXmjM', 'Content-Type': 'application/json' }, body: '{}' })
       .then(function(r){ return r.ok ? r.json() : null; }).then(function(s){
         if (!s || typeof s.founding_left !== 'number') return;

@@ -244,6 +244,8 @@ const slotTemplates = Object.fromEntries(Object.keys(CATEGORIES).flatMap(c => Ob
   <script is:inline define:vars={{ vlist, catNames, regNames, slotTemplates }}>
     const SB = 'https://yucgsuzveabsgntlmste.supabase.co/rest/v1/rpc/';
     const SBK = 'sb_publishable_acsHsb9mrZ756aT12EgAPQ_GugWXmjM';
+    // Referral token from an invitation link: ?ref= on this page wins, else the one /for-vendors or /claim stored.
+    const refToken = () => { const q = new URLSearchParams(location.search).get('ref') || ''; const ok = s => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s); if (ok(q)) { try { localStorage.setItem('ceg_ref', q); } catch (_) {} return q; } const st = localStorage.getItem('ceg_ref') || ''; return ok(st) ? st : ''; };
     const rpc = (fn, args) => fetch(SB + fn, { method:'POST', headers:{ apikey:SBK, Authorization:'Bearer '+SBK, 'Content-Type':'application/json' }, body: JSON.stringify(args) }).then(r => r.ok ? r.json() : null).catch(()=>null);
     const vtok = () => localStorage.getItem('ceg_vtoken');
     const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -277,14 +279,19 @@ const slotTemplates = Object.fromEntries(Object.keys(CATEGORIES).flatMap(c => Ob
     // One number a vendor can act on: couples who looked at vendors in their region this week, the week before, how many
     // saved this listing, inquiries to the region this month, then one action chosen from the listing's state.
     async function loadNear(){
+      try { await loadNearInner(); } catch (_) { /* the panel stays hidden when the numbers cannot be read */ }
+    }
+    async function loadNearInner(){
       if (!VD || !VD.verified) return;
       const v = VD.vendor;
       const [wk, mo] = await Promise.all([rpc('ceg_vendor_demand_me', { p_token: vtok(), p_days: 7 }), rpc('ceg_vendor_demand_me', { p_token: vtok(), p_days: 30 })]);
-      if (!wk) return;
+      if (!wk || typeof wk !== 'object') return;
       const region = v.sub_region && v.sub_region !== 'other-colorado' ? (regNames[v.sub_region] || '').replace(/&/g, 'and') : 'Colorado';
       const n = Number(wk.couple_visitors || 0), prev = Number(wk.prior_couple_visitors || 0);
       const saved = Number((mo || wk).saved_count || 0), rinq = Number((mo || wk).region_inquiries || 0), own = Number((mo || wk).profile_views || 0);
-      document.getElementById('vd-near-lead').innerHTML = `<span class="text-ink">${num(n)}</span> ${n === 1 ? 'couple' : 'couples'} looked at ${esc(region)} vendors in the last 7 days <span class="text-ink/50 text-lg">(${num(prev)} the week before)</span>.`;
+      document.getElementById('vd-near-lead').innerHTML = n > 0
+        ? `<span class="text-ink">${num(n)}</span> ${n === 1 ? 'couple' : 'couples'} looked at ${esc(region)} vendors in the last 7 days <span class="text-ink/50 text-lg">(${num(prev)} the week before)</span>.`
+        : `No couple visits to ${esc(region)} vendors in the last 7 days yet <span class="text-ink/50 text-lg">(${num(prev)} the week before)</span>.`;
       const bits = [];
       bits.push(own > 0 ? `${num(own)} of the last 30 days' couple visits were to your page.` : 'None of them opened your page in the last 30 days.');
       bits.push(saved > 0 ? `${num(saved)} ${saved === 1 ? 'couple' : 'couples'} saved your listing to their planner.` : 'No couple has saved your listing yet.');
@@ -616,7 +623,11 @@ const slotTemplates = Object.fromEntries(Object.keys(CATEGORIES).flatMap(c => Ob
         let res;
         if(mode==='signup'){
           const slug=document.getElementById('va-vendor').value;
+          // M4: a signup that started from a referral link (?ref= on /for-vendors, /claim or here) ties the listing to the
+          // referral first, so the verified signup that follows closes the referral as claimed.
+          if(slug && refToken()){ try{ await rpc('ceg_referral_attach',{p_ref:refToken(),p_slug:slug}); }catch(_){} }
           res=await rpc('ceg_vendor_signup',{p_email:email,p_password:pass,p_slug:slug});
+          if(res && res.token){ try{ localStorage.removeItem('ceg_ref'); }catch(_){} }
           if(res && res.token){ try{ fetch('/api/vendor-signup-notify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,vendor:res.vendor,verified:res.verified})}); }catch(_){} }
         } else {
           res=await rpc('ceg_vendor_login',{p_email:email,p_password:pass});

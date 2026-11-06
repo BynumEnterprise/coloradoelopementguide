@@ -12,47 +12,12 @@ const j = (o: unknown, s = 200) =>
 const esc = (s: string) =>
   String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
 
-// Sends the vendor a "your listing is claimed, here is your dashboard" email with a
-// one tap login link. Called by the daily reply-review task after a claim is confirmed.
-// Secret gated: caller must present the same CEG_AUTH_SECRET the site uses.
-// No Featured pitch here (owner directive 5c) and no bold anywhere in the HTML (owner email rules).
-// After the welcome, any inquiry that reached this listing before the account existed is sent in full.
-export const POST: APIRoute = async ({ request }) => {
-  const secretEnv = process.env.CEG_AUTH_SECRET ?? import.meta.env.CEG_AUTH_SECRET;
-  let body: any = {};
-  try { body = await request.json(); } catch { /* noop */ }
-  const vendorId = Number(body.vendor_id);
-  const secret = String(body.secret || '');
-  const emailOverride = body.email ? String(body.email) : null;
-
-  if (!secretEnv || secret !== secretEnv) return j({ error: 'unauthorized' }, 401);
-  if (!vendorId) return j({ error: 'vendor_id required' }, 400);
-
-  // Provision (idempotent) a verified vendor login and get its token.
-  const pr = await fetch(`${SB_URL}/rest/v1/rpc/ceg_vendor_provision`, {
-    method: 'POST',
-    headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ p_vendor_id: vendorId, p_email: emailOverride, p_secret: secret })
-  });
-  if (!pr.ok) { console.error('vendor-welcome provision failed', pr.status, await pr.text()); return j({ error: 'provision failed' }, 502); }
-  const prov = await pr.json();
-  if (!prov || prov.error) return j({ error: prov?.error || 'provision failed' }, 400);
-
-  const name: string = displayName(prov.name || '') || 'there';
-  const to: string = prov.email;
-  const link = `https://coloradoelopementguide.com/vd/${prov.token}`;
-
-  // S7: lead with the couples near this vendor. Region from the public view, counts from ceg_region_demand (30 days);
-  // below DEMAND_MIN, or on any fetch error, the sentence has no number.
-  let subRegion: string | null = null; let demand: RegionDemand | null = null;
-  try {
-    const vr = await fetch(`${SB_URL}/rest/v1/p2_vendors_public?slug=eq.${encodeURIComponent(String(prov.slug || ''))}&select=sub_region`, { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } });
-    const vrows = vr.ok ? await vr.json() : [];
-    subRegion = vrows?.[0]?.sub_region ?? null;
-    demand = await rpc<RegionDemand>('ceg_region_demand', { p_region: subRegion || 'colorado', p_days: 30 });
-  } catch { demand = null; }
-  const where = demandRegionLabel(subRegion);
-  const cv = Math.max(0, Math.floor(Number(demand?.couple_visitors) || 0));
+// S7 welcome copy. Exported so the reviewer harness can render it against real demand numbers. The couple line quotes the
+// regional count only from DEMAND_MIN up; below that (or when the fetch failed) it has no number.
+export function renderWelcome(p: { name: string; link: string; subRegion: string | null; demand: RegionDemand | null }) {
+  const name = p.name, link = p.link;
+  const where = demandRegionLabel(p.subRegion);
+  const cv = Math.max(0, Math.floor(Number(p.demand?.couple_visitors) || 0));
   const coupleLine = cv >= DEMAND_MIN
     ? `In the last 30 days, ${cv} couples looked at ${where} vendors on Colorado Elopement Guide. Your ${name} listing is now one they can send an inquiry through, and the inquiry comes straight to this address.`
     : `Couples planning a ${where} elopement browse vendors on Colorado Elopement Guide, and your ${name} listing is now one they can send an inquiry through. The inquiry comes straight to this address.`;
@@ -105,6 +70,51 @@ ${POSTAL_ADDRESS}`;
     <p style="font-size:15px;line-height:1.6;color:#3a3733;margin:16px 0 0;">Ryan<br/>Colorado Elopement Guide<br/><span style="font-size:13px;color:#6b665e;">${esc(POSTAL_ADDRESS)}</span></p>
   </div>
 </body></html>`;
+
+  return { subject, text, html };
+}
+
+// Sends the vendor a "your listing is claimed, here is your dashboard" email with a
+// one tap login link. Called by the daily reply-review task after a claim is confirmed.
+// Secret gated: caller must present the same CEG_AUTH_SECRET the site uses.
+// No Featured pitch here (owner directive 5c) and no bold anywhere in the HTML (owner email rules).
+// After the welcome, any inquiry that reached this listing before the account existed is sent in full.
+export const POST: APIRoute = async ({ request }) => {
+  const secretEnv = process.env.CEG_AUTH_SECRET ?? import.meta.env.CEG_AUTH_SECRET;
+  let body: any = {};
+  try { body = await request.json(); } catch { /* noop */ }
+  const vendorId = Number(body.vendor_id);
+  const secret = String(body.secret || '');
+  const emailOverride = body.email ? String(body.email) : null;
+
+  if (!secretEnv || secret !== secretEnv) return j({ error: 'unauthorized' }, 401);
+  if (!vendorId) return j({ error: 'vendor_id required' }, 400);
+
+  // Provision (idempotent) a verified vendor login and get its token.
+  const pr = await fetch(`${SB_URL}/rest/v1/rpc/ceg_vendor_provision`, {
+    method: 'POST',
+    headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ p_vendor_id: vendorId, p_email: emailOverride, p_secret: secret })
+  });
+  if (!pr.ok) { console.error('vendor-welcome provision failed', pr.status, await pr.text()); return j({ error: 'provision failed' }, 502); }
+  const prov = await pr.json();
+  if (!prov || prov.error) return j({ error: prov?.error || 'provision failed' }, 400);
+
+  const name: string = displayName(prov.name || '') || 'there';
+  const to: string = prov.email;
+  const link = `https://coloradoelopementguide.com/vd/${prov.token}`;
+
+  // S7: lead with the couples near this vendor. Region from the public view, counts from ceg_region_demand (30 days);
+  // below DEMAND_MIN, or on any fetch error, the sentence has no number.
+  let subRegion: string | null = null; let demand: RegionDemand | null = null;
+  try {
+    const vr = await fetch(`${SB_URL}/rest/v1/p2_vendors_public?slug=eq.${encodeURIComponent(String(prov.slug || ''))}&select=sub_region`, { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } });
+    const vrows = vr.ok ? await vr.json() : [];
+    subRegion = vrows?.[0]?.sub_region ?? null;
+    demand = await rpc<RegionDemand>('ceg_region_demand', { p_region: subRegion || 'colorado', p_days: 30 });
+  } catch { demand = null; }
+  const mail = renderWelcome({ name, link, subRegion, demand });
+  const { subject, text, html } = mail;
 
   // Same gate as every other automated email: dashes, AI tells, exclamation marks, bold, our legal name.
   try {

@@ -45,8 +45,10 @@ const { v } = Astro.props;
   <script is:inline>
     (function () {
       // Referral token from the invitation email rides along with the claim so /api/claim can tie the listing to it.
+      var isRef = function (s) { return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s); };
       var ref = new URLSearchParams(location.search).get('ref') || '';
-      if (/^[0-9a-f-]{36}$/i.test(ref)) { var i = document.getElementById('claim-ref'); if (i) i.value = ref; }
+      try { if (isRef(ref)) localStorage.setItem('ceg_ref', ref); else ref = localStorage.getItem('ceg_ref') || ''; } catch (_) {}
+      if (isRef(ref)) { var i = document.getElementById('claim-ref'); if (i) i.value = ref; }
       var el = document.getElementById('claim-demand'); if (!el) return;
       var region = el.getAttribute('data-region') || 'colorado', label = el.getAttribute('data-label') || 'Colorado';
       if (region === 'other-colorado') label = 'Colorado';
