@@ -14,7 +14,7 @@ facts:
   - label: "RMNP Winter Sites"
     value: "Bear Lake opens for weekday weddings; Sprague Lake allows 30"
   - label: "Independence Pass"
-    value: "Closes around Nov. 7; reopens before Memorial Day"
+    value: "Typically closes late October or early November; reopens around Memorial Day weekend"
   - label: "Denver Sunset"
     value: "About 4:39 p.m. on Dec. 21"
 sources:
@@ -22,8 +22,8 @@ sources:
     url: "https://www.nps.gov/romo/planyourvisit/weddings.htm"
   - label: "Rocky Mountain National Park: Directions and Transportation"
     url: "https://www.nps.gov/romo/planyourvisit/directions.htm"
-  - label: "CDOT: Seasonal Closures"
-    url: "https://www.codot.gov/travel/winter-driving/seasonalclosures"
+  - label: "CDOT: CO 82 at Independence Pass closes for the winter season (Nov. 3, 2026)"
+    url: "https://www.codot.gov/news/2026/october-2026-news/co82-independencepass-close-for-winter"
   - label: "CDOT: Passenger Vehicle Traction and Chain Laws"
     url: "https://www.codot.gov/travel/winter-driving/tractionlaw"
   - label: "White River National Forest: Sapphire Point Overlook"
@@ -41,14 +41,13 @@ Start here, because a closed road can erase a location from your list.
 | Road or area | Winter status | Source |
 | --- | --- | --- |
 | Trail Ridge Road (U.S. 34 in Rocky Mountain National Park) | Closed from approximately mid October through late May | Park Service |
-| Independence Pass (CO 82 east of Aspen) | Closes around Nov. 7; typically reopens the Thursday before Memorial Day | CDOT |
-| Kebler Pass (near Crested Butte) | Typically closed from November to May | CDOT, maintained by Gunnison County |
+| Independence Pass (CO 82 east of Aspen) | Typically closes late October or early November (closed Nov. 3 in 2026); reopens around Memorial Day weekend, weather permitting | CDOT |
 | Maroon Creek Road to the Maroon Bells | Open to cars from May 15 to early November | Maroon Bells reservation site |
 | Loveland Pass (U.S. 6) | Open in winter, but closes in storms and for avalanche work | CDOT |
 
-All of these dates move with the weather. CDOT says plainly that closing and opening dates are subject to change, so check [COtrip.org](https://www.cotrip.org) the morning of your ceremony.
+All of these dates move with the weather. CDOT says the pass reopens weather permitting, so check [COtrip.org](https://www.cotrip.org) the morning of your ceremony.
 
-**What it means in practice.** With Independence Pass closed, Aspen from Denver means westbound I-70 to Glenwood Springs and then south on CO 82, which CDOT says adds a few hours. In Rocky Mountain National Park, the high tundra is off limits by car, but the east side stays open. At the Maroon Bells, the road closes to cars once winter sets in; a winter ceremony there means a long trip over snow, so read our [Maroon Bells permit guide](/resources/maroon-bells-elopement-permit) and call the Aspen Sopris Ranger District before you plan one.
+**What it means in practice.** With Independence Pass closed, Aspen from Denver means westbound I-70 to Glenwood Springs and then south on CO 82, the route CDOT directs drivers to during the closure. In Rocky Mountain National Park, the high tundra is off limits by car, but the east side stays open. At the Maroon Bells, the road closes to cars once winter sets in; a winter ceremony there means a long trip over snow, so read our [Maroon Bells permit guide](/resources/maroon-bells-elopement-permit) and call the Aspen Sopris Ranger District before you plan one.
 
 Loveland Pass deserves a note. It stays open through winter and is a favorite for snowy Continental Divide photos, but it is also the route for hazardous materials trucks that are not allowed through the Eisenhower Johnson tunnels, and CDOT [escorts those trucks through the tunnel](https://www.codot.gov/news/2025/june/loveland-pass-us6-extended-closure-due-to-mountain-slide) only when the pass is closed. Expect truck traffic, narrow pullouts and storm closures, and have a backup spot lower down.
 

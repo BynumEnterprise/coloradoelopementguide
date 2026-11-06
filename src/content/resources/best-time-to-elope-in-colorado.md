@@ -23,8 +23,8 @@ sources:
     url: "https://www.nps.gov/romo/learn/news/trail-ridge-road-is-closed-to-through-travel-for-the-winter-2025-2026-season.htm"
   - label: "Rocky Mountain National Park: Timed Entry Permit System"
     url: "https://www.nps.gov/romo/planyourvisit/timed-entry-permit-system.htm"
-  - label: "CDOT: Seasonal Closures"
-    url: "https://www.codot.gov/travel/winter-driving/seasonalclosures"
+  - label: "CDOT: CO 82 at Independence Pass closes for the winter season (Nov. 3, 2026)"
+    url: "https://www.codot.gov/news/2026/october-2026-news/co82-independencepass-close-for-winter"
   - label: "CDOT: Fall travelers plan ahead for an earlier leaf peeping season (Sept. 8, 2026)"
     url: "https://www.codot.gov/news/2026/september-2026-news/fall-travelers-plan-ahead-for-earlier-leaf-peeping-season"
   - label: "Rocky Mountain National Park: Lightning Safety in the High Country"
@@ -45,13 +45,13 @@ The table is for the high country, roughly 8,000 to 12,000 feet. Denver and the 
 | February | Deep snow, more sun | Ski town elopements, lodge venues | Holiday weekend crowds |
 | March | Heaviest snow in many areas | Ski season ceremonies | Spring storms, road closures |
 | April | Snow up high, melt below | Quiet dates, lower valleys | Mud season; resorts close |
-| May | Melting, muddy trails | Desert and foothills; late month high roads | Trail Ridge and Independence Pass open late May |
+| May | Melting, muddy trails | Desert and foothills; late month high roads | Trail Ridge and Independence Pass typically open around Memorial Day weekend |
 | June | Green, long days, snow lingers up high | Lakes, valleys, longest daylight | Snow on high trails; first storms |
 | July | Warmest, peak wildflowers | Alpine meadows, high roads | Afternoon thunderstorms most days |
 | August | Warm, flowers fading late | High lakes, early morning hikes | Afternoon thunderstorms; smoke some years |
 | September | Cool, clear, aspens turning | Fall color, fewer storms | Weekend crowds; early snow up high |
 | October | Cold mornings, first snow | Foothill aspens, quiet trails | Trail Ridge normally closes mid October |
-| November | Early winter | Cheap dates, early ski openings | Kebler, Cottonwood and Independence Pass closed |
+| November | Early winter | Cheap dates, early ski openings | Independence Pass typically closed by early November |
 | December | Snow, holiday lights | Winter ceremonies, ski towns | Shortest days; holiday pricing |
 
 ## When the high roads open
@@ -59,8 +59,7 @@ The table is for the high country, roughly 8,000 to 12,000 feet. Denver and the 
 Many of the views couples see in photos sit on roads that close for half the year.
 
 - **Trail Ridge Road** in Rocky Mountain National Park normally closes in mid October and opens to through travel during the last week of May, weather permitting, according to the Park Service. In 2025 it opened May 30 and closed for winter on Nov. 14. The recorded status line is (970) 586-1222.
-- **Independence Pass** on CO 82 closes around Nov. 7 and typically opens the Thursday before Memorial Day, per CDOT.
-- **Kebler Pass** and **Cottonwood Pass**, both maintained by Gunnison County, are typically closed November to May, per CDOT.
+- **Independence Pass** on CO 82 typically closes in late October or early November and reopens around Memorial Day weekend, weather permitting, per CDOT. Closing dates from 2020 through 2025 ranged from Oct. 28 to Nov. 17, and in 2026 CDOT closed it for the season on Nov. 3.
 
 If your plan depends on one of these roads, a date from late June through September is the safe window. Late May and October are possible but can change with one storm. In Rocky Mountain National Park you also need a timed entry reservation from 9 a.m. to 2 p.m. during the summer season; in 2026 that ran May 22 through Oct. 12. See our [Rocky Mountain National Park wedding permit guide](/resources/rocky-mountain-national-park-wedding-permit) for the ceremony permit itself.
 
