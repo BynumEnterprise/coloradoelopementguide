@@ -197,20 +197,19 @@ export function buildDigest(d: any, run: Record<string, any>, date: string): str
   L.push(`Canary: ${!c ? 'not run' : c.error ? `error, ${String(c.error).slice(0, 80)}` : c.pass ? `pass, ${c.checks?.length ?? 0} of ${c.checks?.length ?? 0} checks` : `FAILED on ${failed.join(', ')}`}`);
   L.push(`Maps refresh ${run.ratings_updated ?? 0} ratings, ${run.images_updated ?? 0} photos. Deploy ${run.deploy ? 'fired' : 'not fired'}. Pinterest ${run.pinterest || 'skipped'}`);
   L.push('');
-  L.push('THIS WEEK');
+  L.push('WHAT THE AUTOMATION DOES NEXT (nothing here is for you to do)');
   const todo: string[] = [];
-  if (c && !c.pass) todo.push('Fix the canary first. A broken inquiry or checkout path costs more than anything else on this list.');
-  if ((w.inquiries ?? 0) > 0 && w.inquiries_replied != null && w.inquiries_replied < w.inquiries) todo.push(`${w.inquiries - w.inquiries_replied} inquiries have no vendor reply yet. Nudge those vendors from the admin.`);
-  if ((se.featured_checkout_click ?? 0) > (w.featured ?? 0)) todo.push(`${se.featured_checkout_click} Featured checkout clicks did not convert. Send a personal note from the Sales tab.`);
-  if ((w.featured ?? 0) === 0 && (w.vendor_accounts_verified_total ?? 0) > 0 && (w.pitches_7d ?? 0) === 0) todo.push(`No Featured customers yet and no pitches this week. Open the Sales tab and send the founding offer to the ${Math.min(5, w.vendor_accounts_verified_total)} claimed vendors with the most views.`);
+  if (c && !c.pass) todo.push('The canary failed. The Sunday self audit and the next Claude session treat it as the first fix.');
+  if ((w.inquiries ?? 0) > 0 && w.inquiries_replied != null && w.inquiries_replied < w.inquiries) todo.push(`${w.inquiries - w.inquiries_replied} inquiries have no vendor reply yet. The daily cron sends those vendors a reply reminder.`);
+  if ((se.featured_checkout_click ?? 0) > (w.featured ?? 0)) todo.push(`${se.featured_checkout_click} Featured checkout clicks did not convert. Logged for the week 6 sales work.`);
   if ((hasCouple ? (w.couple_pageviews_7d ?? 0) : (w.pageviews ?? 0)) < 500) {
     const best = tp.find(p => p.path !== '/' && p.path !== '/thanks');
-    todo.push(best ? `Traffic is still small. ${prettyPath(best.path)} leads; link to it from two related guides and pitch it to one link prospect.` : 'Traffic is still small. Push the newest guides to link prospects and Pinterest.');
+    todo.push(best ? `Traffic is still small. ${prettyPath(best.path)} leads; the content sessions link to it from related guides.` : 'Traffic is still small. The content sessions keep publishing three guides a week.');
   }
-  if ((lp.sent_7d ?? 0) > 0 && (lp.replied ?? 0) === 0) todo.push('No link replies yet. The 10 day follow up goes out once; then move on.');
-  if ((w.contactable_left ?? 0) < 25) todo.push(`Only ${w.contactable_left ?? 0} vendors are ready to invite. Run contact discovery or add supply.`);
-  if ((w.claims ?? 0) > 0) todo.push(`${w.claims} new claims. Check each new account finished its profile and photos.`);
-  todo.push('Check the admin Traffic tab for what moved.');
+  if ((lp.sent_7d ?? 0) > 0 && (lp.replied ?? 0) === 0) todo.push('No link replies yet. The single 10 day follow up goes out on its own.');
+  if ((w.contactable_left ?? 0) < 25) todo.push(`Only ${w.contactable_left ?? 0} vendors are ready to invite. Contact discovery runs daily and the research task writes paragraphs each morning.`);
+  if ((w.claims ?? 0) > 0) todo.push(`${w.claims} new claims. The reply review task confirms them and the onboarding emails take it from there.`);
+  todo.push('Everything above runs on its own. Full detail is on the admin Traffic tab.');
   todo.slice(0, 3).forEach((t, i) => L.push(`${i + 1}. ${t}`));
   L.push('');
   L.push(`Admin: ${SITE}/admin`);

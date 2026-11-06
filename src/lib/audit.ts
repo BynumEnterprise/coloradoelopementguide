@@ -64,7 +64,7 @@ function render(d: AuditData, x: AuditExtras, date: string, safe: boolean): { te
   // 8 open claims: flag on claims from the last 14 days still open after 48 hours; p2_claims has no closed state, so the
   // older unverified backlog is printed as context rather than flagged every week.
   const recent = d.claims_open_48h_recent ?? d.claims_open_48h;
-  line(recent === 0, `Claims open more than 48 hours: ${recent} from the last 14 days, ${d.claims_open_48h} in total${d.claims_open_48h_vendor_claimed ? `, of which ${d.claims_open_48h_vendor_claimed} are for vendors already marked claimed (verify or close them)` : ''}`);
+  line(recent === 0, `Claims open more than 48 hours: ${recent} from the last 14 days, ${d.claims_open_48h} in total${d.claims_open_48h_vendor_claimed ? `, of which ${d.claims_open_48h_vendor_claimed} are for vendors already marked claimed (closed automatically on the next run)` : ''}`);
   // 9 orphan sessions
   const os = d.orphan_sessions || [];
   line(os.length === 0, `Orphan sessions: ${os.length}${os.length ? ` (rows ${os.map(o => o.id).join(', ')})` : ''}`);

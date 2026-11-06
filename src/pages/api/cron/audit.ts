@@ -42,6 +42,8 @@ export const GET: APIRoute = async ({ request }) => {
   const started = Date.now();
   const run: Record<string, unknown> = { ok: true, ran_at: new Date().toISOString(), dry };
   try {
+    // Settled claims (vendor already has a verified account) are closed first, so nothing waits on a person.
+    if (!dry) { try { await rpc('ceg_cron_close_settled_claims', { p_secret: secret }); } catch { /* noop */ } }
     const data = await rpc<AuditData>('ceg_cron_self_audit', { p_secret: secret });
     const rs = await resendSends7d();
     const date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/Denver' });
