@@ -34,6 +34,8 @@ sources:
     url: "https://www.nps.gov/romo/learn/news/trail-ridge-road-opens-for-the-2025-season-timed-entry-reservations-required-for-trail-ridge-road-9-am-to-2-pm.htm"
   - label: "Rocky Mountain National Park: Trail Ridge Road"
     url: "https://www.nps.gov/romo/planyourvisit/trail_ridge_road.htm"
+  - label: "RMNP news release, November 14, 2025: Trail Ridge Road closed for the winter (Many Parks Curve gate)"
+    url: "https://www.nps.gov/romo/learn/news/trail-ridge-road-is-closed-to-through-travel-for-the-winter-2025-2026-season.htm"
   - label: "Larimer County Natural Resources: Group Pavilions (Hermit Park)"
     url: "https://www.larimer.gov/naturalresources/reservations/group-pavilions"
   - label: "Arapaho and Roosevelt National Forests: Events and Weddings"
@@ -41,7 +43,7 @@ sources:
   - label: "Town of Estes Park Events Complex: Mrs. Walsh's Garden"
     url: "https://eventsinestes.com/mrs-walshs-garden/"
   - label: "YMCA of the Rockies: Weddings"
-    url: "https://ymcarockies.org/weddings"
+    url: "https://www.ymcarockies.org/groups/weddings"
 nearby:
   title: "Estes Park"
   italic: "vendors"
@@ -55,15 +57,7 @@ Our [Estes Park region guide](/guides/estes-park) tells you why to elope here an
 
 ## The Larimer County license
 
-Any Colorado county clerk can issue your license and it works statewide, but the Estes Park office is five minutes from most rentals. Larimer County's terms: both of you appear with valid photo ID (driver's license, passport, state ID, military ID or green card; birth certificates and expired licenses are not accepted), the fee is $30, there is no waiting period, blood test or residency requirement, and you may solemnize your own marriage under C.R.S. 14-2-109 with no officiant and no witnesses. Fill in the online application first and bring the transaction number.
-
-| Office | Address | Service | Hours |
-| --- | --- | --- | --- |
-| Estes Park | 1601 Brodie Ave. | Appointment only | 8 a.m. to 4:30 p.m. weekdays |
-| Fort Collins | 200 W. Oak St., 1st floor | Walk ins welcome, appointments encouraged | 8 a.m. to 5 p.m. weekdays |
-| Loveland | 200 Peridot Ave., 1st floor | Appointment only | 8 a.m. to 5 p.m. weekdays |
-
-Estes Park and Loveland are vehicle licensing branches, and the county warns of longer waits on the first and last days of a month. The license must be used within 35 days and the signed certificate returned within 63 days of the ceremony, by anyone, to any of the three offices; late returns cost $20 plus $5 a day up to $50. Certified copies are $1.25 each. If one of you cannot appear, the county accepts a notarized absentee affidavit with a copy of that person's ID. Full detail is on our [Larimer County license page](/resources/larimer-county-marriage-license).
+Any Colorado county clerk can issue your license and it works statewide, but the Estes Park office at 1601 Brodie Ave. is five minutes from most rentals. It is appointment only, open 8 a.m. to 4:30 p.m. on weekdays, and it shares a counter with vehicle licensing, so the county warns of longer waits on the first and last days of a month. Both of you appear with photo ID, the fee is $30, there is no waiting period, and you may solemnize your own marriage under C.R.S. 14-2-109 with no officiant and no witnesses. Fill in the online application first and bring the transaction number. The license must be used within 35 days and the signed certificate returned within 63 days; certified copies are $1.25 and are ready within three days of a return to the Estes Park office. The Fort Collins and Loveland offices, the ID list and the absentee affidavit are on our [Larimer County license page](/resources/larimer-county-marriage-license).
 
 ## Where the ceremony can happen
 
@@ -97,19 +91,19 @@ The table below uses NOAA's 1991 to 2020 climate normals for the Estes Park 3 SS
 | November | 44 | 24 | 11.0 | 0.76 |
 | December | 36 | 16 | 12.7 | 0.36 |
 
-What the record says, plainly. March and April are the snowiest months, not December, which surprises couples planning a spring date. May is the wettest month and still averages nearly ten inches of snow. June through August are the only months with no normal snowfall, and the summer precipitation arrives mostly as afternoon thunderstorms, which is why every experienced Estes Park photographer pushes for sunrise. September has a normal low of 39 and almost no snow, which is why it fills the park's permit calendar first. October's normal low drops to 30 and the first real snow returns. The winter months are dry and cold, with highs in the mid to upper 30s and lows in the teens, and far more open permit dates.
+What the record says, plainly. March and April are the snowiest months, not December, which surprises couples planning a spring date. May is the wettest month and still averages nearly ten inches of snow. June through August are the only months with no normal snowfall, and the summer precipitation arrives mostly as afternoon thunderstorms, which is why every experienced Estes Park photographer pushes for sunrise. September has a normal low of 39 and almost no snow, and it was one of the months the park reported full for 2026. October's normal low drops to 30 and the first real snow returns. The winter months are dry and cold, with highs in the mid to upper 30s and lows in the teens, and far more open permit dates.
 
 ## The elk rut and the fall calendar
 
-Elk bugle in the meadows from early September into October, and the park manages it with a closure that matters for ceremonies. From September 1 through October 31 the meadows in Horseshoe Park, Moraine Park, Upper Beaver Meadows, Harbison Meadow and Holzwarth Meadow are closed to all foot travel off established roads and trails from 5 p.m. to 10 a.m. daily. Upper Beaver Meadows is one of the thirteen ceremony sites, so a fall sunrise ceremony there stays on the road and trail footprint, and an evening ceremony in a fall meadow is not an option. Stay at least 75 feet from elk; elk calling and spotlighting are prohibited. Moraine Park at dusk from the road is the show.
+Elk bugle in the meadows from early September into October, and the park manages it with a closure that matters for ceremonies. From September 1 through October 31 the meadows in Horseshoe Park, Moraine Park, Upper Beaver Meadows, Harbison Meadow and Holzwarth Meadow are closed to all foot travel off established roads and trails from 5 p.m. to 10 a.m. daily. Upper Beaver Meadows is one of the thirteen ceremony sites and a sunrise window there falls inside the closure hours, so ask the permit office how the site is handled in September and October before you request it, and do not plan an evening ceremony in any of these meadows. Stay at least 75 feet from elk; elk calling and spotlighting are prohibited. Moraine Park at dusk from the road is the show.
 
 ## Trail Ridge Road
 
-Trail Ridge Road crosses the park between Estes Park and Grand Lake at up to 12,183 feet. The park says it historically opens in late May; it opened May 31 in 2024 and May 30 in 2025, with the earliest opening on record May 7, 2002 and the latest June 26, 1943. It closed for the season on October 18 in 2024. Below Many Parks Curve the road stays open all winter, so 3M Curve, Sprague Lake, Bear Lake and Lily Lake are reachable in any month, while tundra portraits are a June to early October idea. The park's recorded status line is 970 586 1222 and the tundra runs 20 to 30 degrees colder than town.
+Trail Ridge Road crosses the park between Estes Park and Grand Lake at up to 12,183 feet. The park says it historically opens in late May; it opened May 31 in 2024 and May 30 in 2025, with the earliest opening on record May 7, 2002 and the latest June 26, 1943. It closed for the season on October 18 in 2024 and November 14 in 2025, at the Many Parks Curve gate. Below Many Parks Curve the road stays open all winter, so 3M Curve, Sprague Lake, Bear Lake and Lily Lake are reachable in any month, while tundra portraits are a June to early October idea. The park's recorded status line is 970 586 1222 and the tundra runs 20 to 30 degrees colder than town.
 
 ## Where to stay
 
-Four zones. Downtown and the Fall River corridor put you five minutes from the Beaver Meadows and Fall River entrances and the Brodie Avenue clerk. Highway 7 toward Allenspark is closest to Lily Lake and Wild Basin and quieter. Tunnel Road and the YMCA campus sit against the park boundary and suit a group under one roof. Lyons and Loveland, down the canyons, cost less and add 45 to 60 minutes each way, fine for a license run and painful before a 5 a.m. call. Lodging estimates are on the [2027 cost page](/resources/colorado-elopement-cost-2027).
+Downtown and the Fall River corridor put you five minutes from the Beaver Meadows and Fall River entrances and the Brodie Avenue clerk, while Highway 7 toward Allenspark is closest to Lily Lake and Wild Basin. The [Estes Park region guide](/guides/estes-park) compares the lodging zones and the [2027 cost page](/resources/colorado-elopement-cost-2027) carries the nightly estimates.
 
 ## A two day timeline that works
 

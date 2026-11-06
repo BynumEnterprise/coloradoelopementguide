@@ -39,9 +39,11 @@ sources:
   - label: "Town of Estes Park: Town maintained parks"
     url: "https://estespark.colorado.gov/townparks"
   - label: "YMCA of the Rockies: Weddings"
-    url: "https://ymcarockies.org/weddings"
+    url: "https://www.ymcarockies.org/groups/weddings"
   - label: "RMNP news release: Trail Ridge Road opens for the 2025 season (open and close dates)"
     url: "https://www.nps.gov/romo/learn/news/trail-ridge-road-opens-for-the-2025-season-timed-entry-reservations-required-for-trail-ridge-road-9-am-to-2-pm.htm"
+  - label: "RMNP news release, November 14, 2025: Trail Ridge Road closed for the winter"
+    url: "https://www.nps.gov/romo/learn/news/trail-ridge-road-is-closed-to-through-travel-for-the-winter-2025-2026-season.htm"
 ---
 
 Rocky Mountain National Park publishes exactly how many weddings it will permit: 60 ceremonies a month from May through October, 40 a month from November through April, no more than two a day at any one site and six a day park wide. Applications open one year ahead of the wedding month and are reviewed in the order received. On November 5, 2026 the park's wedding page still said all dates for May, June, August, September and October 2026 were fully booked. If your month is gone, this page is the plan B. Every fee and rule below comes from the office that sets it.
@@ -68,11 +70,11 @@ Two constraints. The property is open March 1 through December 20, so January an
 
 The Arapaho and Roosevelt National Forests wrap around the park on the east and south, and their rules are the most permissive near Estes Park. The forest's events page sets the test: a gathering needs a permit if it is 75 or more people, if it is commercial, if it uses props of any kind (arches, chairs, tables, tents, lighting), or if it is in a wilderness or the Arapaho National Recreation Area. A ceremony with no props on an existing trail or pullout needs nothing. Weddings are not allowed along Highway 5 or at developed sites on Mount Blue Sky. A permit, when needed, takes six months to a year.
 
-Practical spots are along Colorado 7 south of Lily Lake toward Allenspark and on the Peak to Peak Highway, where pullouts face Longs Peak and Mount Meeker. Your photographer may need the forest's photography authorization; most Estes Park photographers already hold one. Ranger district contacts are in our [national forest and BLM guide](/resources/national-forest-and-blm-elopements).
+Practical spots are along Colorado 7 south of Lily Lake toward Allenspark and on the Peak to Peak Highway, where pullouts face Longs Peak and Mount Meeker. Your photographer may need the forest's photography authorization, so ask whether they hold one. Ranger district contacts are in our [national forest and BLM guide](/resources/national-forest-and-blm-elopements).
 
 ## Town of Estes Park parks and venues
 
-The Town of Estes Park rents its spaces through the Estes Park Events Complex (events@estes.org, 970 577 3900). Mrs. Walsh's Garden, a fenced botanic garden at the west end of Elkhorn Avenue, is the one the town describes as a wedding ceremony setting: a reception area inside the gate, a stream side path, benches, and parking and restrooms across the street at Performance Park. It is open Memorial Day through September 30 with no winter rentals. George Hix Riverside Plaza, Performance Park, Bond Park and the O'Connor Pavilion are also rentable. The town does not publish rental prices; you submit its venue request form or event permit application and it quotes from there, so allow time for that exchange.
+The Town of Estes Park rents its spaces through the Estes Park Events Complex (events@estes.org, 970 577 3900). Mrs. Walsh's Garden, a fenced botanic garden at the west end of Elkhorn Avenue, is the one the town describes as a wedding ceremony setting: a reception area inside the gate, a stream side path, benches, and parking and restrooms across the street at Performance Park. It is open Memorial Day through September 30 with no winter rentals. George Hix Riverside Plaza, Performance Park and the O'Connor Pavilion are also rentable. The town does not publish rental prices; you submit its venue request form or event permit application and it quotes from there, so allow time for that exchange.
 
 Lake Estes belongs to the Estes Valley Recreation and Park District rather than the town; we could not verify a published event fee there, so ask the district directly.
 
@@ -95,7 +97,7 @@ Estes Park has a deep list of lodges, ranches and small venues that host a cerem
 | July | 60 cap, not listed as full for 2026 | Try the park first, west side second | Peak crowds, timed entry in effect |
 | August | 60 cap, 2026 was full | Hermit Park; national forest; YMCA | Wildflowers still up high, storms most afternoons |
 | September | 60 cap, fills first | Hermit Park 24 months out; forest pullouts on Colorado 7 | Aspens turn late in the month, elk rut closes park meadows 5 p.m. to 10 a.m. |
-| October | 60 cap, fills first | Hermit Park through December 20; YMCA | Trail Ridge closed for the season on October 18 in 2024 |
+| October | 60 cap, fills first | Hermit Park through December 20; YMCA | Trail Ridge closed for the season on October 18 in 2024 and November 14 in 2025 |
 | November and December | 40 cap, usually open | RMNP itself, then Hermit Park to December 20 | Town garden closed after September 30 |
 
 In the months the park is realistically full, Hermit Park is the public land answer for a group, the national forest is the answer for two people and no props, and YMCA or a private venue is the answer for chairs, an arch and dinner in one place. In the months the park has room, apply to the park and hold the others as backups.
