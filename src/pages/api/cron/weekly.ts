@@ -169,8 +169,8 @@ export function buildDigest(d: any, run: Record<string, any>, date: string): str
     const c = gw.days ? gw.clicks : g.clicks, im = gw.days ? gw.impressions : g.impressions;
     L.push(`Search Console: ${c} clicks, ${im} impressions last week${gw.days && gw.prev_impressions ? ` (prior ${gw.prev_clicks} clicks, ${gw.prev_impressions} impressions)` : ''}`);
     const tq = (gw.top_queries || []) as { q: string; clicks: number; impressions: number }[];
-    if (tq.length) L.push(`Top queries: ${tq.slice(0, 5).map(q => `${q.q} ${q.clicks}/${q.impressions}`).join('; ')}`);
-  }
+    if (tq.length) L.push(`Top queries: ${tq.slice(0, 5).map(q => `${String(q.q).replace(/[!*]/g, "")} ${q.clicks}/${q.impressions}`).join('; ')}`);
+  } else L.push('Search Console: connected, no week imported yet');
   L.push('');
   L.push('COUPLES');
   // Vendor inquiries only (vendor_id not null). Contact form rows live in p2_inquiries too, with vendor_id null; once
