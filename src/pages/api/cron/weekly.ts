@@ -7,6 +7,7 @@ import { IMG } from '../../../lib/assets';
 import { displayName } from '../../../lib/outreach';
 import { runMonthlyReports } from '../../../lib/vendor-report';
 import { runCanary } from '../../../lib/canary';
+import { gscEnv, gscAccessToken, gscFetchWeek, gscWindow } from '../../../lib/gsc';
 
 // Weekly P2 automation (Vercel cron, Monday 14:00 UTC):
 //   1. release up to 40 queued vendors (balanced across regions, junk names excluded)
@@ -15,8 +16,9 @@ import { runCanary } from '../../../lib/canary';
 //   4. email the owner the KPI digest
 //   5. create 3 Pinterest pins when PINTEREST_ACCESS_TOKEN and PINTEREST_BOARD_ID are set
 //   6. monthly_reports: first Monday of the month (Denver), the previous month's stats email to each verified vendor account
+//   8. gsc: Search Console import (src/lib/gsc.ts) when GSC_SA_JSON is set; rows to p2_gsc_daily, totals to fleet.site_kpis and the digest
 //   7. canary: money path canary against the hidden synthetic vendor (src/lib/canary.ts); alerts the owner on failure
-// Flags for manual runs: ?dry=1 (release count 0, no sends, no pins), ?release=N, ?only=monthly_reports, ?only=canary or ?only=digest (that stage alone; digest also runs the canary so it can report it).
+// Flags for manual runs: ?dry=1 (release count 0, no sends, no pins), ?release=N, ?only=monthly_reports, ?only=canary, ?only=gsc or ?only=digest (that stage alone; digest also runs the canary so it can report it).
 
 const RELEASE_N = 40;
 const DASHES = /[\-‐‑‒–—―]/g;
@@ -112,6 +114,23 @@ const pct = (a: number, b: number) => (b > 0 ? `${a >= b ? 'up' : 'down'} ${Math
 const VENDOR_SIDE = /^\/(claim|vendor-dashboard|vd|lt|for-vendors|featured|admin|api|unsub|unsubscribe)(\/|$|\?)/;
 const prettyPath = (p: string) => (p === '/' ? 'home page' : p.replace(/\/$/, '').replace(/^\/(resources|venues|vendor|local|category|guides|region)\//, '').replace(/[\/-]+/g, ' ').trim() || p);
 
+// 8. Search Console import. Returns what the digest needs; {skipped} when the service account is not configured.
+async function runGsc(secret: string, dry: boolean): Promise<Record<string, any>> {
+  const env = gscEnv();
+  if (!env.sa) return { skipped: env.error ? `GSC_SA_JSON invalid: ${env.error}` : 'no GSC_SA_JSON' };
+  const win = gscWindow();
+  const token = await gscAccessToken(env.sa);
+  const rows = await gscFetchWeek(token, env.site, win);
+  const pageRows = rows.filter(r => r.dimension === 'page');
+  const clicks = pageRows.reduce((a, r) => a + r.clicks, 0), impressions = pageRows.reduce((a, r) => a + r.impressions, 0);
+  const out: Record<string, any> = { site: env.site, window: win, rows: rows.length, clicks, impressions };
+  if (!dry && rows.length) {
+    out.upsert = await rpc('ceg_gsc_upsert', { p_secret: secret, p_rows: rows });
+    out.kpi_id = await rpc('ceg_gsc_kpi', { p_secret: secret, p_clicks: clicks, p_impressions: impressions, p_note: `gsc week ${win.start} to ${win.end}: ${clicks} clicks, ${impressions} impressions, ${pageRows.length} page rows` });
+  }
+  return out;
+}
+
 export function buildDigest(d: any, run: Record<string, any>, date: string): string {
   const w = d.week || {};
   const se = (w.site_events || {}) as Record<string, number>;
@@ -141,6 +160,17 @@ export function buildDigest(d: any, run: Record<string, any>, date: string): str
   L.push(`${hasCouple ? 'Top couple pages' : 'Top pages'}: ${shown.length ? shown.map(p => `${prettyPath(p.path)} ${p.n}`).join('; ') : 'none yet'}`);
   const src = (w.sources || []) as { source: string; n: number }[];
   L.push(`Sources${hasCouple ? ', all traffic' : ''} (visits): ${src.length ? src.map(s => `${s.source} ${s.n}`).join(', ') : 'none yet'}`);
+  // Search Console (S8): last week's clicks and impressions from p2_gsc_daily when the import has run.
+  const g = run.gsc as any;
+  const gw = (run.gsc_week || {}) as any;
+  if (g?.skipped || !g) L.push('Search Console: not connected');
+  else if (g.error) L.push(`Search Console: import failed, ${String(g.error).slice(0, 80)}`);
+  else if ((gw.days ?? 0) > 0 || g.clicks != null) {
+    const c = gw.days ? gw.clicks : g.clicks, im = gw.days ? gw.impressions : g.impressions;
+    L.push(`Search Console: ${c} clicks, ${im} impressions last week${gw.days && gw.prev_impressions ? ` (prior ${gw.prev_clicks} clicks, ${gw.prev_impressions} impressions)` : ''}`);
+    const tq = (gw.top_queries || []) as { q: string; clicks: number; impressions: number }[];
+    if (tq.length) L.push(`Top queries: ${tq.slice(0, 5).map(q => `${String(q.q).replace(/[!*]/g, "")} ${q.clicks}/${q.impressions}`).join('; ')}`);
+  } else L.push('Search Console: connected, no week imported yet');
   L.push('');
   L.push('COUPLES');
   // Vendor inquiries only (vendor_id not null). Contact form rows live in p2_inquiries too, with vendor_id null; once
@@ -212,7 +242,18 @@ export const GET: APIRoute = async ({ request }) => {
     return json(run);
   }
 
+  if (url.searchParams.get('only') === 'gsc') {
+    try { run.gsc = await runGsc(secret, dry); if (!run.gsc.skipped) run.gsc_week = await rpc<any>('ceg_gsc_week', { p_secret: secret }); }
+    catch (e) { run.gsc = { error: String(e).slice(0, 300) }; run.ok = false; }
+    run.ms = Date.now() - started;
+    console.log('CRON weekly', JSON.stringify(run));
+    return json(run);
+  }
+
   if (url.searchParams.get('only') === 'digest') {
+    // Digest only: no Google call, print what the last import stored.
+    try { run.gsc = gscEnv().sa ? { from_db: true } : { skipped: 'no GSC_SA_JSON' }; if (!run.gsc.skipped) run.gsc_week = await rpc<any>('ceg_gsc_week', { p_secret: secret }); }
+    catch (e) { run.gsc = { error: String(e).slice(0, 300) }; }
     try { run.canary = await runCanary(secret, dry); } catch (e) { run.canary = { error: String(e).slice(0, 300) }; }
     try {
       const date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/Denver' });
@@ -284,6 +325,10 @@ export const GET: APIRoute = async ({ request }) => {
     } catch (e) { run.indexnow = { error: String(e).slice(0, 200) }; }
   }
 
+  // 8. Search Console import (before the digest so it can print last week's clicks)
+  try { run.gsc = await runGsc(secret, dry); if (!run.gsc.skipped) run.gsc_week = await rpc<any>('ceg_gsc_week', { p_secret: secret }); }
+  catch (e) { run.gsc = { error: String(e).slice(0, 300) }; }
+
   // 7. Canary (runs before the digest so the Monday email reports it; its own owner alert on failure)
   try { run.canary = await runCanary(secret, dry); }
   catch (e) { run.canary = { error: String(e).slice(0, 300) }; }
@@ -331,6 +376,7 @@ export const GET: APIRoute = async ({ request }) => {
   try { run.monthly_reports = await runMonthlyReports(secret, dry, started + 270_000); }
   catch (e) { run.monthly_reports = { error: String(e).slice(0, 300) }; }
 
+  if (!dry) { try { await rpc('ceg_cron_config_set', { p_secret: secret, p_key: 'cron_weekly_last_ran', p_value: String(run.ran_at) }); } catch { /* noop */ } } // read by the Sunday self audit
   run.ms = Date.now() - started;
   console.log('CRON weekly', JSON.stringify(run));
   return json(run);

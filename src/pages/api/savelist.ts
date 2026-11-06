@@ -1,6 +1,7 @@
 export const prerender = false;
 import type { APIRoute } from 'astro';
 import { SB_URL, SB_KEY } from '../../lib/supabase';
+import { rpc, authSecret } from '../../lib/cron';
 import { sendMail } from '../../lib/mail';
 
 export const POST: APIRoute = async ({ request, redirect }) => {
@@ -26,13 +27,10 @@ Happy planning,
 Colorado Elopement Guide
 
 If you don't want occasional planning notes, reply "unsubscribe" and we won't email again.`);
+  // ceg_subscriber_add (secret gated, S9 2026-11-05): stores the address once, no nurture enrolment.
   try {
-    await fetch(`${SB_URL}/rest/v1/p2_subscribers`, {
-      method: 'POST',
-      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-      body: JSON.stringify({ email, source: 'shortlist' })
-    });
-  } catch { /* noop */ }
+    await rpc('ceg_subscriber_add', { p_secret: authSecret(), p_email: email, p_source: 'shortlist' });
+  } catch (e) { console.error('subscriber add failed', e); }
   await sendMail('bynumenterprisesbe@gmail.com', '[CEG] Shortlist emailed', `${email} saved ${slugs.length} vendors:\n\n${lines}`);
   return redirect('/thanks?list=1', 303);
 };
