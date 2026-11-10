@@ -164,8 +164,9 @@ export async function runMonthlyReports(secret: string, dry: boolean, deadline: 
       const fresh = await rpc<boolean>('ceg_cron_drip_mark', { p_secret: secret, p_user_id: r.user_id, p_step: r.report_step });
       if (fresh === false) { s.skipped_already++; continue; }
     } catch (e) { errors.push(`mark ${r.slug}: ${String(e).slice(0, 150)}`); continue; }
-    const res = await sendMailResult(r.email, m.subject, m.text, m.html);
+    const res = await sendMailResult('lifecycle', r.email, m.subject, m.text, m.html);
     if (res.ok) { s.sent++; detail.push({ slug: r.slug, words, id: res.id }); }
+    else if (res.suppressed) { s.skipped_suppressed = (s.skipped_suppressed || 0) + 1; detail.push({ slug: r.slug, words, skip: 'suppressed' }); }
     else { s.send_errors++; errors.push(`send ${r.slug}: ${res.status} ${res.error || ''}`.slice(0, 200)); }
     await sleep(300);
   }

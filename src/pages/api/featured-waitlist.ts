@@ -23,7 +23,7 @@ export const POST: APIRoute = async ({ request }) => {
   if (!r?.ok) return json({ ok: false, error: 'We could not find that listing.' }, 404);
   if (r.new) {
     const v = r.vendor;
-    await sendMailResult(OWNER_EMAIL, `[CEG] Featured waitlist: ${v.name}`,
+    await sendMailResult('transactional', OWNER_EMAIL, `[CEG] Featured waitlist: ${v.name}`,
       `${v.name} (${v.category}, ${v.sub_region}, ${v.status}) joined the Featured waitlist from the ${token ? 'dashboard' : 'vendor page'}. Contact: ${r.email || 'none given'}. Listing: https://coloradoelopementguide.com/vendor/${v.slug}`);
   }
   return json({ ok: true });

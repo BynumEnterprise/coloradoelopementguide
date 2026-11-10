@@ -82,7 +82,7 @@ export const POST: APIRoute = async ({ request }) => {
   if (deploy) await fireDeployHook();
   if (notes.length) {
     const text = `Mail bridge handled ${msgs.length} message(s).\n\n${notes.join('\n\n')}\n\nAnything marked needs a human look is waiting in your inbox.`;
-    await sendMailResult(OWNER_EMAIL, `CEG mail bridge: ${notes.length} item(s)`, text).catch(() => null);
+    await sendMailResult('transactional', OWNER_EMAIL, `CEG mail bridge: ${notes.length} item(s)`, text).catch(() => null);
   }
   return json({ ok: true, processed: msgs.length, actions, notes: notes.length });
 };

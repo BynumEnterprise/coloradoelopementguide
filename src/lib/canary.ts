@@ -99,7 +99,7 @@ export async function runCanary(secret: string, dry: boolean) {
     const text = `The weekly money path canary failed ${failed.length} of ${checks.length} checks.\n\n` +
       failed.map(f => `${f.name}: ${f.detail || 'failed'}`).join('\n') +
       `\n\nRun it again with /api/cron/weekly?only=canary to see the full result.\n\nRyan, this is the automated canary alert from the site.`;
-    const r = await sendMailResult(OWNER_EMAIL, '[CEG] Canary failed', text);
+    const r = await sendMailResult('transactional', OWNER_EMAIL, '[CEG] Canary failed', text);
     out.alert_sent = r.ok;
   }
   return out;

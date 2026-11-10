@@ -202,6 +202,26 @@ export const GET: APIRoute = async ({ request }) => {
       b.bad = bad.length;
       if (bad.length && !dry) b.result = await rpc('ceg_mail_bounced', { p_secret: secret, p_rows: bad });
       if (dry) b.would_mark = bad.map(x => ({ to: x.to, event: x.last_event, at: x.created_at }));
+      // Spam complaints and hard bounces go on the suppression list, which every lifecycle and marketing send and every
+      // cron selector checks (owner directive 2026-11-09). A complaint is an unsubscribe in the strongest form.
+      // Resend reports a permanent bounce as last_event 'bounced' (soft ones stay 'delivery_delayed'); 'failed' is
+      // our side and is not a reason to suppress. ceg_unsubscribe_email is idempotent, so re polling is harmless.
+      const sup = new Map<string, { reason: string; source: string }>();
+      for (const x of bad) {
+        const e = String(x.to).trim().toLowerCase();
+        if (x.last_event === 'complained') sup.set(e, { reason: 'complaint', source: 'resend_complaint' });
+        else if (x.last_event === 'bounced' && !sup.has(e)) sup.set(e, { reason: 'bounce', source: 'resend_bounce' });
+      }
+      b.suppress = sup.size;
+      if (dry) b.would_suppress = [...sup].map(([e, v]) => ({ to: e, reason: v.reason }));
+      else {
+        let n = 0; const errs: string[] = [];
+        for (const [e, v] of sup) {
+          try { await rpc('ceg_unsubscribe_email', { p_secret: secret, p_email: e, p_reason: v.reason, p_source: v.source, p_note: null }); n++; }
+          catch (err) { errs.push(`${e}: ${String(err).slice(0, 120)}`); }
+        }
+        b.suppressed = n; if (errs.length) { b.suppress_errors = errs; summary.ok = false; }
+      }
     } catch (e) { b.fatal = String(e).slice(0, 300); summary.ok = false; }
     summary.bounces = b;
   }
@@ -252,8 +272,9 @@ export const GET: APIRoute = async ({ request }) => {
         try { mail = renderV4(v); }
         catch (e) { (o.blocked as unknown[]).push({ id: v.id, slug: v.slug, reason: String((e as Error).message || e).slice(0, 200) }); continue; }
         if (dry) { (o.sent as number[]).push(v.id); previews.push({ to: v.contact_email, subject: mail.subject, text: mail.text }); continue; }
-        const res = await sendMailResult(v.contact_email, mail.subject, mail.text, mail.html);
+        const res = await sendMailResult('marketing', v.contact_email, mail.subject, mail.text, mail.html);
         if (res.ok) { sentIds.push(v.id); (o.sent as number[]).push(v.id); }
+        else if (res.suppressed) ((o.suppressed ??= []) as unknown[]).push(v.id);
         else (o.failed as unknown[]).push({ id: v.id, status: res.status, error: res.error });
         await sleep(300);
       }
@@ -281,8 +302,9 @@ export const GET: APIRoute = async ({ request }) => {
         try { mail = renderFollowup(v); }
         catch (e) { (f.blocked as unknown[]).push({ id: v.id, reason: String((e as Error).message || e).slice(0, 200) }); continue; }
         if (dry) { (f.sent as unknown[]).push({ id: v.id, step: v.followups + 1, subject: mail.subject }); continue; }
-        const res = await sendMailResult(v.contact_email, mail.subject, mail.text, mail.html);
+        const res = await sendMailResult('marketing', v.contact_email, mail.subject, mail.text, mail.html);
         if (res.ok) { doneIds.push(v.id); (f.sent as unknown[]).push({ id: v.id, slug: v.slug, step: v.followups + 1 }); }
+        else if (res.suppressed) ((f.suppressed ??= []) as unknown[]).push(v.id);
         else (f.failed as unknown[]).push({ id: v.id, status: res.status, error: res.error });
         await sleep(300);
       }
@@ -313,8 +335,9 @@ export const GET: APIRoute = async ({ request }) => {
         if (dry) { (ac.sent as unknown[]).push({ to: u.email, vendor: u.slug, subject: mail.subject, text: mail.text }); continue; }
         try { await rpc('ceg_cron_drip_mark', { p_secret: secret, p_user_id: u.user_id, p_step: 10 }); }
         catch (e) { (ac.failed as unknown[]).push({ user: u.user_id, error: 'mark failed, not sent: ' + String(e).slice(0, 200) }); continue; }
-        const res = await sendMailResult(u.email, mail.subject, mail.text, mail.html);
+        const res = await sendMailResult('lifecycle', u.email, mail.subject, mail.text, mail.html);
         if (res.ok) (ac.sent as unknown[]).push({ user: u.user_id, vendor: u.slug, id: res.id });
+        else if (res.suppressed) ((ac.suppressed ??= []) as unknown[]).push(u.user_id); // step stays marked: never retried
         else (ac.failed as unknown[]).push({ user: u.user_id, vendor: u.slug, status: res.status, error: res.error });
         await sleep(300);
       }
@@ -361,12 +384,13 @@ export const GET: APIRoute = async ({ request }) => {
         try { mail = renderDrip(u, u.step === 1 ? await regionDemand(u.sub_region) : u.step === 2 ? await vendorDemand(u.vendor_id) : null); }
         catch (e) { (dr.blocked as unknown[]).push({ user: u.user_id, step: u.step, reason: String((e as Error).message || e).slice(0, 200) }); continue; }
         if (dry) { (dr.sent as unknown[]).push({ user: u.user_id, step: u.step, to: u.email, subject: mail.subject, text: mail.text }); continue; }
-        const res = await sendMailResult(u.email, mail.subject, mail.text, mail.html);
+        const res = await sendMailResult('lifecycle', u.email, mail.subject, mail.text, mail.html);
         if (res.ok) {
           try { await rpc('ceg_cron_drip_mark', { p_secret: secret, p_user_id: u.user_id, p_step: u.step }); }
           catch (e) { (dr.failed as unknown[]).push({ user: u.user_id, step: u.step, error: 'sent but mark failed: ' + String(e).slice(0, 200) }); continue; }
           (dr.sent as unknown[]).push({ user: u.user_id, step: u.step, vendor: u.slug });
-        } else (dr.failed as unknown[]).push({ user: u.user_id, step: u.step, status: res.status, error: res.error });
+        } else if (res.suppressed) ((dr.suppressed ??= []) as unknown[]).push({ user: u.user_id, step: u.step });
+        else (dr.failed as unknown[]).push({ user: u.user_id, step: u.step, status: res.status, error: res.error });
         await sleep(300);
       }
     } catch (e) { dr.fatal = String(e).slice(0, 300); summary.ok = false; }
@@ -395,6 +419,8 @@ export const GET: APIRoute = async ({ request }) => {
         if (res.ok) {
           (nu.sent as unknown[]).push({ id: r.id, step: r.step, resend: res.id });
           if (res.id) { try { await rpc('ceg_nurture_set_resend', { p_secret: secret, p_id: r.id, p_step: r.step, p_resend_id: res.id }); } catch { /* noop */ } }
+        } else if (res.suppressed) {
+          ((nu.suppressed ??= []) as unknown[]).push({ id: r.id, step: r.step }); // stays marked: never retried
         } else {
           (nu.failed as unknown[]).push({ id: r.id, step: r.step, status: res.status, error: res.error });
           try { await rpc('ceg_nurture_unmark', { p_secret: secret, p_id: r.id, p_step: r.step }); } catch { /* noop */ }
@@ -424,8 +450,9 @@ export const GET: APIRoute = async ({ request }) => {
         try { marked = Boolean(await rpc<boolean>('ceg_cron_reply_reminder_mark', { p_secret: secret, p_id: r.inquiry_id })); }
         catch (e) { (rr.failed as unknown[]).push({ inquiry: r.inquiry_id, error: 'mark failed, not sent: ' + String(e).slice(0, 200) }); continue; }
         if (!marked) continue;
-        const res = await sendMailResult(r.email, mail.subject, mail.text, mail.html);
+        const res = await sendMailResult('lifecycle', r.email, mail.subject, mail.text, mail.html);
         if (res.ok) (rr.sent as unknown[]).push({ inquiry: r.inquiry_id, vendor: r.slug, id: res.id });
+        else if (res.suppressed) ((rr.suppressed ??= []) as unknown[]).push(r.inquiry_id); // stays marked: never retried
         else {
           (rr.failed as unknown[]).push({ inquiry: r.inquiry_id, vendor: r.slug, status: res.status, error: res.error });
           try { await rpc('ceg_cron_reply_reminder_mark', { p_secret: secret, p_id: r.inquiry_id, p_clear: true }); } catch { /* noop */ }
@@ -451,8 +478,9 @@ export const GET: APIRoute = async ({ request }) => {
         if (dry) { (pn.sent as unknown[]).push({ user: u.user_id, to: u.email, vendor: u.slug, subject: mail.subject, text: mail.text }); continue; }
         try { await rpc('ceg_cron_drip_mark', { p_secret: secret, p_user_id: u.user_id, p_step: 40 }); }
         catch (e) { (pn.failed as unknown[]).push({ user: u.user_id, error: 'mark failed, not sent: ' + String(e).slice(0, 200) }); continue; }
-        const res = await sendMailResult(u.email, mail.subject, mail.text, mail.html);
+        const res = await sendMailResult('lifecycle', u.email, mail.subject, mail.text, mail.html);
         if (res.ok) (pn.sent as unknown[]).push({ user: u.user_id, vendor: u.slug, id: res.id });
+        else if (res.suppressed) ((pn.suppressed ??= []) as unknown[]).push(u.user_id); // stays marked: never retried
         else {
           (pn.failed as unknown[]).push({ user: u.user_id, vendor: u.slug, status: res.status, error: res.error });
           try { await rpc('ceg_cron_drip_unmark', { p_secret: secret, p_user_id: u.user_id, p_step: 40 }); } catch { /* noop */ }

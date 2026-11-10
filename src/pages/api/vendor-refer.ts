@@ -80,9 +80,10 @@ export const POST: APIRoute = async ({ request }) => {
       inviteeName: name, inviteeEmail: email, token: r.token, matchSlug: r.match?.slug || null });
   } catch (e) { console.error('vendor-refer render', e); return json({ ok: false, error: 'Saved, but the invitation could not be written. We will send it by hand.' }, 500); }
 
-  const res = await sendMailResult(email, mail.subject, mail.text, mail.html);
+  const res = await sendMailResult('marketing', email, mail.subject, mail.text, mail.html);
   // A queued match was just released: rebuild so its vendor and claim pages exist before the invitee clicks.
   if (r.released) { try { await fireDeployHook(); } catch { /* noop */ } }
+  if (res.suppressed) return json({ ok: false, sent: false, listed: !!r.match, vendor: r.match?.name || null, error: 'That address has asked us not to email it, so no invitation went out.' }, 409);
   return json({ ok: res.ok, sent: res.ok, listed: !!r.match, vendor: r.match?.name || null, error: res.ok ? undefined : 'Saved, but the email did not go out. We will send it by hand.' }, res.ok ? 200 : 502);
 };
 

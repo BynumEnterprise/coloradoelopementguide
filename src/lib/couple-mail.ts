@@ -2,7 +2,7 @@
 // run by /api/cron/daily (stage "nurture"): day 3 region and season, day 7 permits and the license,
 // day 12 vendor team, plus one planner nudge for couples who saved no vendors after 2 days.
 // Every body passes naturalCheck and carries the Denver address and a one click unsubscribe link.
-import { MAIL_FROM, MAIL_REPLY_TO, textToHtml } from './mail';
+import { textToHtml, deliver, type MailResult } from './mail';
 import { naturalCheck, tagLinks, POSTAL_ADDRESS, SITE_URL, displayName, categoryPlural, regionName, fmtDateLong } from './outreach';
 import { REGIONS, CATEGORIES } from './taxonomy';
 
@@ -176,25 +176,10 @@ export function renderNurture(r: NurtureRecipient): CoupleMail {
   }
 }
 
-// Resend send with RFC 8058 one click unsubscribe headers (Gmail and Yahoo bulk sender rules).
-export async function sendCoupleMail(to: string, m: CoupleMail): Promise<{ ok: boolean; status: number; id?: string; error?: string }> {
-  const key = process.env.RESEND_API_KEY ?? import.meta.env.RESEND_API_KEY;
-  if (!key) return { ok: false, status: 0, error: 'no RESEND_API_KEY' };
-  try {
-    const r = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        from: MAIL_FROM, to: [to], reply_to: MAIL_REPLY_TO, subject: m.subject, text: m.text, html: m.html,
-        headers: { 'List-Unsubscribe': `<${m.unsubUrl}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' }
-      })
-    });
-    const body = await r.text();
-    if (!r.ok) return { ok: false, status: r.status, error: body.slice(0, 300) };
-    let id: string | undefined;
-    try { id = JSON.parse(body)?.id; } catch { /* noop */ }
-    return { ok: true, status: r.status, id };
-  } catch (e) { return { ok: false, status: 0, error: String(e) }; }
+// Kit and nurture go through the central sender as lifecycle mail: suppression check (fail closed), the signed
+// List-Unsubscribe and List-Unsubscribe-Post headers, and the body already carries its own unsubscribe line.
+export async function sendCoupleMail(to: string, m: CoupleMail): Promise<MailResult> {
+  return deliver(to, m.subject, m.text, m.html, { kind: 'lifecycle' });
 }
 
 // Couple confirmation after an inquiry (/api/inquiry). One per inquiry, never for spam (ceg_inquiry_confirm

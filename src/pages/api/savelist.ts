@@ -14,7 +14,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
   });
   const rows = await r.json();
   const lines = (Array.isArray(rows) ? rows : []).map((v: any) => `${v.name}\nhttps://coloradoelopementguide.com/vendor/${v.slug}`).join('\n\n');
-  await sendMail(email, 'Your saved Colorado elopement vendors',
+  await sendMail('lifecycle', email, 'Your saved Colorado elopement vendors',
 `Hi,
 
 Here is the vendor list you saved on Colorado Elopement Guide:
@@ -31,7 +31,7 @@ If you don't want occasional planning notes, reply "unsubscribe" and we won't em
   try {
     await rpc('ceg_subscriber_add', { p_secret: authSecret(), p_email: email, p_source: 'shortlist' });
   } catch (e) { console.error('subscriber add failed', e); }
-  await sendMail('bynumenterprisesbe@gmail.com', '[CEG] Shortlist emailed', `${email} saved ${slugs.length} vendors:\n\n${lines}`);
+  await sendMail('transactional', 'bynumenterprisesbe@gmail.com', '[CEG] Shortlist emailed', `${email} saved ${slugs.length} vendors:\n\n${lines}`);
   return redirect('/thanks?list=1', 303);
 };
 export const GET: APIRoute = () => new Response('Method not allowed', { status: 405 });

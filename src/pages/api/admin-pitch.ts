@@ -53,6 +53,7 @@ export const POST: APIRoute = async ({ request }) => {
   const sent = await sendPitch(pitch);
   if (!sent.ok) {
     await call({ p_token: token, p_id: id, p_action: 'failed', p_log_id: logId, p_error: `${sent.status} ${sent.error || ''}` });
+    if (sent.suppressed) return json({ ok: false, blocked: true, error: 'This address is on the unsubscribe list. Nothing was sent.' }, 409);
     return json({ ok: false, error: `Resend refused the email (${sent.status}). Nothing was recorded as sent.` }, 502);
   }
   await call({ p_token: token, p_id: id, p_action: 'sent', p_log_id: logId, p_resend_id: sent.id || null });

@@ -17,7 +17,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     const r = await rpc<{ ok: boolean; error?: string }>('ceg_contact_submit', { p_secret: authSecret(), p_name: name, p_email: email, p_message: message });
     throttled = !r?.ok && r?.error === 'rate';
   } catch (e) { console.error('contact submit failed', e); }
-  if (!throttled) await sendMail('bynumenterprisesbe@gmail.com', `[CEG] Contact form: ${name}`, `From: ${name} <${email}>\n\n${message}`);
+  if (!throttled) await sendMail('transactional', 'bynumenterprisesbe@gmail.com', `[CEG] Contact form: ${name}`, `From: ${name} <${email}>\n\n${message}`);
   return redirect('/thanks?contact=1', 303);
 };
 export const GET: APIRoute = () => new Response('Method not allowed', { status: 405 });

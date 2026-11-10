@@ -258,7 +258,7 @@ export const GET: APIRoute = async ({ request }) => {
       const date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/Denver' });
       const text = buildDigest(await rpc<any>('ceg_cron_digest', { p_secret: secret }), run, date);
       run.digest_words = text.split(/\s+/).length;
-      if (!dry) { const res = await sendMailResult(OWNER_EMAIL, `CEG weekly: ${date}`, text); run.digest_sent = res.ok; if (!res.ok) run.digest_error = res.error; }
+      if (!dry) { const res = await sendMailResult('transactional', OWNER_EMAIL, `CEG weekly: ${date}`, text); run.digest_sent = res.ok; if (!res.ok) run.digest_error = res.error; }
       else run.digest_preview = text;
     } catch (e) { run.digest_error = String(e).slice(0, 300); run.ok = false; }
     run.ms = Date.now() - started;
@@ -366,7 +366,7 @@ export const GET: APIRoute = async ({ request }) => {
     const text = buildDigest(digest, run, date);
     run.digest_words = text.split(/\s+/).length;
     if (!dry) {
-      const res = await sendMailResult(OWNER_EMAIL, `CEG weekly: ${date}`, text);
+      const res = await sendMailResult('transactional', OWNER_EMAIL, `CEG weekly: ${date}`, text);
       run.digest_sent = res.ok; if (!res.ok) run.digest_error = res.error;
     } else run.digest_preview = text;
   } catch (e) { run.digest_error = String(e).slice(0, 300); run.ok = false; }

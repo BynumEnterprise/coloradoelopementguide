@@ -124,7 +124,7 @@ export const POST: APIRoute = async ({ request }) => {
     if (/<\s*(b|strong)\b/i.test(html)) throw new Error('welcome html: bold tag');
   } catch (e) { return j({ error: String((e as Error).message || e).slice(0, 200) }, 500); }
 
-  const ok = await sendMail(to, subject, text, html);
+  const ok = await sendMail('transactional', to, subject, text, html);
   // Inquiries that arrived while the listing was unclaimed: full copy to this account, once each.
   let pending: unknown = null;
   if (ok) {

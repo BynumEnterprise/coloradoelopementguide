@@ -2,7 +2,7 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { repliedUrl } from '../../lib/trust-mail';
 import { json, rpc, authSecret } from '../../lib/cron';
-import { sendMailResult, MAIL_FROM, OWNER_EMAIL } from '../../lib/mail';
+import { sendMailResult, sendMailReplyTo, OWNER_EMAIL } from '../../lib/mail';
 import { inquiryVendorEmail, inquiryNoticeEmail, naturalCheck, type InquiryIn } from '../../lib/outreach';
 
 // "Ask similar vendors too" (GAP 1.5). After a couple's inquiry succeeds, the AlsoAsk component offers up to
@@ -16,19 +16,6 @@ import { inquiryVendorEmail, inquiryNoticeEmail, naturalCheck, type InquiryIn } 
 const EMAIL_RE = /^[^@\s<>"]+@[^@\s<>"]+\.[A-Za-z]{2,}$/;
 const clean = (s: unknown, max: number) => String(s ?? '').replace(/\r\n/g, '\n').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '').trim().slice(0, max);
 
-async function sendReplyTo(to: string, replyTo: string, subject: string, text: string, html?: string) {
-  const key = process.env.RESEND_API_KEY ?? import.meta.env.RESEND_API_KEY;
-  if (!key) return { ok: false, status: 0, error: 'no RESEND_API_KEY' };
-  try {
-    const r = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: MAIL_FROM, to: [to], reply_to: replyTo, subject, text, ...(html ? { html } : {}) })
-    });
-    const body = await r.text();
-    return r.ok ? { ok: true, status: r.status } : { ok: false, status: r.status, error: body.slice(0, 300) };
-  } catch (e) { return { ok: false, status: 0, error: String(e) }; }
-}
 
 export const POST: APIRoute = async ({ request }) => {
   let body: Record<string, unknown> = {};
@@ -61,12 +48,12 @@ export const POST: APIRoute = async ({ request }) => {
     try {
       if (r.mode === 'account' && r.to) {
         const m = inquiryVendorEmail(q, repliedUrl(r.id));
-        const s = await sendReplyTo(r.to, res.email, m.subject, m.text, m.html);
+        const s = await sendMailReplyTo('inquiry', r.to, res.email, m.subject, m.text, m.html);
         notified = s.ok; note = s.ok ? `full inquiry emailed to account ${r.to}` : `account email failed (${s.error})`;
       } else if (r.mode === 'notice' && r.to) {
         const m = inquiryNoticeEmail(q);
-        const s = await sendMailResult(r.to, m.subject, m.text, m.html);
-        notified = s.ok; note = s.ok ? `claim notice emailed to ${r.to}` : `claim notice failed (${s.error})`;
+        const s = await sendMailResult('lifecycle', r.to, m.subject, m.text, m.html);
+        notified = s.ok; note = s.ok ? `claim notice emailed to ${r.to}` : s.suppressed ? `claim notice not sent, ${r.to} is unsubscribed` : `claim notice failed (${s.error})`;
       } else note = 'no deliverable vendor address, kept for the owner';
     } catch (e) { console.error('inquiry-more delivery failed', e); note = `delivery error: ${String(e).slice(0, 200)}`; }
     try { await rpc('ceg_inquiry_mark', { p_secret: secret, p_id: r.id, p_notified: notified }); } catch (e) { console.error('inquiry mark failed', e); }
@@ -79,7 +66,7 @@ export const POST: APIRoute = async ({ request }) => {
       const subj = `[CEG] Also ask: ${lines.length} more from inquiry ${res.id}`;
       const text = `${res.names} <${res.email}> copied inquiry ${res.id} for ${res.from_vendor} to ${lines.length} more vendors.\n\n${lines.join('\n')}`;
       naturalCheck(text, 'owner also ask line', [res.names, res.email, res.from_vendor, ...lines]);
-      await sendMailResult(OWNER_EMAIL, subj, text);
+      await sendMailResult('transactional', OWNER_EMAIL, subj, text);
     } catch (e) { console.error('owner notice failed', e); }
   }
   const limitMsg: Record<string, string> = { dup_vendor: 'already has your note today', email_daily: 'daily limit of five notes reached', site_hourly: 'busy right now, try later', not_eligible: 'not available' };

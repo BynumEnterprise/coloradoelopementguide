@@ -82,7 +82,7 @@ export const POST: APIRoute = async ({ request }) => {
       if (guard?.full) {
         await rpc('ceg_featured_waitlist_add', { p_secret: secret, p_slug: guard.slug, p_token: null, p_email: email || null, p_source: 'stripe', p_note: `paid while cap full (${type})` });
         out.waitlisted = guard.vendor_id; out.email = email;
-        await sendMailResult(OWNER_EMAIL, `[CEG] Featured cap full, refund or hold: ${name || email}`,
+        await sendMailResult('transactional', OWNER_EMAIL, `[CEG] Featured cap full, refund or hold: ${name || email}`,
           `Stripe ${type} for ${email || 'unknown email'}${name ? ` (${name})` : ''} matched vendor ${guard.name} (id ${guard.vendor_id}), but all 3 Featured spots for ${guard.category} in ${guard.sub_region} are taken.\nThey were NOT flipped to Featured and are on the waitlist. Refund the payment in Stripe or hold it until a spot opens.`);
         return json(out);
       }
@@ -92,7 +92,7 @@ export const POST: APIRoute = async ({ request }) => {
       if (customer && email) await rpc('ceg_cron_config_set', { p_secret: secret, p_key: `stripe_customer:${customer}`, p_value: email });
       if (customer && slug && vendorId) await rpc('ceg_cron_config_set', { p_secret: secret, p_key: `stripe_customer_slug:${customer}`, p_value: slug });
       if (vendorId) await fireDeployHook();
-      await sendMailResult(OWNER_EMAIL, `[CEG] Featured ${vendorId ? 'activated' : 'payment with no vendor match'}: ${name || email}`,
+      await sendMailResult('transactional', OWNER_EMAIL, `[CEG] Featured ${vendorId ? 'activated' : 'payment with no vendor match'}: ${name || email}`,
         `Stripe ${type} for ${email || 'unknown email'}${name ? ` (${name})` : ''}${slug ? `, listing ${slug}` : ''}.\n${vendorId ? `Vendor id ${vendorId} is now featured until ${until}.` : 'No vendor matched this listing, email or name; set Featured by hand in the admin.'}`);
     } else if (type === 'customer.subscription.deleted') {
       const customer = typeof obj.customer === 'string' ? obj.customer : obj.customer?.id;
@@ -103,7 +103,7 @@ export const POST: APIRoute = async ({ request }) => {
       const vendorId = email || name || slug ? await rpcWithSlug<number | null>('ceg_cron_unset_featured', { p_secret: secret, p_email: email, p_name: name || null }, slug) : null;
       out.vendor_id = vendorId; out.email = email; out.slug = slug;
       if (vendorId) await fireDeployHook();
-      await sendMailResult(OWNER_EMAIL, `[CEG] Featured ended: ${email || customer || 'unknown customer'}`,
+      await sendMailResult('transactional', OWNER_EMAIL, `[CEG] Featured ended: ${email || customer || 'unknown customer'}`,
         `Stripe subscription ended for ${email || customer || 'an unknown customer'}.\n${vendorId ? `Vendor id ${vendorId} is back to a claimed listing.` : 'No vendor matched; check the admin and unset Featured by hand if needed.'}`);
     } else {
       out.ignored = true;

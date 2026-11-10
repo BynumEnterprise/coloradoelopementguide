@@ -2,49 +2,94 @@ export const MAIL_FROM = 'Colorado Elopement Guide <hello@send.coloradoelopement
 export const MAIL_REPLY_TO = 'bynumenterprisesbe@gmail.com';
 export const OWNER_EMAIL = 'bynumenterprisesbe@gmail.com';
 
-export type MailResult = { ok: boolean; status: number; id?: string; error?: string };
+// Every email goes through deliver(). `kind` decides the unsubscribe handling (owner directive 2026-11-09,
+// CAN-SPAM and the Gmail and Yahoo bulk sender rules):
+//   transactional  login links, claim receipts, the couple's own inquiry or match confirmation, the welcome with the
+//                  dashboard link, and every notice to OWNER_EMAIL. Always sent, no unsubscribe footer.
+//   inquiry        a couple's inquiry relayed to a vendor account (Reply To the couple). The couple is asking that
+//                  vendor for business, so it is delivered even to a suppressed address, with nothing added.
+//   lifecycle      drips, activation, monthly report, reply reminders, photo nudge, kit and nurture, saved list,
+//                  claim notice to an unclaimed listing.
+//   marketing      claim invites and follow ups, referral invites, Featured pitches.
+// lifecycle and marketing: checked against p2_suppressions (ceg_is_suppressed) first and skipped when suppressed;
+// when the check itself fails the mail is NOT sent (fail closed). Each one carries List-Unsubscribe (signed https
+// link plus mailto) with List-Unsubscribe-Post One-Click, and a visible per recipient unsubscribe line unless the
+// body already has one of our unsubscribe links.
+import { rpc, authSecret } from './cron';
+import { makeUnsubUrl, unsubHeaders } from './unsub';
 
-// Full-detail sender used by the cron jobs (they need the HTTP status and the Resend id).
-export async function sendMailResult(to: string, subject: string, text: string, html?: string): Promise<MailResult> {
+export type MailKind = 'transactional' | 'inquiry' | 'lifecycle' | 'marketing';
+export type MailResult = { ok: boolean; status: number; id?: string; error?: string; suppressed?: boolean };
+export type DeliverOpts = { kind: MailKind; replyTo?: string; from?: string };
+
+export const isBulkKind = (k: MailKind) => k === 'lifecycle' || k === 'marketing';
+
+const HAS_UNSUB_LINK = /coloradoelopementguide\.com\/api\/(unsub|unsubscribe)\?/;
+export const unsubLine = (url: string) => `To stop all email from Colorado Elopement Guide, use this link: ${url}`;
+
+// Adds the visible line to the text and html parts when the body has no unsubscribe link of ours yet.
+export function withUnsubFooter(to: string, text: string, html?: string): { text: string; html?: string } {
+  if (HAS_UNSUB_LINK.test(text)) return { text, html };
+  const url = makeUnsubUrl(to);
+  const t = `${text.replace(/\s+$/, '')}\n\n${unsubLine(url)}\n`;
+  if (!html) return { text: t, html };
+  const href = url.replace(/&/g, '&amp;');
+  const p = `<p style="font-size:13px;color:#6b665e">To stop all email from Colorado Elopement Guide, <a href="${href}">unsubscribe here</a>.</p>`;
+  const h = /<\/body>/i.test(html) ? html.replace(/<\/body>/i, `${p}\n</body>`) : `${html}\n${p}`;
+  return { text: t, html: h };
+}
+
+// True when the address must not get lifecycle or marketing mail. Throws when the check cannot be made.
+export async function isSuppressed(email: string): Promise<boolean> {
+  const secret = authSecret();
+  if (!secret) throw new Error('no CEG_AUTH_SECRET for the suppression check');
+  return Boolean(await rpc<boolean>('ceg_is_suppressed', { p_secret: secret, p_email: String(email || '').trim().toLowerCase() }));
+}
+
+export async function deliver(to: string, subject: string, text: string, html: string | undefined, opts: DeliverOpts): Promise<MailResult> {
+  const bulk = isBulkKind(opts.kind);
+  if (bulk) {
+    let sup: boolean;
+    try { sup = await isSuppressed(to); }
+    catch (e) { console.error('MAIL: suppression check failed, not sending', opts.kind, e); return { ok: false, status: 0, error: 'suppression check failed: ' + String(e).slice(0, 200) }; }
+    if (sup) return { ok: false, status: 0, suppressed: true, error: 'suppressed' };
+  }
   const key = process.env.RESEND_API_KEY ?? import.meta.env.RESEND_API_KEY;
   if (!key) { console.error('MAIL: no RESEND_API_KEY in env'); return { ok: false, status: 0, error: 'no RESEND_API_KEY' }; }
   try {
-    const payload: Record<string, unknown> = { from: MAIL_FROM, to: [to], reply_to: MAIL_REPLY_TO, subject, text };
-    if (html) payload.html = html;
+    let body: { text: string; html?: string } = { text, html };
+    let headers: Record<string, string> | undefined;
+    if (bulk) { body = withUnsubFooter(to, text, html); headers = unsubHeaders(to); }
+    const payload: Record<string, unknown> = { from: opts.from || MAIL_FROM, to: [to], reply_to: opts.replyTo || MAIL_REPLY_TO, subject, text: body.text };
+    if (body.html) payload.html = body.html;
+    if (headers) payload.headers = headers;
     const r = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    const body = await r.text();
-    if (!r.ok) { console.error('MAIL: resend error', r.status, body); return { ok: false, status: r.status, error: body.slice(0, 300) }; }
+    const rb = await r.text();
+    if (!r.ok) { console.error('MAIL: resend error', r.status, rb); return { ok: false, status: r.status, error: rb.slice(0, 300) }; }
     let id: string | undefined;
-    try { id = JSON.parse(body)?.id; } catch { /* noop */ }
+    try { id = JSON.parse(rb)?.id; } catch { /* noop */ }
     return { ok: true, status: r.status, id };
   } catch (e) { console.error('MAIL: exception', e); return { ok: false, status: 0, error: String(e) }; }
 }
 
-// Same as sendMailResult with a different Reply To (the couple, for inquiries delivered to a vendor account).
-export async function sendMailReplyTo(to: string, replyTo: string, subject: string, text: string, html?: string): Promise<MailResult> {
-  const key = process.env.RESEND_API_KEY ?? import.meta.env.RESEND_API_KEY;
-  if (!key) return { ok: false, status: 0, error: 'no RESEND_API_KEY' };
-  try {
-    const r = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: MAIL_FROM, to: [to], reply_to: replyTo, subject, text, ...(html ? { html } : {}) })
-    });
-    const body = await r.text();
-    if (!r.ok) return { ok: false, status: r.status, error: body.slice(0, 300) };
-    let id: string | undefined;
-    try { id = JSON.parse(body)?.id; } catch { /* noop */ }
-    return { ok: true, status: r.status, id };
-  } catch (e) { return { ok: false, status: 0, error: String(e) }; }
+// Full detail sender used by the cron jobs (they need the HTTP status and the Resend id). kind is required so
+// every call site states what it sends.
+export async function sendMailResult(kind: MailKind, to: string, subject: string, text: string, html?: string): Promise<MailResult> {
+  return deliver(to, subject, text, html, { kind });
 }
 
-// Original signature, kept for every existing caller.
-export async function sendMail(to: string, subject: string, text: string, html?: string) {
-  return (await sendMailResult(to, subject, text, html)).ok;
+// Same with a different Reply To (the couple, for inquiries delivered to a vendor account).
+export async function sendMailReplyTo(kind: MailKind, to: string, replyTo: string, subject: string, text: string, html?: string): Promise<MailResult> {
+  return deliver(to, subject, text, html, { kind, replyTo });
+}
+
+// Boolean form kept for the simple callers.
+export async function sendMail(kind: MailKind, to: string, subject: string, text: string, html?: string) {
+  return (await sendMailResult(kind, to, subject, text, html)).ok;
 }
 
 const esc = (s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
