@@ -1,7 +1,7 @@
 export const prerender = false;
 import type { APIRoute } from 'astro';
 import { SB_URL, SB_KEY } from '../../lib/supabase';
-import { sendMail } from '../../lib/mail';
+import { sendMailResult } from '../../lib/mail';
 import { naturalCheck, displayName, POSTAL_ADDRESS, DEMAND_MIN, demandRegionLabel, type RegionDemand } from '../../lib/outreach';
 import { rpc } from '../../lib/cron';
 import { releasePendingInquiries } from '../../lib/trust-mail';
@@ -74,11 +74,52 @@ ${POSTAL_ADDRESS}`;
   return { subject, text, html };
 }
 
-// Sends the vendor a "your listing is claimed, here is your dashboard" email with a
-// one tap login link. Called by the daily reply-review task after a claim is confirmed.
-// Secret gated: caller must present the same CEG_AUTH_SECRET the site uses.
+export type WelcomeTarget = { vendorId: number; email: string; token: string; name: string; slug: string; subRegion?: string | null };
+export type WelcomeResult = { ok: boolean; sent_to?: string; vendor?: string; id?: string; error?: string; subject?: string; text?: string; pending_inquiries?: unknown };
+
+// Renders, checks and sends the welcome for one provisioned account, then releases inquiries that reached the listing
+// before the account existed. Shared by POST below and the queue stage of the crons (src/lib/welcome-queue.ts).
+export async function deliverWelcome(secret: string, t: WelcomeTarget, opts: { dry?: boolean } = {}): Promise<WelcomeResult> {
+  const name: string = displayName(t.name || '') || 'there';
+  const to = t.email;
+  if (!to || !t.token) return { ok: false, error: 'missing email or token' };
+  const link = `https://coloradoelopementguide.com/vd/${t.token}`;
+
+  // S7: lead with the couples near this vendor. Region from the public view (or the caller), counts from
+  // ceg_region_demand (30 days); below DEMAND_MIN, or on any fetch error, the sentence has no number.
+  let subRegion: string | null = t.subRegion ?? null; let demand: RegionDemand | null = null;
+  try {
+    if (subRegion == null) {
+      const vr = await fetch(`${SB_URL}/rest/v1/p2_vendors_public?slug=eq.${encodeURIComponent(String(t.slug || ''))}&select=sub_region`, { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } });
+      const vrows = vr.ok ? await vr.json() : [];
+      subRegion = vrows?.[0]?.sub_region ?? null;
+    }
+    demand = await rpc<RegionDemand>('ceg_region_demand', { p_region: subRegion || 'colorado', p_days: 30 });
+  } catch { demand = null; }
+  const { subject, text, html } = renderWelcome({ name, link, subRegion, demand });
+
+  // Same gate as every other automated email: dashes, AI tells, exclamation marks, bold, our legal name.
+  try {
+    naturalCheck(subject, 'welcome subject', [name, t.name || '']);
+    naturalCheck(text, 'welcome body', [name, t.name || '']);
+    naturalCheck(html.replace(/<[^>]+>/g, ' '), 'welcome html', [name, esc(name), t.name || '']);
+    if (/<\s*(b|strong)\b/i.test(html)) throw new Error('welcome html: bold tag');
+  } catch (e) { return { ok: false, error: String((e as Error).message || e).slice(0, 200) }; }
+
+  if (opts.dry) return { ok: true, sent_to: to, vendor: name, subject, text };
+  const res = await sendMailResult('transactional', to, subject, text, html);
+  if (!res.ok) return { ok: false, sent_to: to, vendor: name, error: `send ${res.status}: ${String(res.error || '').slice(0, 200)}` };
+  // Inquiries that arrived while the listing was unclaimed: full copy to this account, once each.
+  let pending: unknown = null;
+  try { pending = await releasePendingInquiries(secret, { vendorId: t.vendorId, limit: 10 }); }
+  catch (e) { pending = { error: String(e).slice(0, 200) }; }
+  return { ok: true, sent_to: to, vendor: name, id: res.id, pending_inquiries: pending };
+}
+
+// Sends the vendor a "your listing is claimed, here is your dashboard" email with a one tap login link.
+// Cloud tasks no longer call this (they use ceg_task_confirm_claim, and the queue cron sends the welcome);
+// it stays for manual and admin use. Secret gated: caller must present the same CEG_AUTH_SECRET the site uses.
 // No Featured pitch here (owner directive 5c) and no bold anywhere in the HTML (owner email rules).
-// After the welcome, any inquiry that reached this listing before the account existed is sent in full.
 export const POST: APIRoute = async ({ request }) => {
   const secretEnv = process.env.CEG_AUTH_SECRET ?? import.meta.env.CEG_AUTH_SECRET;
   let body: any = {};
@@ -100,38 +141,9 @@ export const POST: APIRoute = async ({ request }) => {
   const prov = await pr.json();
   if (!prov || prov.error) return j({ error: prov?.error || 'provision failed' }, 400);
 
-  const name: string = displayName(prov.name || '') || 'there';
-  const to: string = prov.email;
-  const link = `https://coloradoelopementguide.com/vd/${prov.token}`;
-
-  // S7: lead with the couples near this vendor. Region from the public view, counts from ceg_region_demand (30 days);
-  // below DEMAND_MIN, or on any fetch error, the sentence has no number.
-  let subRegion: string | null = null; let demand: RegionDemand | null = null;
-  try {
-    const vr = await fetch(`${SB_URL}/rest/v1/p2_vendors_public?slug=eq.${encodeURIComponent(String(prov.slug || ''))}&select=sub_region`, { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } });
-    const vrows = vr.ok ? await vr.json() : [];
-    subRegion = vrows?.[0]?.sub_region ?? null;
-    demand = await rpc<RegionDemand>('ceg_region_demand', { p_region: subRegion || 'colorado', p_days: 30 });
-  } catch { demand = null; }
-  const mail = renderWelcome({ name, link, subRegion, demand });
-  const { subject, text, html } = mail;
-
-  // Same gate as every other automated email: dashes, AI tells, exclamation marks, bold, our legal name.
-  try {
-    naturalCheck(subject, 'welcome subject', [name, prov.name || '']);
-    naturalCheck(text, 'welcome body', [name, prov.name || '']);
-    naturalCheck(html.replace(/<[^>]+>/g, ' '), 'welcome html', [name, esc(name), prov.name || '']);
-    if (/<\s*(b|strong)\b/i.test(html)) throw new Error('welcome html: bold tag');
-  } catch (e) { return j({ error: String((e as Error).message || e).slice(0, 200) }, 500); }
-
-  const ok = await sendMail('transactional', to, subject, text, html);
-  // Inquiries that arrived while the listing was unclaimed: full copy to this account, once each.
-  let pending: unknown = null;
-  if (ok) {
-    try { pending = await releasePendingInquiries(secret, { vendorId, limit: 10 }); }
-    catch (e) { pending = { error: String(e).slice(0, 200) }; }
-  }
-  return j({ ok, sent_to: to, vendor: name, pending_inquiries: pending });
+  const r = await deliverWelcome(secret, { vendorId, email: prov.email, token: prov.token, name: prov.name || '', slug: prov.slug || '' });
+  if (!r.ok && !r.sent_to) return j({ error: r.error }, 500);
+  return j({ ok: r.ok, sent_to: r.sent_to, vendor: r.vendor, pending_inquiries: r.pending_inquiries ?? null, ...(r.ok ? {} : { error: r.error }) });
 };
 
 export const GET: APIRoute = () => new Response('Method not allowed', { status: 405 });
