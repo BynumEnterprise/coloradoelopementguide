@@ -6,7 +6,8 @@ import { renderV4, renderDrip, renderFollowup, renderActivation, FEATURED_PITCHE
 import { renderNurture, sendCoupleMail, type NurtureRecipient } from '../../../lib/couple-mail';
 import { renderReplyReminder, renderPhotoNudge, releasePendingInquiries, type ReplyReminder, type PhotoNudge } from '../../../lib/trust-mail';
 
-// Daily P2 automation (Vercel cron, 15:00 UTC):
+// Daily P2 automation (Vercel cron, 17:00 UTC, moved from 15:00 on 2026-11-09 so the morning Gmail reply review,
+// about 14:00 to 15:00 UTC, logs replies and opt outs before anything is sent):
 //   1. contact discovery for up to 12 seeded vendors with a website and no email
 //   2. up to 25 Template v4 claim invites via Resend, marked sent_v1
 //   3. onboarding drips for vendor accounts (one email per user per run)

@@ -1,9 +1,11 @@
 export const prerender = false;
 import type { APIRoute } from 'astro';
-import { performUnsub, unsubPage, oneClickResponse } from '../../lib/unsub-handler';
+import { unsubRoutes } from '../../lib/unsub-handler';
 
-// Unsubscribe from all Colorado Elopement Guide email. /api/unsub?e=<email>&t=<signed>, the link and the
-// List-Unsubscribe header in every lifecycle and marketing email, or the legacy /api/unsub?t=<vendor user token>.
-// GET (the link) and POST (RFC 8058 one click from Gmail and Yahoo) both unsubscribe. See src/lib/unsub-handler.ts.
-export const GET: APIRoute = async ({ url }) => unsubPage(await performUnsub(url, 'ceg_unsub', 'link'));
-export const POST: APIRoute = async ({ url }) => oneClickResponse(await performUnsub(url, 'ceg_unsub', 'one_click'));
+// Unsubscribe from all Colorado Elopement Guide email: /api/unsub?e=<email>&t=<signed> (the link and List-Unsubscribe
+// header in every lifecycle and marketing email) or the legacy /api/unsub?t=<token>. GET only shows a confirm page with
+// one button (scanners open every link, so a GET never unsubscribes); the button POSTs and unsubscribes; a POST with
+// List-Unsubscribe=One-Click (RFC 8058, Gmail and Yahoo) unsubscribes immediately. See src/lib/unsub-handler.ts.
+const r = unsubRoutes('/api/unsub', 'ceg_unsub');
+export const GET: APIRoute = ({ url }) => r.GET({ url });
+export const POST: APIRoute = ({ url, request }) => r.POST({ url, request });

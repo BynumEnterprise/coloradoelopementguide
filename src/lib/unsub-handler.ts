@@ -3,8 +3,11 @@
 //   ?t=<uuid>                    legacy links: a vendor user token (/api/unsub) or a p2_nurture.unsub_token
 //                                (/api/unsubscribe). Both RPCs resolve the token to its email in the database and
 //                                put that address on the suppression list, so it applies to every list, not one.
-// GET performs the unsubscribe and shows a plain page (many mail apps just open the link). POST is RFC 8058 one
-// click (body List-Unsubscribe=One-Click) and answers 200 with a short text body.
+// Scanner safe (review 2026-11-09): email security scanners open every link in a message within minutes of the send
+// (39 percent of October traffic), so GET never unsubscribes. GET checks the link and shows one button, a plain
+// HTML form (no JavaScript) that POSTs the same parameters with confirm=1; that POST unsubscribes and shows the done
+// page. Any other POST is RFC 8058 one click (body List-Unsubscribe=One-Click from Gmail and Yahoo): it unsubscribes
+// immediately and answers 200 with a short text body. A bad or mismatched token never reaches the database.
 import { rpc, authSecret } from './cron';
 import { verifyUnsub, normEmail } from './unsub';
 
@@ -14,9 +17,24 @@ const escH = (s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt
 export type UnsubOutcome = { status: 'ok' | 'invalid' | 'not_found' | 'error'; email?: string };
 
 // legacyRpc: 'ceg_unsub' (vendor user token) or 'ceg_nurture_unsub' (nurture token).
-export async function performUnsub(url: URL, legacyRpc: 'ceg_unsub' | 'ceg_nurture_unsub', source: 'link' | 'one_click'): Promise<UnsubOutcome> {
-  const e = url.searchParams.get('e');
-  const t = String(url.searchParams.get('t') || '').trim();
+export type UnsubParams = { e: string | null; t: string };
+export type LegacyRpc = 'ceg_unsub' | 'ceg_nurture_unsub';
+
+// Query string first; a form body (the confirm button) can carry the same fields.
+export function unsubParams(url: URL, form?: FormData | null): UnsubParams {
+  const pick = (k: string) => url.searchParams.get(k) ?? (form ? (form.get(k) as string | null) : null);
+  const e = pick('e');
+  return { e: e === null ? null : String(e), t: String(pick('t') || '').trim() };
+}
+
+// Shape and signature check only, no database call. Legacy tokens can only be shape checked here.
+export function checkUnsub(p: UnsubParams): UnsubOutcome {
+  if (p.e !== null) return verifyUnsub(normEmail(p.e), p.t) ? { status: 'ok', email: normEmail(p.e) } : { status: 'invalid' };
+  return UUID_RE.test(p.t) ? { status: 'ok' } : { status: 'invalid' };
+}
+
+export async function performUnsub(p: UnsubParams, legacyRpc: LegacyRpc, source: 'link' | 'one_click'): Promise<UnsubOutcome> {
+  const { e, t } = p;
   if (e !== null) {
     const email = normEmail(e);
     if (!verifyUnsub(email, t)) return { status: 'invalid' };
@@ -41,6 +59,19 @@ const page = (title: string, body: string, status = 200) =>
 <p style="font-size:14px;color:#6b665e;"><a href="https://coloradoelopementguide.com/" style="color:#2f4a3f;">Back to the site</a></p>
 </div></body></html>`, { status, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' } });
 
+// The GET page: one button that POSTs the same parameters. Only shown for a link that passed checkUnsub.
+export function confirmPage(path: string, p: UnsubParams, o: UnsubOutcome): Response {
+  if (o.status !== 'ok') return unsubPage(o);
+  const qs = new URLSearchParams();
+  if (p.e !== null) qs.set('e', normEmail(p.e));
+  qs.set('t', p.t);
+  const action = escH(`${path}?${qs.toString()}`);
+  const hidden = (p.e !== null ? `<input type="hidden" name="e" value="${escH(normEmail(p.e))}">` : '') + `<input type="hidden" name="t" value="${escH(p.t)}"><input type="hidden" name="confirm" value="1">`;
+  const who = o.email ? escH(o.email) : 'this address';
+  return page('Unsubscribe', `Stop all email from Colorado Elopement Guide to ${who}? Press the button to confirm.</p>
+<form method="post" action="${action}" style="margin:0 0 18px;">${hidden}<button type="submit" style="font:inherit;font-size:17px;background:#2f4a3f;color:#fff;border:0;border-radius:6px;padding:12px 28px;cursor:pointer;">Unsubscribe</button></form><p style="font-size:14px;color:#6b665e;margin:0 0 18px;">If you did not mean to open this page, close it and nothing changes.`);
+}
+
 export function unsubPage(o: UnsubOutcome): Response {
   if (o.status === 'ok') {
     const who = o.email ? escH(o.email) : 'This address';
@@ -49,6 +80,19 @@ export function unsubPage(o: UnsubOutcome): Response {
   if (o.status === 'error') return page('Unsubscribe', 'Something went wrong on our side and the unsubscribe did not save. Please open the link again in a minute, or reply to any of our emails with the word unsubscribe and we will stop them.', 500);
   if (o.status === 'not_found') return page('Unsubscribe', 'We could not match that link to an address. Reply to any of our emails with the word unsubscribe and we will stop them.', 404);
   return page('Unsubscribe', 'That unsubscribe link is not valid. Reply to any of our emails with the word unsubscribe and we will stop them.', 400);
+}
+
+// Route factory used by both endpoints.
+export function unsubRoutes(path: '/api/unsub' | '/api/unsubscribe', legacyRpc: LegacyRpc) {
+  const GET = async ({ url }: { url: URL }) => { const p = unsubParams(url); return confirmPage(path, p, checkUnsub(p)); };
+  const POST = async ({ url, request }: { url: URL; request: Request }) => {
+    let form: FormData | null = null;
+    try { form = await request.formData(); } catch { form = null; }
+    const p = unsubParams(url, form);
+    if (form && form.get('confirm') === '1' && form.get('List-Unsubscribe') === null) return unsubPage(await performUnsub(p, legacyRpc, 'link'));
+    return oneClickResponse(await performUnsub(p, legacyRpc, 'one_click'));
+  };
+  return { GET, POST };
 }
 
 export function oneClickResponse(o: UnsubOutcome): Response {

@@ -13,7 +13,7 @@ export const OWNER_EMAIL = 'bynumenterprisesbe@gmail.com';
 //   marketing      claim invites and follow ups, referral invites, Featured pitches.
 // lifecycle and marketing: checked against p2_suppressions (ceg_is_suppressed) first and skipped when suppressed;
 // when the check itself fails the mail is NOT sent (fail closed). Each one carries List-Unsubscribe (signed https
-// link plus mailto) with List-Unsubscribe-Post One-Click, and a visible per recipient unsubscribe line unless the
+// link) with List-Unsubscribe-Post One-Click, and a visible per recipient unsubscribe line unless the
 // body already has one of our unsubscribe links.
 import { rpc, authSecret } from './cron';
 import { makeUnsubUrl, unsubHeaders } from './unsub';
@@ -43,7 +43,9 @@ export function withUnsubFooter(to: string, text: string, html?: string): { text
 export async function isSuppressed(email: string): Promise<boolean> {
   const secret = authSecret();
   if (!secret) throw new Error('no CEG_AUTH_SECRET for the suppression check');
-  return Boolean(await rpc<boolean>('ceg_is_suppressed', { p_secret: secret, p_email: String(email || '').trim().toLowerCase() }));
+  const v = await rpc<unknown>('ceg_is_suppressed', { p_secret: secret, p_email: String(email || '').trim().toLowerCase() });
+  if (typeof v !== 'boolean') throw new Error('ceg_is_suppressed returned ' + JSON.stringify(v)); // fail closed on anything odd
+  return v;
 }
 
 export async function deliver(to: string, subject: string, text: string, html: string | undefined, opts: DeliverOpts): Promise<MailResult> {

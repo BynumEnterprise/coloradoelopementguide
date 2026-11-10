@@ -6,7 +6,9 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { authSecret, SITE } from './cron';
 
-export const UNSUB_MAILTO = 'mailto:hello@send.coloradoelopementguide.com?subject=unsubscribe';
+// No mailto part on purpose: send.coloradoelopementguide.com has no MX or A record (checked 2026-11-09), so a mailto
+// unsubscribe there would bounce and be lost. RFC 8058 only needs the https URI; replies saying unsubscribe still reach
+// the Reply To inbox, which the daily reply review reads.
 
 export const normEmail = (email: string) => String(email || '').trim().toLowerCase();
 
@@ -32,7 +34,7 @@ export function verifyUnsub(email: string, t: string): boolean {
 // RFC 2369 / 8058 headers for Resend's `headers` object.
 export function unsubHeaders(email: string): Record<string, string> {
   return {
-    'List-Unsubscribe': `<${makeUnsubUrl(email)}>, <${UNSUB_MAILTO}>`,
+    'List-Unsubscribe': `<${makeUnsubUrl(email)}>`,
     'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click'
   };
 }
