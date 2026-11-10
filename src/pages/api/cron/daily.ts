@@ -5,6 +5,7 @@ import { sendMailResult } from '../../../lib/mail';
 import { renderV4, renderDrip, renderFollowup, renderActivation, FEATURED_PITCHES_PAUSED, type OutreachVendor, type DripUser, type FollowupVendor, type ActivationUser, type RegionDemand, type VendorDemand } from '../../../lib/outreach';
 import { renderNurture, sendCoupleMail, type NurtureRecipient } from '../../../lib/couple-mail';
 import { renderReplyReminder, renderPhotoNudge, releasePendingInquiries, type ReplyReminder, type PhotoNudge } from '../../../lib/trust-mail';
+import { runQueueStage } from '../../../lib/welcome-queue';
 
 // Daily P2 automation (Vercel cron, 15:00 UTC):
 //   1. contact discovery for up to 12 seeded vendors with a website and no email
@@ -14,7 +15,7 @@ import { renderReplyReminder, renderPhotoNudge, releasePendingInquiries, type Re
 //   2c. one time activation note (drip step 10) to accounts that existed on 2026-10-12, sent once each
 //       vendor is clear of any email from us for 3 days; it runs before the drips so it takes the slot
 // Query flags for manual runs: ?dry=1 renders and checks but sends nothing;
-//   ?only=featured_rotation|bounces|analytics|discovery|outreach|followups|activation|pending_inquiries|drips|nurture|reply_reminders|photo_nudges;
+//   ?only=featured_rotation|bounces|analytics|discovery|outreach|followups|activation|queue|pending_inquiries|drips|nurture|reply_reminders|photo_nudges;
 //   ?force=1 lets featured_rotation run on a day other than Tuesday (manual first run).
 //   0. featured_rotation: free Featured trial. Tuesdays (Denver) through p2_config trial_rotation_until, ends the active
 //      cohort and starts a new 7 day one (3 per category) via ceg_cron_trial_rotate, then fires the deploy hook. Runs
@@ -320,6 +321,15 @@ export const GET: APIRoute = async ({ request }) => {
       }
     } catch (e) { ac.fatal = String(e).slice(0, 300); summary.ok = false; }
     summary.activation = ac;
+  }
+
+  // 2c2. queue (?only=queue): backup run of the 15 minute queue (src/lib/welcome-queue.ts): Maps lookup for listings added
+  //      by the cloud tasks, welcome emails for claims they confirmed, one deploy hook for pending requests.
+  if (run('queue')) {
+    let qu: Record<string, unknown>;
+    try { qu = await runQueueStage(secret, { dry, started, budgetMs: 120_000 }); if (!qu.ok) summary.ok = false; }
+    catch (e) { qu = { fatal: String(e).slice(0, 300) }; summary.ok = false; }
+    summary.queue = qu;
   }
 
   // 2d. Inquiries that arrived before the vendor claimed: full copy to the verified account, once each.

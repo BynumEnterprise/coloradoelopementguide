@@ -23,12 +23,12 @@ import { gscEnv, gscAccessToken, gscFetchWeek, gscWindow } from '../../../lib/gs
 const RELEASE_N = 40;
 const DASHES = /[\-‐‑‒–—―]/g;
 
-type Released = { id: number; slug: string; name: string; lat: number | null; lng: number | null; address: string | null; image_url: string | null; place_id: string | null; sub_region: string | null };
+export type Released = { id: number; slug: string; name: string; lat: number | null; lng: number | null; address: string | null; image_url: string | null; place_id: string | null; sub_region: string | null };
 type MapsItem = { type?: string; title?: string; place_id?: string; rating?: { value?: number; votes_count?: number } | null; main_image?: string | null };
 
 const norm = (s: string) => String(s || '').toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '');
 
-async function mapsLookup(v: Released, login: string, password: string): Promise<MapsItem | null> {
+export async function mapsLookup(v: Released, login: string, password: string): Promise<MapsItem | null> {
   const task: Record<string, unknown> = {
     keyword: `${v.name} ${v.address || 'Colorado'}`.slice(0, 200),
     language_code: 'en', depth: 3
@@ -49,7 +49,7 @@ async function mapsLookup(v: Released, login: string, password: string): Promise
   return items.find(i => norm(i.title || '') === want) || null;
 }
 
-function bigPhoto(url: string | null | undefined): string | null {
+export function bigPhoto(url: string | null | undefined): string | null {
   if (!url || !/^https?:\/\//.test(url)) return null;
   return /=w\d+-h\d+-k-no/.test(url) ? url.replace(/=w\d+-h\d+-k-no.*$/, '=w1200-h750-k-no') : `${url}=w1200-h750-k-no`;
 }
