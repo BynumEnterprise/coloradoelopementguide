@@ -7,7 +7,7 @@ import { IMG } from '../../../lib/assets';
 import { displayName } from '../../../lib/outreach';
 import { runMonthlyReports } from '../../../lib/vendor-report';
 import { runCanary } from '../../../lib/canary';
-import { gscEnv, gscAccessToken, gscFetchWeek, gscWindow } from '../../../lib/gsc';
+import { gscAuth, gscConfigured, gscFetchWeek, gscWindow } from '../../../lib/gsc';
 
 // Weekly P2 automation (Vercel cron, Monday 14:00 UTC):
 //   1. release up to 40 queued vendors (balanced across regions, junk names excluded)
@@ -16,7 +16,7 @@ import { gscEnv, gscAccessToken, gscFetchWeek, gscWindow } from '../../../lib/gs
 //   4. email the owner the KPI digest
 //   5. create 3 Pinterest pins when PINTEREST_ACCESS_TOKEN and PINTEREST_BOARD_ID are set
 //   6. monthly_reports: first Monday of the month (Denver), the previous month's stats email to each verified vendor account
-//   8. gsc: Search Console import (src/lib/gsc.ts) when GSC_SA_JSON is set; rows to p2_gsc_daily, totals to fleet.site_kpis and the digest
+//   8. gsc: Search Console import (src/lib/gsc.ts), keyless via Vercel OIDC + Google workload identity federation; rows to p2_gsc_daily, totals to fleet.site_kpis and the digest
 //   7. canary: money path canary against the hidden synthetic vendor (src/lib/canary.ts); alerts the owner on failure
 // Flags for manual runs: ?dry=1 (release count 0, no sends, no pins), ?release=N, ?only=monthly_reports, ?only=canary, ?only=gsc or ?only=digest (that stage alone; digest also runs the canary so it can report it).
 
@@ -115,15 +115,15 @@ const VENDOR_SIDE = /^\/(claim|vendor-dashboard|vd|lt|for-vendors|featured|admin
 const prettyPath = (p: string) => (p === '/' ? 'home page' : p.replace(/\/$/, '').replace(/^\/(resources|venues|vendor|local|category|guides|region)\//, '').replace(/[\/-]+/g, ' ').trim() || p);
 
 // 8. Search Console import. Returns what the digest needs; {skipped} when the service account is not configured.
-async function runGsc(secret: string, dry: boolean): Promise<Record<string, any>> {
-  const env = gscEnv();
-  if (!env.sa) return { skipped: env.error ? `GSC_SA_JSON invalid: ${env.error}` : 'no GSC_SA_JSON' };
+async function runGsc(secret: string, dry: boolean, request?: Request): Promise<Record<string, any>> {
+  const auth = await gscAuth(request);
+  if ('skipped' in auth) return { skipped: auth.skipped };
+  const env = { site: auth.site };
   const win = gscWindow();
-  const token = await gscAccessToken(env.sa);
-  const rows = await gscFetchWeek(token, env.site, win);
+  const rows = await gscFetchWeek(auth.token, env.site, win);
   const pageRows = rows.filter(r => r.dimension === 'page');
   const clicks = pageRows.reduce((a, r) => a + r.clicks, 0), impressions = pageRows.reduce((a, r) => a + r.impressions, 0);
-  const out: Record<string, any> = { site: env.site, window: win, rows: rows.length, clicks, impressions };
+  const out: Record<string, any> = { site: env.site, auth: auth.mode, window: win, rows: rows.length, clicks, impressions };
   if (!dry && rows.length) {
     out.upsert = await rpc('ceg_gsc_upsert', { p_secret: secret, p_rows: rows });
     out.kpi_id = await rpc('ceg_gsc_kpi', { p_secret: secret, p_clicks: clicks, p_impressions: impressions, p_note: `gsc week ${win.start} to ${win.end}: ${clicks} clicks, ${impressions} impressions, ${pageRows.length} page rows` });
@@ -242,7 +242,7 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   if (url.searchParams.get('only') === 'gsc') {
-    try { run.gsc = await runGsc(secret, dry); if (!run.gsc.skipped) run.gsc_week = await rpc<any>('ceg_gsc_week', { p_secret: secret }); }
+    try { run.gsc = await runGsc(secret, dry, request); if (!run.gsc.skipped) run.gsc_week = await rpc<any>('ceg_gsc_week', { p_secret: secret }); }
     catch (e) { run.gsc = { error: String(e).slice(0, 300) }; run.ok = false; }
     run.ms = Date.now() - started;
     console.log('CRON weekly', JSON.stringify(run));
@@ -251,7 +251,7 @@ export const GET: APIRoute = async ({ request }) => {
 
   if (url.searchParams.get('only') === 'digest') {
     // Digest only: no Google call, print what the last import stored.
-    try { run.gsc = gscEnv().sa ? { from_db: true } : { skipped: 'no GSC_SA_JSON' }; if (!run.gsc.skipped) run.gsc_week = await rpc<any>('ceg_gsc_week', { p_secret: secret }); }
+    try { run.gsc = gscConfigured() ? { from_db: true } : { skipped: 'gsc not configured' }; if (!run.gsc.skipped) run.gsc_week = await rpc<any>('ceg_gsc_week', { p_secret: secret }); }
     catch (e) { run.gsc = { error: String(e).slice(0, 300) }; }
     try { run.canary = await runCanary(secret, dry); } catch (e) { run.canary = { error: String(e).slice(0, 300) }; }
     try {
@@ -325,7 +325,7 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   // 8. Search Console import (before the digest so it can print last week's clicks)
-  try { run.gsc = await runGsc(secret, dry); if (!run.gsc.skipped) run.gsc_week = await rpc<any>('ceg_gsc_week', { p_secret: secret }); }
+  try { run.gsc = await runGsc(secret, dry, request); if (!run.gsc.skipped) run.gsc_week = await rpc<any>('ceg_gsc_week', { p_secret: secret }); }
   catch (e) { run.gsc = { error: String(e).slice(0, 300) }; }
 
   // 7. Canary (runs before the digest so the Monday email reports it; its own owner alert on failure)

@@ -1,6 +1,13 @@
-// Google Search Console import (S8). Service account JSON in env GSC_SA_JSON, property in GSC_SITE
-// (default sc-domain:coloradoelopementguide.com). No SDK: a RS256 JWT signed with node crypto, swapped for an
-// access token, then the Search Analytics query endpoint. The weekly cron stores rows via ceg_gsc_upsert.
+// Google Search Console import (S8). Property in GSC_SITE (default sc-domain:coloradoelopementguide.com).
+// Auth, in order of preference:
+//   1. Keyless Workload Identity Federation (live path, 2026-11-09). Vercel OIDC federation (team issuer) gives every
+//      function a short lived JWT in the x-vercel-oidc-token request header (VERCEL_OIDC_TOKEN env as a fallback).
+//      We swap it at Google STS for a federated token, then impersonate the read only service account in GSC_SA_EMAIL
+//      via IAM Credentials generateAccessToken. Needs GSC_WIF_AUDIENCE
+//      (//iam.googleapis.com/projects/<NUM>/locations/global/workloadIdentityPools/<pool>/providers/<provider>)
+//      and GSC_SA_EMAIL. No key material is stored anywhere.
+//   2. Legacy service account JSON key in GSC_SA_JSON (unused; kept as a fallback branch only).
+// No SDK either way. The weekly cron stores rows via ceg_gsc_upsert.
 import { createSign } from 'node:crypto';
 import { fetchWithTimeout } from './cron';
 
@@ -10,6 +17,85 @@ const SCOPE = 'https://www.googleapis.com/auth/webmasters.readonly';
 export type GscRow = { date: string; dimension: 'page' | 'query'; key: string; clicks: number; impressions: number; ctr: number; position: number };
 
 const b64url = (b: Buffer | string) => Buffer.from(b).toString('base64').replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
+
+const envVar = (k: string): string | undefined => (process.env[k] ?? (import.meta.env as any)?.[k]) || undefined;
+
+export type GscWif = { audience: string; saEmail: string };
+
+// Federation settings, or null when not configured.
+export function gscWifEnv(): GscWif | null {
+  const audience = envVar('GSC_WIF_AUDIENCE'), saEmail = envVar('GSC_SA_EMAIL');
+  return audience && saEmail ? { audience: audience.trim(), saEmail: saEmail.trim() } : null;
+}
+
+// The Vercel OIDC token: request header first (runtime), then the env var (build time, local dev with vercel env pull).
+export function vercelOidcToken(request?: Request | null): string | null {
+  const h = request?.headers?.get('x-vercel-oidc-token');
+  return (h && h.trim()) || envVar('VERCEL_OIDC_TOKEN')?.trim() || null;
+}
+
+export const STS_URL = 'https://sts.googleapis.com/v1/token';
+export const STS_SCOPE = 'https://www.googleapis.com/auth/cloud-platform';
+
+// Request builders are exported so they can be unit tested without the network.
+export function stsRequest(audience: string, subjectToken: string): { url: string; init: RequestInit } {
+  return {
+    url: STS_URL,
+    init: {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'urn:ietf:params:oauth:grant-type:token-exchange',
+        audience,
+        scope: STS_SCOPE,
+        requested_token_type: 'urn:ietf:params:oauth:token-type:access_token',
+        subject_token_type: 'urn:ietf:params:oauth:token-type:jwt',
+        subject_token: subjectToken
+      }).toString()
+    }
+  };
+}
+
+export function impersonateRequest(saEmail: string, federatedToken: string): { url: string; init: RequestInit } {
+  return {
+    url: `https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${encodeURIComponent(saEmail)}:generateAccessToken`,
+    init: {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${federatedToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scope: [SCOPE], lifetime: '3600s' })
+    }
+  };
+}
+
+export async function gscFederatedToken(wif: GscWif, oidcToken: string, f: typeof fetch = fetch): Promise<string> {
+  const timed = (url: string, init: RequestInit) => (f === fetch ? fetchWithTimeout(url, 15_000, init) : f(url, init));
+  const a = stsRequest(wif.audience, oidcToken);
+  const r1 = await timed(a.url, a.init);
+  const b1: any = await r1.json().catch(() => ({}));
+  if (!r1.ok || !b1.access_token) throw new Error(`gsc sts ${r1.status} ${String(b1.error_description || b1.error || '').slice(0, 160)}`);
+  const b = impersonateRequest(wif.saEmail, String(b1.access_token));
+  const r2 = await timed(b.url, b.init);
+  const b2: any = await r2.json().catch(() => ({}));
+  if (!r2.ok || !b2.accessToken) throw new Error(`gsc impersonate ${r2.status} ${String(b2?.error?.message || '').slice(0, 160)}`);
+  return String(b2.accessToken);
+}
+
+// One entry point for the cron: picks federation when configured, else the legacy key, else reports skipped.
+export async function gscAuth(request?: Request | null): Promise<{ token: string; mode: 'wif' | 'key'; site: string } | { skipped: string; site: string }> {
+  const site = envVar('GSC_SITE') || GSC_DEFAULT_SITE;
+  const wif = gscWifEnv();
+  if (wif) {
+    const oidc = vercelOidcToken(request);
+    if (!oidc) return { skipped: 'GSC_WIF_AUDIENCE set but no Vercel OIDC token (enable OIDC federation on the project)', site };
+    return { token: await gscFederatedToken(wif, oidc), mode: 'wif', site };
+  }
+  const env = gscEnv();
+  if (env.sa) return { token: await gscAccessToken(env.sa), mode: 'key', site };
+  return { skipped: env.error ? `GSC_SA_JSON invalid: ${env.error}` : 'no GSC_WIF_AUDIENCE/GSC_SA_EMAIL', site };
+}
+
+// True when some auth path is configured (used by the digest only stage, which makes no Google call).
+export const gscConfigured = (): boolean => !!gscWifEnv() || !!gscEnv().sa;
 
 export function gscEnv(): { sa: { client_email: string; private_key: string; token_uri?: string } | null; site: string; error?: string } {
   const raw = process.env.GSC_SA_JSON ?? import.meta.env.GSC_SA_JSON;
