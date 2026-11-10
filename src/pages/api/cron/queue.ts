@@ -5,7 +5,7 @@ import { runQueueStage } from '../../../lib/welcome-queue';
 
 // Lightweight queue drain: new listing Maps lookups, welcome emails for claims confirmed by the cloud tasks, and one
 // deploy hook for pending requests. Triggered every 15 minutes by the Supabase pg_cron job p2-queue-tick, which only
-// calls this route when a queue has pending rows (Vercel Hobby crons are limited to once a day). The daily cron runs
+// calls this route when a queue has pending rows (cheaper than a fixed Vercel cron; the team is on Pro). The daily cron runs
 // the same stage as a backup. ?dry=1 touches nothing.
 export const GET: APIRoute = async ({ request }) => {
   if (!cronAuthorized(request)) return json({ error: 'unauthorized' }, 401);
