@@ -1,7 +1,7 @@
 export const prerender = false;
 import type { APIRoute } from 'astro';
 import { json, rpc, authSecret } from '../../lib/cron';
-import { sendMailResult, MAIL_FROM, OWNER_EMAIL } from '../../lib/mail';
+import { sendMailResult, sendMailReplyTo, OWNER_EMAIL } from '../../lib/mail';
 import { repliedUrl } from '../../lib/trust-mail';
 import { renderInquiryConfirm } from '../../lib/couple-mail';
 import { inquiryVendorEmail, inquiryNoticeEmail, naturalCheck, type InquiryIn } from '../../lib/outreach';
@@ -12,20 +12,6 @@ import { EMAIL_RE, clean, looksLikeSpam, SUBMIT_ERRORS } from '../../lib/inquiry
 // (Reply To the couple), a short claim notice without the couple's details to an unclaimed vendor, or nothing
 // but the owner notice when no deliverable address exists. The owner always gets a one line notice.
 
-// Same as sendMailResult, plus a Reply To of the couple (sendMailResult always replies to the owner inbox).
-async function sendReplyTo(to: string, replyTo: string, subject: string, text: string, html?: string) {
-  const key = process.env.RESEND_API_KEY ?? import.meta.env.RESEND_API_KEY;
-  if (!key) return { ok: false, status: 0, error: 'no RESEND_API_KEY' };
-  try {
-    const r = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: MAIL_FROM, to: [to], reply_to: replyTo, subject, text, ...(html ? { html } : {}) })
-    });
-    const body = await r.text();
-    return r.ok ? { ok: true, status: r.status } : { ok: false, status: r.status, error: body.slice(0, 300) };
-  } catch (e) { return { ok: false, status: 0, error: String(e) }; }
-}
 
 
 export const POST: APIRoute = async ({ request }) => {
@@ -85,12 +71,12 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     if (res.mode === 'account' && res.to) {
       const m = inquiryVendorEmail(q, repliedUrl(res.id));
-      const r = await sendReplyTo(res.to, email, m.subject, m.text, m.html);
+      const r = await sendMailReplyTo('inquiry', res.to, email, m.subject, m.text, m.html);
       notified = r.ok; note = r.ok ? `full inquiry emailed to account ${res.to}` : `account email failed (${r.error})`;
     } else if (res.mode === 'notice' && res.to) {
       const m = inquiryNoticeEmail(q);
-      const r = await sendMailResult(res.to, m.subject, m.text, m.html);
-      notified = r.ok; note = r.ok ? `claim notice emailed to ${res.to}` : `claim notice failed (${r.error})`;
+      const r = await sendMailResult('lifecycle', res.to, m.subject, m.text, m.html);
+      notified = r.ok; note = r.ok ? `claim notice emailed to ${res.to}` : r.suppressed ? `claim notice not sent, ${res.to} is unsubscribed` : `claim notice failed (${r.error})`;
     } else {
       note = 'no deliverable vendor address, kept for the owner';
     }
@@ -102,7 +88,7 @@ export const POST: APIRoute = async ({ request }) => {
     const subj = `[CEG] Inquiry ${res.id} for ${v.name}`;
     const line = `Inquiry ${res.id} for ${v.name} (${v.status}) from ${names} <${email}>: ${note}.`;
     naturalCheck(line, 'owner inquiry line', [v.name, names, email, note]);
-    await sendMailResult(OWNER_EMAIL, subj, line);
+    await sendMailResult('transactional', OWNER_EMAIL, subj, line);
   } catch (e) { console.error('owner notice failed', e); }
 
   // Couple confirmation: one per inquiry (ceg_inquiry_confirm holds the slot; spam never reaches here).
@@ -113,7 +99,7 @@ export const POST: APIRoute = async ({ request }) => {
       let ok = false;
       try {
         const m = renderInquiryConfirm({ mode: res.mode, vendor: c.vendor, similar: c.similar || [], names, email, weddingDate, guests, message });
-        const r = await sendMailResult(email, m.subject, m.text, m.html);
+        const r = await sendMailResult('transactional', email, m.subject, m.text, m.html);
         ok = r.ok; if (!r.ok) console.error('couple confirm failed', r.status, r.error);
       } catch (e) { console.error('couple confirm render/send error', e); }
       await rpc('ceg_inquiry_confirm_mark', { p_secret: secret, p_id: res.id, p_ok: ok });

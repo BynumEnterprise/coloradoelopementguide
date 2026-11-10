@@ -107,7 +107,7 @@ export async function deliverWelcome(secret: string, t: WelcomeTarget, opts: { d
   } catch (e) { return { ok: false, error: String((e as Error).message || e).slice(0, 200) }; }
 
   if (opts.dry) return { ok: true, sent_to: to, vendor: name, subject, text };
-  const res = await sendMailResult(to, subject, text, html);
+  const res = await sendMailResult('transactional', to, subject, text, html);
   if (!res.ok) return { ok: false, sent_to: to, vendor: name, error: `send ${res.status}: ${String(res.error || '').slice(0, 200)}` };
   // Inquiries that arrived while the listing was unclaimed: full copy to this account, once each.
   let pending: unknown = null;

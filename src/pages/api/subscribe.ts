@@ -30,7 +30,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
       if (res.ok) await rpc('ceg_nurture_mark', { p_secret: secret, p_id: sub.id, p_step: 'kit', p_via: 'subscribe', p_resend_id: res.id ?? null });
       else console.error('kit send failed', res.status, res.error);
     } catch (e) { console.error('kit send error', e); }
-    try { await sendMail(OWNER_EMAIL, '[CEG] New planning kit subscriber', `New planning kit subscriber: ${email} (from ${source}). Stored in p2_subscribers and enrolled in the couple emails.`); } catch { /* noop */ }
+    try { await sendMail('transactional', OWNER_EMAIL, '[CEG] New planning kit subscriber', `New planning kit subscriber: ${email} (from ${source}). Stored in p2_subscribers and enrolled in the couple emails.`); } catch { /* noop */ }
   }
 
   const key = process.env.KIT_API_KEY ?? import.meta.env.KIT_API_KEY;

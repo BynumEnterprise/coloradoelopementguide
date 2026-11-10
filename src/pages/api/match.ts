@@ -149,12 +149,12 @@ export const POST: APIRoute = async ({ request }) => {
     try {
       if (s.mode === 'account' && s.to) {
         const m = inquiryVendorEmail(q, repliedUrl(s.id));
-        const r = await sendMailReplyTo(s.to, email, m.subject, m.text, m.html);
+        const r = await sendMailReplyTo('inquiry', s.to, email, m.subject, m.text, m.html);
         notified = r.ok; note = r.ok ? `full inquiry emailed to account ${s.to}` : `account email failed (${r.error})`;
       } else if (s.mode === 'notice' && s.to) {
         const m = inquiryNoticeEmail(q);
-        const r = await sendMailResult(s.to, m.subject, m.text, m.html);
-        notified = r.ok; note = r.ok ? `claim notice emailed to ${s.to}` : `claim notice failed (${r.error})`;
+        const r = await sendMailResult('lifecycle', s.to, m.subject, m.text, m.html);
+        notified = r.ok; note = r.ok ? `claim notice emailed to ${s.to}` : r.suppressed ? `claim notice not sent, ${s.to} is unsubscribed` : `claim notice failed (${r.error})`;
       } else note = 'no deliverable vendor address, kept for the owner';
     } catch (e) { console.error('match delivery failed', e); note = `delivery error: ${String(e).slice(0, 200)}`; }
     try { await rpc('ceg_inquiry_mark', { p_secret: secret, p_id: s.id, p_notified: notified }); } catch (e) { console.error('inquiry mark failed', e); }
@@ -166,7 +166,7 @@ export const POST: APIRoute = async ({ request }) => {
     const subj = `[CEG] Match: ${sent.length} ${sent.length === 1 ? 'inquiry' : 'inquiries'} from ${names}`;
     const text = `${names} <${email}> used /match/ (${region || 'region not decided'}, ${categories.join(', ')}${band ? `, ${band.label}` : ''}) and reached ${sent.length} ${sent.length === 1 ? 'vendor' : 'vendors'}.\n\n${lines.join('\n')}${skipped.length ? `\n\nSkipped: ${skipped.map(s => `${s.slug} (${s.reason})`).join(', ')}` : ''}${state.stop ? `\n\nStopped early: ${state.stop}` : ''}`;
     naturalCheck(text, 'owner match line', [names, email, region || '', ...lines, ...categories, band?.label || '', ...skipped.map(s => s.slug)]);
-    await sendMailResult(OWNER_EMAIL, subj, text);
+    await sendMailResult('transactional', OWNER_EMAIL, subj, text);
   } catch (e) { console.error('owner notice failed', e); }
 
   // Couple confirmation: one email for the batch. ceg_inquiry_confirm holds each inquiry's slot so the
@@ -182,7 +182,7 @@ export const POST: APIRoute = async ({ request }) => {
       let ok = false;
       try {
         const m = renderMatchConfirm({ vendors: confirms.map(c => c.v), names, email, weddingDate, guests, region, budget: band?.label || null, message: coupleMessage });
-        const r = await sendMailResult(email, m.subject, m.text, m.html);
+        const r = await sendMailResult('transactional', email, m.subject, m.text, m.html);
         ok = r.ok; if (!r.ok) console.error('match confirm failed', r.status, r.error);
       } catch (e) { console.error('match confirm render/send error', e); }
       for (const c of confirms) { try { await rpc('ceg_inquiry_confirm_mark', { p_secret: secret, p_id: c.id, p_ok: ok }); } catch (e) { console.error('confirm mark failed', e); } }

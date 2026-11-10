@@ -24,7 +24,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     if (!r?.ok) return redirect(r?.error === 'rate' ? '/thanks?claim=1' : '/claim?e=invalid', 303);
     vendorId = r.vendor_id ?? null; vendorName = r.vendor_name ?? '';
   } catch (e) { console.error('claim submit failed', e); return redirect('/claim?e=invalid', 303); }
-  await sendMail(email, `We got your claim${vendorName ? ` for ${vendorName}` : ''} | Colorado Elopement Guide`,
+  await sendMail('transactional', email, `We got your claim${vendorName ? ` for ${vendorName}` : ''} | Colorado Elopement Guide`,
 `Hi ${name},
 
 Thanks for claiming${vendorName ? ` for ${vendorName}` : ''}. Here's what happens next:
@@ -37,7 +37,7 @@ Nothing to do right now. Questions? Just reply.
 
 Ryan
 Colorado Elopement Guide`);
-  await sendMail('bynumenterprisesbe@gmail.com', `[CEG] New claim: ${vendorName || 'unlisted business'} by ${name}`,
+  await sendMail('transactional', 'bynumenterprisesbe@gmail.com', `[CEG] New claim: ${vendorName || 'unlisted business'} by ${name}`,
 `Claim received.\nVendor: ${vendorName || '(not listed)'} (id ${vendorId})\nClaimant: ${name} <${email}>\nMessage: ${message || '(none)'}\nReferral: ${ref || '(none)'}\n\nDaily reply-review task will verify domain match, or handle manually.`);
   return redirect('/thanks?claim=1', 303);
 };

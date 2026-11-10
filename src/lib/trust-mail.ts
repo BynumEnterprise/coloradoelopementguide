@@ -107,7 +107,7 @@ export async function releasePendingInquiries(secret: string, opts: { vendorId?:
     try { flipped = Boolean(await rpc<boolean>('ceg_inquiry_release', { p_secret: secret, p_id: r.id, p_undo: false })); }
     catch (e) { out.failed.push({ inquiry: r.id, error: 'release mark failed, not sent: ' + String(e).slice(0, 200) }); continue; }
     if (!flipped) continue; // another run got it first
-    const res = await sendMailReplyTo(r.account_email, r.couple_email, m.subject, m.text, m.html);
+    const res = await sendMailReplyTo('inquiry', r.account_email, r.couple_email, m.subject, m.text, m.html);
     if (res.ok) {
       out.sent.push({ inquiry: r.id, vendor: r.slug, to: r.account_email, was: r.delivery_mode, id: res.id });
       try { await rpc('ceg_inquiry_mark', { p_secret: secret, p_id: r.id, p_notified: true }); } catch { /* noop: the flip already stops a resend */ }

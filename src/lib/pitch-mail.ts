@@ -2,7 +2,7 @@
 // Rendered on the server so the admin preview, the Copy button and the sent email are the same text,
 // and every version passes naturalCheck before anyone sees it.
 import { naturalCheck, displayName, categoryPlural, greetingFor, slotLine, SITE_URL, POSTAL_ADDRESS, featuredLinkFor, FEATURED_CAP, FOUNDING_CAP } from './outreach';
-import { textToHtml, MAIL_REPLY_TO } from './mail';
+import { textToHtml, deliver, type MailResult } from './mail';
 
 export const PITCH_FROM = 'Ryan at Colorado Elopement Guide <hello@send.coloradoelopementguide.com>';
 
@@ -90,24 +90,9 @@ Prefer no more emails? ${unsubUrl}
   return { to, subject, text, html: textToHtml(text), unsubUrl };
 }
 
-export type SendResult = { ok: boolean; status: number; id?: string; error?: string };
+export type SendResult = MailResult;
 
+// Marketing: suppression check (fail closed), signed List-Unsubscribe plus One-Click headers, sent as Ryan.
 export async function sendPitch(p: Pitch): Promise<SendResult> {
-  const key = process.env.RESEND_API_KEY ?? import.meta.env.RESEND_API_KEY;
-  if (!key) return { ok: false, status: 0, error: 'no RESEND_API_KEY' };
-  try {
-    const r = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        from: PITCH_FROM, to: [p.to], reply_to: MAIL_REPLY_TO, subject: p.subject, text: p.text, html: p.html,
-        headers: { 'List-Unsubscribe': `<${p.unsubUrl}>` }
-      })
-    });
-    const body = await r.text();
-    if (!r.ok) return { ok: false, status: r.status, error: body.slice(0, 300) };
-    let id: string | undefined;
-    try { id = JSON.parse(body)?.id; } catch { /* noop */ }
-    return { ok: true, status: r.status, id };
-  } catch (e) { return { ok: false, status: 0, error: String(e).slice(0, 300) }; }
+  return deliver(p.to, p.subject, p.text, p.html, { kind: 'marketing', from: PITCH_FROM });
 }

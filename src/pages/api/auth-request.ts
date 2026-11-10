@@ -18,7 +18,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
   if (!r.ok) { console.error('auth-request rpc failed', r.status, await r.text()); return redirect('/my-vendors?e=srv', 303); }
   const lt = (await r.text()).replace(/"/g, '');
   const link = `https://coloradoelopementguide.com/lt/${lt}${slugs ? `?merge=${encodeURIComponent(slugs)}` : ''}`;
-  await sendMail(email, 'Your sign in link for Colorado Elopement Guide',
+  await sendMail('transactional', email, 'Your sign in link for Colorado Elopement Guide',
 `Hi,
 
 Tap this link to open your vendor planner. It works once and expires in 30 minutes:

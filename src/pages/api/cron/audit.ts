@@ -51,7 +51,7 @@ export const GET: APIRoute = async ({ request }) => {
     run.flags = flags; run.words = text.split(/\s+/).length; run.lines = lines;
     if (dry) run.preview = text;
     else {
-      const res = await sendMailResult(OWNER_EMAIL, '[CEG] Sunday self audit', text);
+      const res = await sendMailResult('transactional', OWNER_EMAIL, '[CEG] Sunday self audit', text);
       run.sent = res.ok; if (!res.ok) { run.send_error = res.error; run.ok = false; }
       try {
         run.decision_id = await rpc('ceg_cron_decision', {
